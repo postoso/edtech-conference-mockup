@@ -3,13 +3,16 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Conference Mockup — Index</title>
+<title>Counselor LMS — IECA Baltimore 2026</title>
+<meta name="description" content="Static HTML mockup index — Counselor LMS, IECA Baltimore booth 2026-05-18." />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500&family=Geist:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
   :root {
+    /* Locked tokens — match SHARED-SPEC v2 */
     --bg: #f7f8fa;
     --surface: #ffffff;
     --surface-2: #fbfcfd;
@@ -18,820 +21,725 @@
     --ink-3: #94a3b8;
     --line: #e4e6eb;
     --line-2: #cbd5e1;
+
+    --sidebar: #0f172a;
+    --sidebar-ink: #cbd5e1;
+
     --primary: #5b5fcf;
     --primary-bg: #eef0fb;
     --primary-line: #c7cbe8;
-    --rose: #be123c;
-    --rose-bg: #ffe4e6;
+
     --emerald: #047857;
     --emerald-bg: #d1fae5;
     --amber: #b45309;
     --amber-bg: #fef3c7;
+    --rose: #be123c;
+
+    --radius: 6px;
+    --radius-card: 10px;
+    --radius-chip: 4px;
   }
-  html, body { background: var(--bg); color: var(--ink); }
+
+  html, body { background: var(--bg); color: var(--ink); min-height: 100%; }
   body {
     font-family: 'Geist', system-ui, sans-serif;
     font-size: 14px;
     line-height: 1.55;
     -webkit-font-smoothing: antialiased;
+    font-feature-settings: "ss01", "cv11";
   }
-  .font-mono { font-family: 'Geist Mono', SF Mono, monospace; }
+  .font-mono { font-family: 'Geist Mono', 'SF Mono', monospace; }
 
-  .page {
-    max-width: 1100px;
-    margin: 0 auto;
-    padding: 56px 40px 80px;
-  }
-
-  /* Header */
-  header { margin-bottom: 44px; padding-bottom: 28px; border-bottom: 1px solid var(--line); }
-  .eyebrow {
-    font-family: 'Geist Mono', monospace;
-    font-size: 11px;
-    color: var(--ink-3);
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    margin-bottom: 14px;
+  /* ─── Topbar ─── */
+  .topbar {
+    height: 56px;
+    background: var(--sidebar);
     display: flex;
     align-items: center;
-    gap: 12px;
+    padding: 0 32px;
+    color: #fff;
   }
-  .mark {
-    width: 28px; height: 28px;
-    border-radius: 7px;
+  .topbar-brand {
+    display: flex; align-items: center; gap: 12px;
+  }
+  .brand-mark {
+    width: 30px; height: 30px;
+    border-radius: 8px;
     background: var(--primary);
     display: inline-flex; align-items: center; justify-content: center;
     flex-shrink: 0;
   }
-  .mark svg { display: block; }
-  h1 {
-    font-size: 30px;
+  .brand-mark svg { display: block; }
+  .topbar-title {
+    font-size: 14px;
     font-weight: 600;
-    line-height: 1.15;
-    letter-spacing: -0.022em;
-    margin-bottom: 12px;
-    color: var(--ink);
+    letter-spacing: -0.005em;
+    color: #ffffff;
   }
-  .lede {
-    font-size: 15px;
-    color: var(--ink-2);
-    max-width: 680px;
-    line-height: 1.6;
-  }
-  .meta-strip {
-    margin-top: 22px;
-    display: flex;
-    gap: 18px;
-    flex-wrap: wrap;
-    font-size: 12.5px;
-    color: var(--ink-3);
-  }
-  .meta-strip .pip {
-    display: inline-flex; align-items: center; gap: 7px;
+  .topbar-eyebrow {
+    margin-left: 14px;
     font-family: 'Geist Mono', monospace;
-    font-size: 11.5px;
-    letter-spacing: 0.02em;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(203, 213, 225, 0.7);
+    padding-left: 14px;
+    border-left: 1px solid rgba(255,255,255,0.12);
   }
-  .meta-strip .pip::before {
-    content: ""; width: 6px; height: 6px; border-radius: 50%;
-    background: var(--ink-3);
+  .topbar-meta {
+    margin-left: auto;
+    font-family: 'Geist Mono', monospace;
+    font-size: 11px;
+    color: rgba(203, 213, 225, 0.65);
+    letter-spacing: 0.04em;
   }
-  .meta-strip .pip.go::before { background: var(--emerald); }
-  .meta-strip .pip.warn::before { background: var(--amber); }
-  .meta-strip .pip.alert::before { background: var(--rose); }
-  .meta-strip .pip.live::before { background: var(--primary); }
+  .topbar-meta .live-dot {
+    display: inline-block;
+    width: 7px; height: 7px;
+    background: #34d399;
+    border-radius: 50%;
+    margin-right: 6px;
+    vertical-align: 1px;
+    box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.18);
+  }
 
-  /* V2 callout */
-  .callout {
-    margin-top: 24px;
-    padding: 16px 20px;
-    background: var(--primary-bg);
-    border: 1px solid var(--primary-line);
-    border-radius: 8px;
-    font-size: 13.5px;
-    color: var(--ink-2);
-    line-height: 1.6;
+  /* ─── Page wrapper ─── */
+  .page {
+    max-width: 1240px;
+    margin: 0 auto;
+    padding: 56px 40px 80px;
   }
-  .callout strong { color: var(--ink); font-weight: 600; }
 
-  /* Section */
-  section {
-    margin-top: 48px;
-  }
-  .section-head {
-    display: flex; align-items: baseline; gap: 16px;
-    margin-bottom: 18px;
-    padding-bottom: 12px;
+  /* ─── Hero ─── */
+  .hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+    gap: 56px;
+    align-items: end;
+    margin-bottom: 56px;
+    padding-bottom: 36px;
     border-bottom: 1px solid var(--line);
   }
-  .section-head h2 {
-    font-size: 20px;
+  .hero-headline h1 {
+    font-size: 38px;
     font-weight: 600;
-    letter-spacing: -0.012em;
+    letter-spacing: -0.028em;
+    line-height: 1.08;
     color: var(--ink);
+    margin-bottom: 18px;
   }
-  .section-head .section-meta {
-    font-family: 'Geist Mono', monospace;
-    font-size: 11px;
-    color: var(--ink-3);
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    margin-left: auto;
+  .hero-headline h1 .accent {
+    color: var(--primary);
   }
-  .section-intro {
+  .hero-headline .lede {
+    font-size: 16px;
     color: var(--ink-2);
-    margin-bottom: 22px;
-    max-width: 760px;
-    font-size: 13.5px;
-    line-height: 1.6;
+    max-width: 580px;
+    line-height: 1.55;
   }
-
-  /* Grid of variants */
-  .grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
+  .hero-aside {
+    display: flex;
+    flex-direction: column;
     gap: 14px;
   }
-  .grid.full { grid-template-columns: 1fr; }
-  .variant {
+  .hero-stat {
+    display: flex; align-items: baseline; gap: 12px;
+    padding: 14px 18px;
     background: var(--surface);
     border: 1px solid var(--line);
-    border-radius: 8px;
-    padding: 18px 20px;
-    text-decoration: none;
-    color: var(--ink);
-    display: block;
-    transition: border-color 0.15s, transform 0.12s, box-shadow 0.15s;
+    border-radius: var(--radius-card);
   }
-  .variant:hover {
-    border-color: var(--primary-line);
-    transform: translateY(-1px);
-    box-shadow: 0 1px 3px rgba(91, 95, 207, 0.08);
-  }
-  .variant.cut, .variant.superseded {
-    background: var(--surface-2);
-    opacity: 0.65;
-  }
-  .variant.cut:hover, .variant.superseded:hover {
-    border-color: var(--line);
-    transform: none;
-    box-shadow: none;
-  }
-
-  .v-head {
-    display: flex; align-items: center; gap: 10px;
-    margin-bottom: 6px;
-  }
-  .v-number {
+  .hero-stat .num {
     font-family: 'Geist Mono', monospace;
-    font-size: 11px;
-    color: var(--ink-3);
+    font-size: 22px;
     font-weight: 500;
-    letter-spacing: 0.04em;
-  }
-  .v-name {
-    font-size: 15.5px;
-    font-weight: 600;
-    letter-spacing: -0.005em;
-  }
-  .v-purpose {
-    color: var(--ink-2);
-    font-size: 13px;
-    line-height: 1.55;
-    margin-top: 4px;
-    font-style: italic;
-  }
-  .v-notes {
-    color: var(--ink-3);
-    font-size: 12.5px;
-    line-height: 1.5;
-    margin-top: 10px;
-  }
-  .v-foot {
-    display: flex; align-items: center; gap: 10px;
-    margin-top: 12px;
-    flex-wrap: wrap;
-  }
-  .v-path {
-    font-family: 'Geist Mono', monospace;
-    font-size: 10.5px;
-    color: var(--ink-3);
-    letter-spacing: 0.01em;
-  }
-  .badge {
-    display: inline-flex; align-items: center; gap: 5px;
-    padding: 2px 7px;
-    border-radius: 4px;
-    font-family: 'Geist Mono', monospace;
-    font-size: 10px;
-    font-weight: 500;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-  }
-  .badge-v3 { background: var(--primary-bg); color: var(--primary); }
-  .badge-new { background: var(--emerald-bg); color: var(--emerald); }
-  .badge-cut { background: #f1f5f9; color: var(--ink-3); }
-  .badge-superseded { background: var(--amber-bg); color: var(--amber); }
-  .badge-toggle { background: #ede9fe; color: #7c3aed; }
-  .badge-pair { background: #fce7f3; color: #be185d; }
-
-  /* Patterns block */
-  .patterns {
-    margin-top: 56px;
-    padding: 24px 28px;
-    background: var(--surface);
-    border: 1px solid var(--line);
-    border-radius: 8px;
-  }
-  .patterns h3 {
-    font-size: 16px;
-    font-weight: 600;
-    margin-bottom: 12px;
     color: var(--ink);
-  }
-  .patterns ul {
-    list-style: none;
-    color: var(--ink-2);
-    font-size: 13px;
-    line-height: 1.7;
-  }
-  .patterns li {
-    padding-left: 20px;
-    position: relative;
-    margin-bottom: 6px;
-  }
-  .patterns li::before {
-    content: "·";
-    position: absolute;
-    left: 8px;
-    color: var(--primary);
-    font-weight: 700;
-    font-size: 16px;
-  }
-  .patterns li strong { color: var(--ink); font-weight: 600; }
-  .patterns code {
-    font-family: 'Geist Mono', monospace;
-    font-size: 11.5px;
-    background: var(--surface-2);
-    padding: 1px 5px;
-    border-radius: 3px;
-    color: var(--ink-2);
-  }
-
-  /* Changelog block (sibling of .patterns — same containerized informational treatment).
-     Collapsible via native <details>; open by default for the Phase 1.5 review window (revertible later). */
-  details.changelog {
-    margin-top: 32px;
-    padding: 16px 28px;
-    background: var(--surface);
-    border: 1px solid var(--line);
-    border-radius: 8px;
-  }
-  details.changelog[open] {
-    padding-bottom: 24px;
-  }
-  /* Hide the default <summary> disclosure triangle (Chrome/Safari + Firefox) */
-  details.changelog summary::-webkit-details-marker { display: none; }
-  details.changelog summary { list-style: none; }
-  summary.changelog-head {
-    display: flex; align-items: center; gap: 12px;
-    cursor: pointer;
-    user-select: none;
-    color: var(--ink);
-    transition: color 0.12s;
-    outline: none;
-  }
-  summary.changelog-head:hover { color: var(--primary); }
-  summary.changelog-head:focus-visible {
-    box-shadow: 0 0 0 2px var(--primary-line);
-    border-radius: 4px;
-  }
-  summary.changelog-head h3 {
-    font-size: 16px;
-    font-weight: 600;
-    color: inherit;
-    letter-spacing: -0.005em;
-  }
-  .version-pip {
-    display: inline-flex; align-items: center;
-    padding: 2px 7px;
-    border-radius: 4px;
-    font-family: 'Geist Mono', monospace;
-    font-size: 10px;
-    font-weight: 500;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    background: var(--primary-bg);
-    color: var(--primary);
-  }
-  summary.changelog-head .chevron {
-    margin-left: auto;
-    width: 14px; height: 14px;
-    color: var(--ink-3);
-    transition: transform 0.18s ease;
-    flex-shrink: 0;
-  }
-  details.changelog[open] summary.changelog-head .chevron {
-    transform: rotate(90deg);
-    color: var(--primary);
-  }
-  .changelog-body {
-    margin-top: 14px;
-    padding-top: 14px;
-    border-top: 1px solid var(--line);
-  }
-  .changelog-body .changelog-lede {
-    color: var(--ink-2);
-    font-size: 13px;
-    line-height: 1.6;
-    margin-bottom: 18px;
-    max-width: 760px;
-  }
-  .changelog-body h4 {
-    font-size: 12.5px;
-    font-weight: 600;
-    color: var(--ink);
-    letter-spacing: 0.02em;
-    margin-top: 20px;
-    margin-bottom: 8px;
-  }
-  .changelog-body h4:first-of-type { margin-top: 0; }
-  .changelog-body ul {
-    list-style: none;
-    color: var(--ink-2);
-    font-size: 13px;
-    line-height: 1.65;
-  }
-  .changelog-body li {
-    padding-left: 20px;
-    position: relative;
-    margin-bottom: 6px;
-  }
-  .changelog-body li::before {
-    content: "·";
-    position: absolute;
-    left: 8px;
-    color: var(--primary);
-    font-weight: 700;
-    font-size: 16px;
-  }
-  .changelog-body li strong { color: var(--ink); font-weight: 600; }
-  /* V3 sub-section h5 (sub-rounds within V3) */
-  .changelog-body h5 {
-    font-size: 13.5px;
-    font-weight: 600;
-    color: var(--ink);
-    letter-spacing: -0.005em;
-    margin-top: 22px;
-    margin-bottom: 6px;
-  }
-  .changelog-body h5 code {
-    font-size: 10.5px;
-    font-weight: 500;
-    color: var(--ink-3);
-    background: var(--surface-2);
-    padding: 1px 5px;
-    border-radius: 3px;
-    margin-left: 6px;
-    letter-spacing: 0.02em;
-  }
-  .changelog-body .round-intro {
-    color: var(--ink-2);
-    font-size: 12.5px;
-    line-height: 1.6;
-    margin: 0 0 8px;
-    max-width: 760px;
-  }
-  .changelog-body .round-meta {
-    font-size: 11.5px;
-    font-weight: 600;
-    color: var(--ink-3);
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    margin: 12px 0 6px;
-  }
-  /* Nested V2 / V1 version details (collapsed by default) */
-  details.changelog-version {
-    margin-top: 22px;
-    padding: 12px 18px;
-    background: var(--surface-2);
-    border: 1px solid var(--line);
-    border-radius: 6px;
-  }
-  details.changelog-version[open] {
-    padding-bottom: 18px;
-  }
-  details.changelog-version summary::-webkit-details-marker { display: none; }
-  details.changelog-version summary { list-style: none; }
-  summary.changelog-version-head {
-    display: flex; align-items: center; gap: 10px;
-    cursor: pointer;
-    user-select: none;
-    color: var(--ink);
-    transition: color 0.12s;
-    outline: none;
-    font-size: 13.5px;
-    font-weight: 600;
-  }
-  summary.changelog-version-head:hover { color: var(--primary); }
-  summary.changelog-version-head:focus-visible {
-    box-shadow: 0 0 0 2px var(--primary-line);
-    border-radius: 4px;
-  }
-  summary.changelog-version-head .chevron {
-    margin-left: auto;
-    width: 12px; height: 12px;
-    color: var(--ink-3);
-    transition: transform 0.18s ease;
-    flex-shrink: 0;
-  }
-  details.changelog-version[open] summary.changelog-version-head .chevron {
-    transform: rotate(90deg);
-    color: var(--primary);
-  }
-  .changelog-version-body {
-    margin-top: 12px;
-    padding-top: 12px;
-    border-top: 1px solid var(--line);
-  }
-  .changelog-version-body p {
-    color: var(--ink-2);
-    font-size: 12.5px;
-    line-height: 1.6;
-    margin: 0 0 10px;
-    max-width: 740px;
-  }
-  .changelog-version-body h5 {
-    font-size: 12.5px;
-    font-weight: 600;
-    color: var(--ink);
-    letter-spacing: -0.005em;
-    margin-top: 16px;
-    margin-bottom: 6px;
-  }
-  .changelog-version-body ul {
-    list-style: none;
-    color: var(--ink-2);
-    font-size: 12.5px;
-    line-height: 1.6;
-  }
-  .changelog-version-body li {
-    padding-left: 18px;
-    position: relative;
-    margin-bottom: 5px;
-  }
-  .changelog-version-body li::before {
-    content: "·";
-    position: absolute;
-    left: 6px;
-    color: var(--primary);
-    font-weight: 700;
-    font-size: 15px;
-  }
-  .changelog-version-body li strong { color: var(--ink); font-weight: 600; }
-  .changelog-body code {
-    font-family: 'Geist Mono', monospace;
-    font-size: 11.5px;
-    background: var(--surface-2);
-    padding: 1px 5px;
-    border-radius: 3px;
-    color: var(--ink-2);
-  }
-
-  /* Review artifact section — visually distinct from product mockup surfaces */
-  .review-section {
-    margin-top: 56px;
-    padding: 24px 28px;
-    background: #fffbeb;
-    border: 1px solid #f59e0b;
-    border-left: 4px solid #f59e0b;
-    border-radius: 8px;
-  }
-  .review-section-head {
-    display: flex; align-items: center; gap: 12px;
-    margin-bottom: 10px;
-  }
-  .review-section-head h2 {
-    font-size: 17px;
-    font-weight: 600;
-    color: #78350f;
     letter-spacing: -0.01em;
   }
-  .review-badge {
-    display: inline-flex; align-items: center;
-    padding: 2px 8px;
-    border-radius: 4px;
-    background: #f59e0b;
-    color: #fff;
+  .hero-stat .label {
+    font-size: 12.5px;
+    color: var(--ink-2);
+    letter-spacing: 0.005em;
+  }
+  .hero-stat .sublabel {
+    margin-left: auto;
     font-family: 'Geist Mono', monospace;
-    font-size: 10px;
-    font-weight: 600;
-    letter-spacing: 0.06em;
+    font-size: 10.5px;
+    color: var(--ink-3);
+    letter-spacing: 0.04em;
     text-transform: uppercase;
   }
-  .review-section p {
-    font-size: 13px;
-    color: #92400e;
-    line-height: 1.6;
-    max-width: 740px;
-    margin-bottom: 16px;
+
+  /* ─── Lane ─── */
+  .lane {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    gap: 40px;
+    padding: 36px 0;
+    border-bottom: 1px solid var(--line);
   }
-  .review-variant {
-    background: #fff;
-    border: 1px solid #fde68a;
-    border-radius: 8px;
-    padding: 16px 20px;
+  .lane:last-of-type { border-bottom: none; }
+  .lane-head {
+    padding-top: 4px;
+    position: sticky;
+    top: 32px;
+    align-self: start;
+  }
+  .lane-eyebrow {
+    font-family: 'Geist Mono', monospace;
+    font-size: 10.5px;
+    color: var(--ink-3);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .lane-eyebrow::before {
+    content: "";
+    width: 18px;
+    height: 1px;
+    background: var(--ink-3);
+  }
+  .lane-head h2 {
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: -0.018em;
+    color: var(--ink);
+    margin-bottom: 10px;
+    line-height: 1.18;
+  }
+  .lane-head .lane-blurb {
+    font-size: 13px;
+    color: var(--ink-2);
+    line-height: 1.55;
+    max-width: 200px;
+  }
+  .lane-head .lane-count {
+    margin-top: 14px;
+    font-family: 'Geist Mono', monospace;
+    font-size: 10.5px;
+    color: var(--ink-3);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  /* ─── Card grid (inside lane) ─── */
+  .card-grid {
+    display: grid;
+    gap: 14px;
+  }
+  .card-grid.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .card-grid.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+  /* ─── Surface card ─── */
+  .surface-card {
+    display: flex;
+    flex-direction: column;
+    padding: 22px 22px 20px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-card);
     text-decoration: none;
     color: var(--ink);
-    display: block;
-    transition: border-color 0.15s, box-shadow 0.15s;
-    max-width: 480px;
+    transition: border-color 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
+    position: relative;
+    overflow: hidden;
+    min-height: 168px;
   }
-  .review-variant:hover {
-    border-color: #f59e0b;
-    box-shadow: 0 1px 4px rgba(245, 158, 11, 0.15);
+  .surface-card:hover {
+    border-color: var(--primary-line);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px -8px rgba(91, 95, 207, 0.18), 0 1px 2px rgba(15, 20, 25, 0.04);
   }
-  .review-variant-head {
-    display: flex; align-items: center; gap: 10px;
-    margin-bottom: 5px;
+  .surface-card:hover .arrow {
+    color: var(--primary);
+    transform: translateX(2px);
   }
-  .review-variant-name {
-    font-size: 14.5px;
+  .card-icon {
+    width: 32px; height: 32px;
+    background: var(--primary-bg);
+    border-radius: 7px;
+    display: inline-flex; align-items: center; justify-content: center;
+    color: var(--primary);
+    margin-bottom: 16px;
+  }
+  .card-icon svg { display: block; }
+  .card-name {
+    font-size: 15.5px;
     font-weight: 600;
+    letter-spacing: -0.008em;
     color: var(--ink);
+    margin-bottom: 6px;
   }
-  .review-variant-desc {
+  .card-blurb {
     font-size: 13px;
     color: var(--ink-2);
     line-height: 1.5;
-    margin-top: 3px;
+    margin-bottom: 18px;
+    flex: 1;
   }
-  .review-variant .v-path {
-    margin-top: 10px;
-    display: block;
+  .card-foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: auto;
+    padding-top: 12px;
+    border-top: 1px dashed var(--line);
   }
-  /* A/B toggles active listing — sibling to .review-variant within .review-section */
-  .ab-active-list {
-    margin-top: 18px;
-    padding: 14px 20px;
-    background: #fff;
-    border: 1px solid #fde68a;
-    border-radius: 8px;
-    max-width: 740px;
-  }
-  .ab-active-list-head {
-    display: flex; align-items: center; gap: 10px;
-    margin-bottom: 6px;
-  }
-  .ab-active-list-title {
-    font-size: 13.5px;
-    font-weight: 600;
-    color: var(--ink);
-  }
-  .ab-active-list-lede {
-    font-size: 12.5px;
-    color: #92400e;
-    line-height: 1.55;
-    margin: 0 0 10px;
-  }
-  .ab-active-items {
-    margin: 0;
-    padding-left: 0;
-    list-style: none;
-  }
-  .ab-active-items li {
-    position: relative;
-    padding: 6px 0 6px 18px;
-    border-bottom: 1px dashed #fde68a;
-    font-size: 12.5px;
-    color: var(--ink-2);
-    line-height: 1.55;
-  }
-  .ab-active-items li:last-child { border-bottom: none; }
-  .ab-active-items li::before {
-    content: '·';
-    position: absolute;
-    left: 4px;
-    top: 6px;
-    color: #b45309;
-    font-weight: 700;
-  }
-  .ab-active-items li a {
-    color: var(--ink);
-    text-decoration: none;
-    border-bottom: 1px solid transparent;
-    transition: border-color 0.12s;
-  }
-  .ab-active-items li a:hover { border-bottom-color: var(--primary); }
-  .ab-active-items li em {
-    color: #78350f;
-    font-style: normal;
+  .card-tag {
     font-family: 'Geist Mono', monospace;
-    font-size: 11.5px;
+    font-size: 10.5px;
+    color: var(--ink-3);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .arrow {
+    width: 16px; height: 16px;
+    color: var(--ink-3);
+    transition: color 0.18s, transform 0.18s;
+    flex-shrink: 0;
   }
 
-  /* Footer */
+  /* ─── Hero card variant (lane-hero — bigger emphasis card) ─── */
+  .surface-card.hero-card {
+    grid-column: span 2;
+    flex-direction: row;
+    align-items: stretch;
+    padding: 26px 28px;
+    background: linear-gradient(135deg, #ffffff 0%, var(--primary-bg) 130%);
+    border-color: var(--primary-line);
+    min-height: 180px;
+  }
+  .surface-card.hero-card .hero-card-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding-right: 24px;
+  }
+  .surface-card.hero-card .card-icon {
+    background: var(--primary);
+    color: #fff;
+    width: 38px; height: 38px;
+  }
+  .surface-card.hero-card .card-name {
+    font-size: 19px;
+    letter-spacing: -0.014em;
+    margin-bottom: 8px;
+  }
+  .surface-card.hero-card .card-blurb {
+    font-size: 13.5px;
+    max-width: 480px;
+  }
+  .surface-card.hero-card .hero-card-visual {
+    width: 220px;
+    flex-shrink: 0;
+    background: rgba(255, 255, 255, 0.6);
+    border: 1px solid var(--primary-line);
+    border-radius: 8px;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-self: center;
+  }
+  .surface-card.hero-card .mini-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    background: #ffffff;
+    border-radius: 5px;
+    font-size: 11px;
+    color: var(--ink-2);
+  }
+  .surface-card.hero-card .mini-row .bar {
+    width: 3px; height: 14px;
+    background: var(--rose);
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+  .surface-card.hero-card .mini-row .bar.amber { background: var(--amber); }
+  .surface-card.hero-card .mini-row .bar.indigo { background: var(--primary); }
+  .surface-card.hero-card .mini-row .label {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .surface-card.hero-card .mini-row .pill {
+    font-family: 'Geist Mono', monospace;
+    font-size: 9px;
+    padding: 1px 5px;
+    border-radius: 3px;
+    background: var(--rose);
+    color: #fff;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    flex-shrink: 0;
+  }
+  .surface-card.hero-card .mini-row .pill.amber { background: var(--amber); }
+  .surface-card.hero-card .mini-row .pill.indigo { background: var(--primary); }
+  .surface-card.hero-card .mini-row .pill.neutral {
+    background: var(--ink-3);
+  }
+
+  /* ─── Footer ─── */
   footer {
     margin-top: 64px;
-    padding-top: 24px;
+    padding-top: 28px;
     border-top: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     color: var(--ink-3);
     font-size: 12px;
     font-family: 'Geist Mono', monospace;
     letter-spacing: 0.02em;
   }
-  footer a { color: var(--ink-2); }
+  footer .footer-left { display: flex; align-items: center; gap: 12px; }
+  footer .footer-mark {
+    width: 16px; height: 16px;
+    border-radius: 4px;
+    background: var(--primary);
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  footer .footer-mark svg { display: block; }
+
+  /* ─── Responsive ─── */
+  @media (max-width: 1100px) {
+    .lane { grid-template-columns: 1fr; gap: 22px; padding: 32px 0; }
+    .lane-head { position: static; }
+    .lane-head .lane-blurb { max-width: none; }
+    .card-grid.three { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .surface-card.hero-card { grid-column: span 2; }
+    .hero { grid-template-columns: 1fr; gap: 28px; align-items: stretch; }
+  }
+  @media (max-width: 720px) {
+    .page { padding: 36px 24px 60px; }
+    .topbar { padding: 0 20px; }
+    .hero-headline h1 { font-size: 30px; }
+    .card-grid.two,
+    .card-grid.three { grid-template-columns: 1fr; }
+    .surface-card.hero-card { flex-direction: column; }
+    .surface-card.hero-card .hero-card-visual { width: 100%; margin-top: 14px; }
+  }
 </style>
 </head>
 <body>
+
+<div class="topbar">
+  <div class="topbar-brand">
+    <span class="brand-mark" aria-hidden="true">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="white" stroke-width="1.4">
+        <circle cx="7" cy="7" r="5.5"/>
+        <circle cx="7" cy="7" r="2.5"/>
+      </svg>
+    </span>
+    <span class="topbar-title">Counselor LMS</span>
+    <span class="topbar-eyebrow">IECA Baltimore · 2026-05-18</span>
+  </div>
+  <span class="topbar-meta"><span class="live-dot"></span>Live demo · 14 surfaces</span>
+</div>
+
 <div class="page">
 
-  <header>
-    <div class="eyebrow">
-      <span class="mark">
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="white" stroke-width="1.4">
-          <circle cx="7" cy="7" r="5.5"/>
-          <circle cx="7" cy="7" r="2.5"/>
-        </svg>
-      </span>
-      Conference mockup · Index
+  <section class="hero">
+    <div class="hero-headline">
+      <h1>An LMS built for the way <span class="accent">consultants actually work.</span></h1>
+      <p class="lede">A working tour of the counselor side of our platform — per-student, cross-student, document review, and module delivery. Tap any card to open the live mockup.</p>
     </div>
-    <h1>What we've built</h1>
-    <p class="lede">Static HTML mockups for the IECA Baltimore booth conversations (May 18). Single cohesive design family — light cool-gray content, dark slate sidebar, indigo accent, a single sans-serif typography family (Geist). Each surface answers one focused "what is this page for" question.</p>
-  </header>
-
-  <section>
-    <div class="section-head">
-      <h2>Consultant Today</h2>
-      <div class="section-meta">NEW · top-of-nav homepage</div>
-    </div>
-    <p class="section-intro">A new top-level surface above Students in the left nav. Aggregates the things needing attention across the whole roster — overdue, today's meetings, flagged follow-ups, due today, snapshots awaiting review, modules due today — ordered by urgency. "Not just a per-student overview, but your today… your overview of all the things that need your attention." — Roei, 5/12. Building for V1 conference to test whether the pattern resonates with IECA attendees as solving a real pain point.</p>
-    <div class="grid full">
-      <a class="variant" href="explorations/today-homepage.html">
-        <div class="v-head"><span class="v-name">Today · attention triage</span></div>
-        <div class="v-purpose">A consultant orienting on the day — what needs my attention right now across the whole roster, ordered by urgency.</div>
-        <div class="v-notes">Single-column feed: six widgets stacked by urgency (Overdue → Today's meetings → Flagged · follow-up → Due today → New snapshots · awaiting review → Module check-ins · due today). Compact TickTick-style rows, priority-encoded left-bar always paired with text status pill (D49). Every row quick-links to per-student detail; every widget head links to the relevant surface. <strong>Round 2:</strong> full viewport width, rose reserved for TRUE overdue only (Awaiting / Stuck / recency markers → amber or neutral), meeting times stripped of color, snapshot rows unified to neutral priority-bar, "+more" aggregator replaced with explicit "View all" link, Meetings moved above Flagged per "what am I doing today" framing.</div>
-        <div class="v-foot"><span class="badge badge-new">New</span><span class="v-path">today-homepage.html</span></div>
-      </a>
+    <div class="hero-aside">
+      <div class="hero-stat">
+        <span class="num">14</span>
+        <span class="label">Surfaces in the demo</span>
+        <span class="sublabel">Interactive</span>
+      </div>
+      <div class="hero-stat">
+        <span class="num">4</span>
+        <span class="label">Workflows covered</span>
+        <span class="sublabel">End-to-end</span>
+      </div>
     </div>
   </section>
 
-  <section>
-    <div class="section-head">
-      <h2>Single-student dashboard</h2>
-      <div class="section-meta">Horizontal tabs — selected variant</div>
+  <!-- ─── LANE 1: Per-student workflow ─── -->
+  <section class="lane">
+    <div class="lane-head">
+      <div class="lane-eyebrow">01 · Per-student</div>
+      <h2>The student page, six ways</h2>
+      <p class="lane-blurb">Everything a consultant needs to know about one student — orientation, college landscape, task pipeline.</p>
+      <div class="lane-count">3 surfaces</div>
     </div>
-    <p class="section-intro">The student page opens with a collapsible profile card at the top, then horizontal tab nav under the student name. Horizontal tabs were selected at the 5/13 review. Sidebar variant available at <code style="font-size:11px;background:rgba(0,0,0,0.04);padding:1px 4px;border-radius:3px;">dashboard-1-tabs-sidebar.html</code> for reference but not in the demo flow.</p>
-    <div class="grid full">
-      <a class="variant" href="explorations/dashboard-1-tabs-horizontal.html">
-        <div class="v-head"><span class="v-name">Tabs · horizontal</span></div>
-        <div class="v-purpose">A consultant orienting on one student — what's urgent, what's the school landscape, who is this person.</div>
-        <div class="v-notes">Tab strip directly under student name with indigo-underline active state. Modules progress bubble track on the dashboard. Activity / Notes split into separate sections — Activity = system-generated only (like a Notion notification when you're tagged in a task); Notes = consultant-authored. "It's like in Notion, if you tag me in a task, I see a notification." — Roei, 5/10. <strong>Phase 1.5:</strong> Cohort cleanup — pin-note callout, school-row.pinned wash, and module-current callout demoted to neutral in Mode C; RD · Drafting reclassified to amber. <strong>Round 2:</strong> Profile band cutoff fix, demo-note separation.</div>
-        <div class="v-foot"><span class="badge badge-v3">V3</span><span class="v-path">dashboard-1-tabs-horizontal.html</span></div>
+    <div class="card-grid two">
+
+      <a class="surface-card hero-card" href="explorations/dashboard-1-tabs-horizontal.html">
+        <div class="hero-card-body">
+          <div class="card-icon">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+              <circle cx="9" cy="5.5" r="2.5"/>
+              <path d="M3.5 14.5 c0-2.5 2.5-4.5 5.5-4.5 s5.5 2 5.5 4.5"/>
+            </svg>
+          </div>
+          <div class="card-name">Single-student dashboard</div>
+          <div class="card-blurb">Profile, schools, tasks, snapshots, documents, meetings, notes — one student, all of their work, organized in tabs.</div>
+          <div class="card-foot">
+            <span class="card-tag">dashboard-1-tabs-horizontal</span>
+            <svg class="arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+          </div>
+        </div>
+        <div class="hero-card-visual" aria-hidden="true">
+          <div class="mini-row"><span class="bar"></span><span class="label">Yale SA · draft 12</span><span class="pill">Overdue</span></div>
+          <div class="mini-row"><span class="bar amber"></span><span class="label">Stanford pre-read</span><span class="pill amber">Review</span></div>
+          <div class="mini-row"><span class="bar indigo"></span><span class="label">UCLA personal stmt</span><span class="pill indigo">Active</span></div>
+          <div class="mini-row"><span class="bar" style="background:var(--ink-3)"></span><span class="label">Brown supplements</span><span class="pill neutral">Not started</span></div>
+        </div>
       </a>
+
+      <a class="surface-card" href="explorations/dashboard-2-schools-first.html">
+        <div class="card-icon">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round">
+            <path d="M2 7.5 9 3.5l7 4-7 4z"/>
+            <path d="M4.5 9v4c0 .8 2 2 4.5 2s4.5-1.2 4.5-2V9"/>
+          </svg>
+        </div>
+        <div class="card-name">Schools</div>
+        <div class="card-blurb">One student's full college landscape — where each school stands, what's in flight, deadline windows. Bubble-tab + inline toggle.</div>
+        <div class="card-foot">
+          <span class="card-tag">dashboard-2-schools-first</span>
+          <svg class="arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+        </div>
+      </a>
+
+      <a class="surface-card" href="explorations/dashboard-3-deadline-timeline.html">
+        <div class="card-icon">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 4h12M3 9h12M3 14h7"/>
+          </svg>
+        </div>
+        <div class="card-name">Tasks (single-student)</div>
+        <div class="card-blurb">The task pipeline for one student with school-deadline context band at top, grouped by time-bucket.</div>
+        <div class="card-foot">
+          <span class="card-tag">dashboard-3-deadline-timeline</span>
+          <svg class="arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+        </div>
+      </a>
+
     </div>
   </section>
 
-  <section>
-    <div class="section-head">
-      <h2>Schools</h2>
-      <div class="section-meta">Sidebar + detail</div>
+  <!-- ─── LANE 2: Cross-student ─── -->
+  <section class="lane">
+    <div class="lane-head">
+      <div class="lane-eyebrow">02 · Cross-student</div>
+      <h2>Triage the whole roster</h2>
+      <p class="lane-blurb">Where does my attention need to go right now, across every student I work with?</p>
+      <div class="lane-count">6 surfaces</div>
     </div>
-    <p class="section-intro">The Schools tab — one student's full college landscape. Sidebar lists all schools with stage indicators; selecting a school populates the detail panel with that school's full state.</p>
-    <div class="grid full">
-      <a class="variant" href="explorations/dashboard-2-schools-first.html">
-        <div class="v-head"><span class="v-name">Schools view</span></div>
-        <div class="v-purpose">A consultant looking at one student's full college landscape — where each school stands, what's in flight per school.</div>
-        <div class="v-notes">Sidebar + detail layout. Schools sidebar on the left with stage / round indicators; click a school to load its full state into the detail panel. Right rail killed.</div>
-        <div class="v-foot"><span class="badge badge-v3">V3</span><span class="v-path">dashboard-2-schools-first.html</span></div>
+    <div class="card-grid two">
+
+      <a class="surface-card hero-card" href="explorations/today-homepage.html">
+        <div class="hero-card-body">
+          <div class="card-icon">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="9" cy="9" r="6"/>
+              <path d="M9 5v4l2.5 2"/>
+            </svg>
+          </div>
+          <div class="card-name">Consultant Today</div>
+          <div class="card-blurb">Your top-of-nav homepage. Overdue, today's meetings, flagged follow-ups, snapshots awaiting review — all ordered by urgency.</div>
+          <div class="card-foot">
+            <span class="card-tag">today-homepage</span>
+            <svg class="arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+          </div>
+        </div>
+        <div class="hero-card-visual" aria-hidden="true">
+          <div class="mini-row"><span class="bar"></span><span class="label">Maya · Yale · overdue</span><span class="pill">2d</span></div>
+          <div class="mini-row"><span class="bar amber"></span><span class="label">Snapshot · Owen R.</span><span class="pill amber">Review</span></div>
+          <div class="mini-row"><span class="bar indigo"></span><span class="label">10:30 — Cassie B.</span><span class="pill indigo">Mtg</span></div>
+          <div class="mini-row"><span class="bar" style="background:var(--ink-3)"></span><span class="label">Module — Naomi H.</span><span class="pill neutral">Due</span></div>
+        </div>
       </a>
+
+      <a class="surface-card" href="explorations/students-1-filterable-table.html">
+        <div class="card-icon">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round">
+            <rect x="2.5" y="3.5" width="13" height="11" rx="1.4"/>
+            <path d="M2.5 7.5h13M2.5 11h13M6 3.5v11"/>
+          </svg>
+        </div>
+        <div class="card-name">All students</div>
+        <div class="card-blurb">Filterable table — the whole roster, with stage, upcoming deadlines, next deliverable, working style.</div>
+        <div class="card-foot">
+          <span class="card-tag">students-1-filterable-table</span>
+          <svg class="arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+        </div>
+      </a>
+
+      <a class="surface-card" href="explorations/cross-tasks-kanban.html">
+        <div class="card-icon">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round">
+            <rect x="2.5" y="3" width="3.8" height="12" rx="0.8"/>
+            <rect x="7.1" y="3" width="3.8" height="8.5" rx="0.8"/>
+            <rect x="11.7" y="3" width="3.8" height="10" rx="0.8"/>
+          </svg>
+        </div>
+        <div class="card-name">Cross-tasks · Kanban</div>
+        <div class="card-blurb">5 universal columns (Not started → Done). Card hierarchy Student → Title → Due. Multi-student selector + quick filters.</div>
+        <div class="card-foot">
+          <span class="card-tag">cross-tasks-kanban</span>
+          <svg class="arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+        </div>
+      </a>
+
+      <a class="surface-card" href="explorations/cross-tasks-list.html">
+        <div class="card-icon">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 5h12M3 9h12M3 13h12"/>
+            <circle cx="5" cy="5" r="0.4" fill="currentColor"/>
+            <circle cx="5" cy="9" r="0.4" fill="currentColor"/>
+            <circle cx="5" cy="13" r="0.4" fill="currentColor"/>
+          </svg>
+        </div>
+        <div class="card-name">Cross-tasks · List</div>
+        <div class="card-blurb">Same data, list-shape — for consultants who prefer dense scannable rows over kanban cards.</div>
+        <div class="card-foot">
+          <span class="card-tag">cross-tasks-list</span>
+          <svg class="arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+        </div>
+      </a>
+
+      <a class="surface-card" href="explorations/calendar-week.html">
+        <div class="card-icon">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round">
+            <rect x="2.5" y="4" width="13" height="11" rx="1.4"/>
+            <path d="M2.5 7.8h13M6 2.5v3M12 2.5v3"/>
+          </svg>
+        </div>
+        <div class="card-name">Calendar · Week</div>
+        <div class="card-blurb">Meetings + tasks + deadlines, 7-day grid. Three-tier deadline coloring (neutral / amber-urgent / rose-overdue).</div>
+        <div class="card-foot">
+          <span class="card-tag">calendar-week</span>
+          <svg class="arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+        </div>
+      </a>
+
+      <a class="surface-card" href="explorations/calendar-month.html">
+        <div class="card-icon">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round">
+            <rect x="2.5" y="4" width="13" height="11" rx="1.4"/>
+            <path d="M2.5 7.8h13M6 2.5v3M12 2.5v3M5.5 10h1M8.5 10h1M11.5 10h1M5.5 12.5h1M8.5 12.5h1"/>
+          </svg>
+        </div>
+        <div class="card-name">Calendar · Month</div>
+        <div class="card-blurb">Horizon scanning. Defaults to school deadlines + cross-cutting events; tasks opt-in via filter.</div>
+        <div class="card-foot">
+          <span class="card-tag">calendar-month</span>
+          <svg class="arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+        </div>
+      </a>
+
     </div>
   </section>
 
-  <section>
-    <div class="section-head">
-      <h2>Tasks (single-student)</h2>
-      <div class="section-meta">Reframed from v1 dashboard variant</div>
+  <!-- ─── LANE 3: Documents ─── -->
+  <section class="lane">
+    <div class="lane-head">
+      <div class="lane-eyebrow">03 · Documents</div>
+      <h2>Essay review, two ways</h2>
+      <p class="lane-blurb">Maya's Yale Short Answer 2 — 12 drafts of essay history. Pick the review layout that fits the moment.</p>
+      <div class="lane-count">2 surfaces</div>
     </div>
-    <p class="section-intro">Was a "deadline-timeline dashboard variant" in v1; the team said clearly at 5/10 — "this is just the task page." Reframed as the Tasks tab of the student page, with school-deadline context band at top (per Xiao's "deadlines on the task page motivate") and time-bucket grouping below.</p>
-    <div class="grid full">
-      <a class="variant" href="explorations/dashboard-3-deadline-timeline.html">
-        <div class="v-head"><span class="v-name">Tasks · time buckets + deadline context</span></div>
-        <div class="v-purpose">A consultant viewing all tasks for one student — pipeline visualization with school-deadline context.</div>
-        <div class="v-notes">Universal task statuses (Not started / In progress / Awaiting review / Stuck / Done). Deadline strip at top dialed down 45% from v1 per Xiao's "overwhelming" call. Time-bucket grouping (This week / Next week / etc.) preserved.</div>
-        <div class="v-foot"><span class="badge badge-v3">V3</span><span class="v-path">dashboard-3-deadline-timeline.html</span></div>
+    <div class="card-grid two">
+
+      <a class="surface-card" href="explorations/document-v2-stacked-diff.html">
+        <div class="card-icon">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 3.5h7l3 3v8a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-10a1 1 0 0 1 1-1z"/>
+            <path d="M11 3.5v3h3M6 9.5h6M6 12h4"/>
+          </svg>
+        </div>
+        <div class="card-name">Document · stacked + compare toggle</div>
+        <div class="card-blurb">Single version (default) vs comparative-inline. Comparison implicit on draft-pair selection — no Track Changes button.</div>
+        <div class="card-foot">
+          <span class="card-tag">document-v2-stacked-diff</span>
+          <svg class="arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+        </div>
       </a>
+
+      <a class="surface-card" href="explorations/document-v1-sidebyside.html">
+        <div class="card-icon">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round">
+            <rect x="2.5" y="3.5" width="5.8" height="11" rx="0.8"/>
+            <rect x="9.7" y="3.5" width="5.8" height="11" rx="0.8"/>
+          </svg>
+        </div>
+        <div class="card-name">Document · side-by-side</div>
+        <div class="card-blurb">Two drafts opened next to each other for in-depth revision review. Alternative compare layout.</div>
+        <div class="card-foot">
+          <span class="card-tag">document-v1-sidebyside</span>
+          <svg class="arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+        </div>
+      </a>
+
     </div>
   </section>
 
-  <section>
-    <div class="section-head">
-      <h2>All students</h2>
-      <div class="section-meta">1 active variant</div>
+  <!-- ─── LANE 4: Modules ─── -->
+  <section class="lane">
+    <div class="lane-head">
+      <div class="lane-eyebrow">04 · Modules</div>
+      <h2>Learning modules</h2>
+      <p class="lane-blurb">Admin assigns; student progresses. Custom tracks built from a preset library, then delivered.</p>
+      <div class="lane-count">2 surfaces</div>
     </div>
-    <p class="section-intro">Cross-student view — answers a reframe from the team: "Who needs my attention, and how do I apply that attention most effectively?" — Roei, 5/10. Filterable table won the structural argument; card grid + kanban-by-stage evaluated and cut at 5/10.</p>
-    <div class="grid full">
-      <a class="variant" href="explorations/students-1-filterable-table.html">
-        <div class="v-head"><span class="v-name">Filterable table</span></div>
-        <div class="v-purpose">A consultant triaging across all students — who needs my attention now, filterable by stage / school / round / urgency.</div>
-        <div class="v-notes">Page-level search + multi-student selector chips added. Filter bar consolidated (was duplicated in v1). "Next deliverable" column replaced static "Top choice." <strong>Phase 1.5:</strong> Per-row "Just &lt;Student&gt;" hover chevron; attention chip rebound to rose; filter chrome collapsed 4 → 2 bands; table extends edge-to-edge. <strong>Round 2.5:</strong> Stage-pill opacity A/B toggle (default 0.85; compare 0.60 / 0.40 / 0.25) in the top-bar Review group.</div>
-        <div class="v-foot"><span class="badge badge-v3">V3</span><span class="v-path">students-1-filterable-table.html</span></div>
-      </a>
-    </div>
-  </section>
+    <div class="card-grid two">
 
-  <section>
-    <div class="section-head">
-      <h2>Cross-tasks</h2>
-      <div class="section-meta">2 variants — Kanban + List</div>
-    </div>
-    <p class="section-intro">All tasks across the roster. Universal task statuses (Not started / In progress / Awaiting review / Stuck / Done) replace v1's essay-specific stages. Roei's call: lock Kanban first, derive list from it.</p>
-    <div class="grid">
-      <a class="variant" href="explorations/cross-tasks-kanban.html">
-        <div class="v-head"><span class="v-number">1</span><span class="v-name">Kanban</span></div>
-        <div class="v-purpose">A consultant triaging the work pipeline — what's stuck where across (some or all) students, what needs my review.</div>
-        <div class="v-notes">5 universal-status columns. Card hierarchy: Student → Title → Due. Multi-student scope selector + quick-view filter chips (Overdue / Due this week / Needs my action) that actually filter via CSS. <strong>Phase 1.5:</strong> Cards calmer — status communicated by the column header, not repeated as a card left-bar accent.</div>
-        <div class="v-foot"><span class="badge badge-v3">V3</span><span class="v-path">cross-tasks-kanban.html</span></div>
+      <a class="surface-card" href="explorations/module-admin-assignment.html">
+        <div class="card-icon">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round">
+            <rect x="2.5" y="3.5" width="13" height="11" rx="1.4"/>
+            <path d="M2.5 7h13M5.5 10.5h2M5.5 12.5h5"/>
+          </svg>
+        </div>
+        <div class="card-name">Admin · module assignment</div>
+        <div class="card-blurb">Three-column workspace: preset library → preview → student's track. Custom learning paths assembled from presets.</div>
+        <div class="card-foot">
+          <span class="card-tag">module-admin-assignment</span>
+          <svg class="arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+        </div>
       </a>
-      <a class="variant" href="explorations/cross-tasks-list.html">
-        <div class="v-head"><span class="v-number">2</span><span class="v-name">List</span></div>
-        <div class="v-purpose">Same as Kanban, but list-shape — for consultants who prefer dense scannable rows.</div>
-        <div class="v-notes">Polish-only update — Roei wants this view to derive structurally from the locked Kanban once it stabilizes.</div>
-        <div class="v-foot"><span class="badge badge-v3">V3</span><span class="v-path">cross-tasks-list.html</span></div>
-      </a>
-    </div>
-  </section>
 
-  <section>
-    <div class="section-head">
-      <h2>Calendar</h2>
-      <div class="section-meta">2 views — Week + Month</div>
-    </div>
-    <p class="section-intro">Meetings + tasks + deadlines (3 event types only — snapshots/tracking-changes dropped per 5/10). Week view for active planning; month view for horizon scanning, defaulting to school deadlines + cross-cutting events.</p>
-    <div class="grid">
-      <a class="variant" href="explorations/calendar-week.html">
-        <div class="v-head"><span class="v-number">1</span><span class="v-name">Week view</span></div>
-        <div class="v-purpose">A consultant planning the week — what's happening today, what's coming up, what's overdue.</div>
-        <div class="v-notes">Density trimmed per Roei's "overwhelming" feedback. All-day events cut. Filter strip de-duplicated. <strong>Phase 1.5:</strong> Deadlines band now three-tier (neutral / amber-urgent &lt;48hrs / rose-overdue) — see the Stanford pre-read on Wed Dec 17 for the urgent tier.</div>
-        <div class="v-foot"><span class="badge badge-v3">V3</span><span class="v-path">calendar-week.html</span></div>
+      <a class="surface-card" href="explorations/module-student-sample.html">
+        <div class="card-icon">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round">
+            <rect x="3" y="3.5" width="12" height="11" rx="1.4"/>
+            <path d="M7.5 7l4 2-4 2z" fill="currentColor" stroke="none"/>
+          </svg>
+        </div>
+        <div class="card-name">Student · sample module</div>
+        <div class="card-blurb">What the student sees — section overview + one lesson with video, quiz, and resource example.</div>
+        <div class="card-foot">
+          <span class="card-tag">module-student-sample</span>
+          <svg class="arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+        </div>
       </a>
-      <a class="variant" href="explorations/calendar-month.html">
-        <div class="v-head"><span class="v-number">2</span><span class="v-name">Month view</span></div>
-        <div class="v-purpose">A consultant scanning the month for school deadlines and cross-cutting events.</div>
-        <div class="v-notes">Default content = school deadlines + cross-cutting events only; tasks opt-in via filter. Mini-calendar in left rail removed (redundant). <strong>Phase 1.5:</strong> Multi-day deadline clusters no longer visually merge into single bars; active nav indicator lightened to lavender on the dark sidebar.</div>
-        <div class="v-foot"><span class="badge badge-v3">V3</span><span class="v-path">calendar-month.html</span></div>
-      </a>
-    </div>
-  </section>
 
-  <section>
-    <div class="section-head">
-      <h2>Document / snapshot</h2>
-      <div class="section-meta">2 variants · V2 has compare-mode toggle</div>
-    </div>
-    <p class="section-intro">Maya's Yale Short Answer 2 essay — flagship doc with 12 drafts. V2 won at 5/10: "I think this is right" — Roei, 5/10. V1 side-by-side preserved as the alternative compare layout.</p>
-    <div class="grid">
-      <a class="variant" href="explorations/document-v2-stacked-diff.html">
-        <div class="v-head"><span class="v-number">1</span><span class="v-name">V2 · stacked + compare toggle</span></div>
-        <div class="v-purpose">A consultant reviewing essay history — see one draft cleanly, OR see what changed between two drafts inline.</div>
-        <div class="v-notes">In-page toggle: Single version (default) vs Comparative inline. No more explicit "Track Changes" button — comparison implicit on draft-pair selection. Marginalia comments anchored to text.</div>
-        <div class="v-foot"><span class="badge badge-v3">V3</span><span class="badge badge-toggle">In-page toggle</span><span class="v-path">document-v2-stacked-diff.html</span></div>
-      </a>
-      <a class="variant" href="explorations/document-v1-sidebyside.html">
-        <div class="v-head"><span class="v-number">2</span><span class="v-name">V1 · side-by-side</span></div>
-        <div class="v-purpose">A consultant comparing two essay drafts side-by-side — usable for in-depth revision review.</div>
-        <div class="v-notes">Profile rail dropped; comments anchored inline. Side-by-side is a togglable alternative to V2's inline default; this file is the dedicated mockup of that mode.</div>
-        <div class="v-foot"><span class="badge badge-v3">V3</span><span class="v-path">document-v1-sidebyside.html</span></div>
-      </a>
-    </div>
-  </section>
-
-  <section>
-    <div class="section-head">
-      <h2>Module</h2>
-      <div class="section-meta">2 NEW files + section on student dashboard</div>
-    </div>
-    <p class="section-intro">Module work split per the 5/10 architecture decision: admin Modules tab = preset library only; per-student progress lives ON the student dashboard. The OG Mar 29 module mockups were called out as the visual baseline — "There are like 2 or 3 colors that dictate to me if something is complete or in progress or hasn't started yet... this is closer to what we want for this first version." — Roei, 5/10.</p>
-    <div class="grid">
-      <a class="variant" href="explorations/module-admin-assignment.html">
-        <div class="v-head"><span class="v-number">1</span><span class="v-name">Admin · module assignment</span></div>
-        <div class="v-purpose">A consultant assigning learning modules to students — building a custom track from the preset library.</div>
-        <div class="v-notes">Three-column: preset library / module preview / Maya's track. Drag affordances visible (no real DnD logic). <strong>Phase 1.5:</strong> Working-style "Perfectionist" chip now mutes correctly in Minimal mode; token-drift fixes throughout. <strong>Round 2.5:</strong> Grid rebalanced — Maya's track widened (320 → 400) so progress meta reads on one line; library trimmed (340 → 300); preview flexes between them. <strong>R4:</strong> Page-title locked to 26px (Alex verdict).</div>
-        <div class="v-foot"><span class="badge badge-new">New</span><span class="v-path">module-admin-assignment.html</span></div>
-      </a>
-      <a class="variant" href="explorations/module-student-sample.html">
-        <div class="v-head"><span class="v-number">2</span><span class="v-name">Student · sample module page</span></div>
-        <div class="v-purpose">A consultant showing what a student sees — module section overview + lesson with at least one video, one quiz, and one resource example.</div>
-        <div class="v-notes">Bubble progress band per Xiao's request. Video + quiz + resource examples on one lesson. Re-skinned from OG mockups to V2 family. <strong>Phase 1.5:</strong> PDF resource label demoted from rose to neutral; token-drift fixes throughout. <strong>R4:</strong> Section-title and lesson-title locked to 26px (Alex verdict).</div>
-        <div class="v-foot"><span class="badge badge-new">New</span><span class="v-path">module-student-sample.html</span></div>
-      </a>
     </div>
   </section>
 
   <footer>
-    Conference Mockup · IECA Baltimore 2026-05-18
+    <div class="footer-left">
+      <span class="footer-mark">
+        <svg width="9" height="9" viewBox="0 0 14 14" fill="none" stroke="white" stroke-width="1.6"><circle cx="7" cy="7" r="5.5"/><circle cx="7" cy="7" r="2.5"/></svg>
+      </span>
+      <span>Counselor LMS · Conference build</span>
+    </div>
+    <div>IECA Baltimore · 2026-05-18</div>
   </footer>
 
 </div>
+
 </body>
 </html>
