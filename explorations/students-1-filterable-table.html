@@ -913,13 +913,8 @@
       white-space: nowrap;
     }
 
-    .student-table th:first-child {
-      padding-left: 0;
-      width: 4px;
-    }
-
-    .student-table th:nth-child(2),
-    .student-table td:nth-child(2) {
+    .student-table th:first-child,
+    .student-table td:first-child {
       padding-left: 28px;
     }
 
@@ -934,11 +929,6 @@
       vertical-align: middle;
       font-size: 13px;
       color: var(--ink);
-    }
-
-    .student-table td:first-child {
-      padding: 0;
-      width: 4px;
     }
 
     .student-table tbody tr:last-child td {
@@ -959,10 +949,10 @@
     }
 
     /* Just-<Student> dynamic per-row click affordance (item 3) */
-    .student-table tbody td:nth-child(2) {
+    .student-table tbody td:first-child {
       position: relative;
     }
-    .student-table tbody tr:hover td:nth-child(2)::after {
+    .student-table tbody tr:hover td:first-child::after {
       content: '›';
       position: absolute;
       right: 10px;
@@ -975,7 +965,7 @@
       pointer-events: none;
     }
     /* When filter is active, chevron points back (left) — affordance is "show all again" */
-    body.just-filter-active .student-table tbody tr:hover td:nth-child(2)::after {
+    body.just-filter-active .student-table tbody tr:hover td:first-child::after {
       content: '‹';
     }
     body.just-filter-active .student-table tbody tr.is-hidden { display: none; }
@@ -2182,7 +2172,7 @@
 
     // Click row's student-name cell → filter to just that student.
     // If filter already active on the same row, clicking acts as toggle-off.
-    document.querySelectorAll('.student-table tbody td:nth-child(2)').forEach(function (cell) {
+    document.querySelectorAll('.student-table tbody td:first-child').forEach(function (cell) {
       cell.addEventListener('click', function (e) {
         e.stopPropagation();
         var row = cell.closest('tr');
