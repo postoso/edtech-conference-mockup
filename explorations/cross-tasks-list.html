@@ -1497,14 +1497,58 @@
       color: #fff;
       border-color: #d97706;
     }
+
+    /* ═══ CANONICAL CHROME (Phase B Wave 6) — synced from dashboard-1-tabs-horizontal ═══ */
+    .topbar {
+      height: 48px;
+      background: #ffffff;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      flex-shrink: 0;
+      position: relative;
+      z-index: 20;
+    }
+    .topbar-brand {
+      width: 220px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      padding: 0 18px;
+      background: var(--sidebar);
+      height: 100%;
+    }
+    .topbar-breadcrumb {
+      flex: 1;
+      display: flex; align-items: center;
+      gap: 6px;
+      padding: 0 20px;
+      font-size: 13px;
+      color: var(--ink-2);
+    }
+    .bc-sep { color: var(--line-2); }
+    .bc-current { color: var(--ink); font-weight: 500; }
+    .topbar-actions {
+      display: flex; align-items: center;
+      gap: 10px;
+      padding: 0 16px;
+    }
+    .nav-section-label {
+      padding: 6px 10px 8px;
+      font-size: 10.5px;
+      font-weight: 600;
+      color: var(--sidebar-ink-2);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
   </style>
 </head>
 <body>
 <div class="layout">
 
-  <!-- TOP HEADER -->
-  <header class="top-header">
-    <div class="header-brand">
+  <!-- TOPBAR (canonical chrome) -->
+  <header class="topbar">
+    <div class="topbar-brand">
       <a href="../index.html" class="brand-link" aria-label="Back to demo index">
         <div class="brand-mark">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="white" stroke-width="1.4">
@@ -1515,13 +1559,13 @@
       </a>
     </div>
 
-    <div class="header-breadcrumb">
+    <div class="topbar-breadcrumb">
       <span>Workspace</span>
-      <span class="breadcrumb-sep">/</span>
-      <span class="breadcrumb-current">Cross-Tasks</span>
+      <span class="bc-sep">/</span>
+      <span class="bc-current">Cross-Tasks</span>
     </div>
 
-    <div class="header-actions">
+    <div class="topbar-actions">
       <button class="icon-btn" title="Search">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <circle cx="11" cy="11" r="7"/>
@@ -1546,6 +1590,7 @@
     <nav class="sidebar">
       <!-- Workspace nav -->
       <div class="nav-section" data-design-note="workspace-nav" data-note-num="1">
+        <div class="nav-section-label">Workspace</div>
         <div class="nav-item">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>

@@ -1432,30 +1432,81 @@
     color: var(--ink-2);
   }
   body.color-off .demo-note-box { background: #f3f4f6; }
+
+  /* ═══ CANONICAL CHROME (Phase B Wave 6) — synced from dashboard-1-tabs-horizontal ═══ */
+  .topbar {
+    height: 48px;
+    background: #ffffff;
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 20;
+  }
+  .topbar-brand {
+    width: 220px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    padding: 0 18px;
+    background: var(--sidebar);
+    height: 100%;
+  }
+  .topbar-breadcrumb {
+    flex: 1;
+    display: flex; align-items: center;
+    gap: 6px;
+    padding: 0 20px;
+    font-size: 13px;
+    color: var(--ink-2);
+  }
+  .topbar-breadcrumb a {
+    color: var(--ink-2);
+    text-decoration: none;
+  }
+  .topbar-breadcrumb a:hover { color: var(--primary); }
+  .bc-sep { color: var(--line-2); }
+  .bc-current { color: var(--ink); font-weight: 500; }
+  .topbar-actions {
+    display: flex; align-items: center;
+    gap: 10px;
+    padding: 0 16px;
+  }
+  .nav-section-label {
+    padding: 6px 10px 8px;
+    font-size: 10.5px;
+    font-weight: 600;
+    color: var(--sidebar-ink-2);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
 </style>
 </head>
 <body class="color-status school-mode-sidebar-detail">
 
 <div class="app-shell">
 
-  <!-- ─── Top Chrome ─── -->
-  <header class="top-chrome">
-    <a href="../index.html" class="brand-link" aria-label="Back to demo index" style="margin-right: 16px;">
-      <div class="brand-mark" aria-label="Logo">
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="white" stroke-width="1.4">
-          <circle cx="7" cy="7" r="5.5"/>
-          <circle cx="7" cy="7" r="2.5"/>
-        </svg>
-      </div>
-    </a>
-    <nav class="breadcrumb">
+  <!-- ─── Topbar (canonical chrome) ─── -->
+  <header class="topbar">
+    <div class="topbar-brand">
+      <a href="../index.html" class="brand-link" aria-label="Back to demo index">
+        <div class="brand-mark" aria-label="Logo">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="white" stroke-width="1.4">
+            <circle cx="7" cy="7" r="5.5"/>
+            <circle cx="7" cy="7" r="2.5"/>
+          </svg>
+        </div>
+      </a>
+    </div>
+    <div class="topbar-breadcrumb">
       <a href="#">Students</a>
-      <span class="sep">/</span>
+      <span class="bc-sep">/</span>
       <a href="#">Maya Chen</a>
-      <span class="sep">/</span>
-      <span class="current">Schools</span>
-    </nav>
-    <div class="chrome-actions">
+      <span class="bc-sep">/</span>
+      <span class="bc-current">Schools</span>
+    </div>
+    <div class="topbar-actions">
       <div class="icon-btn notif-btn" title="Notifications">
         <div class="notif-dot"></div>
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">

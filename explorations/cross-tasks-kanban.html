@@ -1000,32 +1000,76 @@
     background: linear-gradient(to right, rgba(199, 203, 232, 0.32) 0%, var(--surface) 30%);
   }
 
+  /* ═══ CANONICAL CHROME (Phase B Wave 6) — synced from dashboard-1-tabs-horizontal ═══ */
+  .topbar {
+    height: 48px;
+    background: #ffffff;
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 20;
+  }
+  .topbar-brand {
+    width: 220px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    padding: 0 18px;
+    background: var(--sidebar);
+    height: 100%;
+  }
+  .topbar-breadcrumb {
+    flex: 1;
+    display: flex; align-items: center;
+    gap: 6px;
+    padding: 0 20px;
+    font-size: 13px;
+    color: var(--ink-2);
+  }
+  .bc-sep { color: var(--line-2); }
+  .bc-current { color: var(--ink); font-weight: 500; }
+  .topbar-actions {
+    display: flex; align-items: center;
+    gap: 10px;
+    padding: 0 16px;
+  }
+  .nav-section-label {
+    padding: 6px 10px 8px;
+    font-size: 10.5px;
+    font-weight: 600;
+    color: var(--sidebar-ink-2);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
 </style>
 </head>
 <body class="color-status">
 
 <div class="app-shell">
 
-  <!-- ═══ HEADER ═══ -->
-  <header class="app-header">
-    <a href="../index.html" class="brand-link" aria-label="Back to demo index">
-      <div class="brand-mark" aria-hidden="true">
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="white" stroke-width="1.4">
-          <circle cx="7" cy="7" r="5.5"/>
-          <circle cx="7" cy="7" r="2.5"/>
-        </svg>
-      </div>
-    </a>
+  <!-- ═══ TOPBAR (canonical chrome) ═══ -->
+  <header class="topbar">
+    <div class="topbar-brand">
+      <a href="../index.html" class="brand-link" aria-label="Back to demo index">
+        <div class="brand-mark" aria-hidden="true">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="white" stroke-width="1.4">
+            <circle cx="7" cy="7" r="5.5"/>
+            <circle cx="7" cy="7" r="2.5"/>
+          </svg>
+        </div>
+      </a>
+    </div>
 
-    <nav class="breadcrumb">
+    <div class="topbar-breadcrumb">
       <span>Cross-Tasks</span>
-      <span class="breadcrumb-sep">›</span>
-      <span class="breadcrumb-current">Board</span>
-    </nav>
+      <span class="bc-sep">/</span>
+      <span class="bc-current">Board</span>
+    </div>
 
-    <div class="header-spacer"></div>
-
-    <div class="header-actions">
+    <div class="topbar-actions">
       <div class="icon-btn" title="Search">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
           <circle cx="11" cy="11" r="8"/>

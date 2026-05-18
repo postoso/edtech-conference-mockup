@@ -1111,31 +1111,72 @@
       .lesson-rail { display: none; }
     }
 
+    /* ═══ CANONICAL CHROME (Phase B Wave 6) — synced from dashboard-1-tabs-horizontal ═══ */
+    .topbar {
+      height: 48px;
+      min-height: 48px;
+      background: #ffffff;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      flex-shrink: 0;
+      padding: 0;
+      gap: 0;
+      position: relative;
+      z-index: 20;
+    }
+    .topbar-brand {
+      width: 220px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      padding: 0 18px;
+      background: var(--sidebar);
+      height: 100%;
+    }
+    .topbar-breadcrumb {
+      flex: 1;
+      display: flex; align-items: center;
+      gap: 6px;
+      padding: 0 20px;
+      font-size: 13px;
+      color: var(--ink-2);
+    }
+    .topbar-breadcrumb .bc-sep { color: var(--line-2); font-size: inherit; }
+    .topbar-breadcrumb .bc-current { color: var(--ink); font-weight: 500; }
+    .topbar-actions {
+      display: flex; align-items: center;
+      gap: 10px;
+      padding: 0 16px;
+      margin-left: auto;
+    }
+    .topbar-spacer { display: none; }
   </style>
 </head>
 <body class="color-status">
 
 <div class="shell">
 
-  <!-- ─── TOP CHROME ─── -->
+  <!-- ─── TOPBAR (canonical chrome) ─── -->
   <header class="topbar">
-    <a href="../index.html" class="brand-link" aria-label="Back to demo index">
-      <div class="brand-mark" aria-label="Logo">
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="white" stroke-width="1.4">
-          <circle cx="7" cy="7" r="5.5"/>
-          <circle cx="7" cy="7" r="2.5"/>
-        </svg>
-      </div>
-    </a>
+    <div class="topbar-brand">
+      <a href="../index.html" class="brand-link" aria-label="Back to demo index">
+        <div class="brand-mark" aria-label="Logo">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="white" stroke-width="1.4">
+            <circle cx="7" cy="7" r="5.5"/>
+            <circle cx="7" cy="7" r="2.5"/>
+          </svg>
+        </div>
+      </a>
+    </div>
 
     <div class="topbar-breadcrumb">
       <span>Modules</span>
-      <span class="bc-sep">›</span>
+      <span class="bc-sep">/</span>
       <span>Building Your Profile</span>
-      <span class="bc-sep">›</span>
+      <span class="bc-sep">/</span>
       <span class="bc-current">Crafting Your Activity List</span>
     </div>
-    <div class="topbar-spacer"></div>
     <div class="topbar-actions">
       <div class="avatar-sm" title="Maya Chen">MC</div>
     </div>
