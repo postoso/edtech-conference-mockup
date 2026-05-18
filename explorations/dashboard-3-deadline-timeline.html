@@ -44,6 +44,8 @@
     /* Working-style chips */
     --ws-perfectionist:    #8b5cf6;
     --ws-perfectionist-bg: #f5f3ff;
+    --ws-anxious:          #e11d48;
+    --ws-anxious-bg:       #fff1f2;
 
     --radius:    6px;
     --radius-sm: 4px;
@@ -319,219 +321,417 @@
   .content-scroll::-webkit-scrollbar-thumb { background: var(--line); border-radius: 3px; }
   .content-scroll > * { flex-shrink: 0; }
 
-  /* ── PROFILE — collapsible, top-of-page ── */
-  .profile-strip {
+  /* ─── Status pill (unified palette — matches d1 Variant A) ─── */
+  .status-pill {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.005em;
+    border: 1px solid transparent;
+    line-height: 1.45;
+    font-variant-numeric: tabular-nums;
+  }
+  .pill-active {
+    background: var(--status-active-bg);
+    color: var(--status-active);
+    border-color: #fde68a;
+  }
+  .pill-neutral {
+    background: var(--status-neutral-bg);
+    color: var(--ink-2);
+    border-color: var(--line-2);
+  }
+  .pill-indigo {
+    background: var(--primary-bg);
+    color: var(--primary);
+    border-color: var(--primary-line);
+  }
+
+  .header-meta-divider {
+    width: 1px; height: 12px;
+    background: var(--line-2);
+    margin: 0 4px;
+  }
+  .header-year {
+    font-size: 12px;
+    color: var(--ink-3);
+  }
+  .header-year strong {
+    color: var(--ink-2);
+    font-weight: 500;
+  }
+
+  /* ─── Wave 5 (5/18): Variant A profile card — ported from dashboard-1
+     Replaces the previous compact-horizontal `.profile-strip` pattern. 4-block body
+     (Academic · Hooks · Engagement · Current Module) under a status-pill header band.
+     Identical structure to dashboard-1 and dashboard-2 for cross-surface parity. ─── */
+  .profile-top {
     background: var(--surface);
     border: 1px solid var(--line);
     border-radius: var(--radius-lg);
+    margin-bottom: 20px;
     overflow: hidden;
-    transition: border-color 0.15s;
+    box-shadow: 0 1px 2px rgba(15, 20, 25, 0.025);
   }
 
-  .profile-strip-header {
+  .profile-top-header {
     display: flex;
     align-items: center;
     gap: 14px;
-    padding: 14px 18px;
+    padding: 16px 18px;
     cursor: pointer;
-    user-select: none;
+    background: linear-gradient(180deg, #f8f9fd 0%, var(--surface) 100%);
+    border-bottom: 1px solid var(--line);
+    position: relative;
   }
-  .profile-strip-header:hover { background: var(--surface-2); }
+  .profile-top-header::before {
+    content: "";
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: var(--primary);
+    opacity: 0.55;
+  }
+  body.color-off .profile-top-header { background: var(--surface); }
+  body.color-off .profile-top-header::before { background: var(--ink-3); opacity: 0.4; }
+  body.color-minimal .profile-top-header { background: linear-gradient(180deg, #f6f7fb 0%, var(--surface) 100%); }
+  body.profile-collapsed .profile-top-header { border-bottom-color: transparent; }
 
-  .profile-avatar {
-    width: 44px;
-    height: 44px;
+  .profile-top-avatar {
+    width: 44px; height: 44px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #818cf8 0%, #5b5fcf 60%, #4338ca 100%);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: var(--font-body);
-    font-size: 16px;
+    background: var(--primary);
+    color: #fff;
+    font-size: 15px;
     font-weight: 600;
-    color: white;
-    letter-spacing: -0.01em;
+    letter-spacing: 0.02em;
+    display: flex; align-items: center; justify-content: center;
     flex-shrink: 0;
   }
+  body.color-off .profile-top-avatar { background: var(--ink); }
 
-  .profile-name-block { min-width: 0; flex: 1; }
+  .profile-top-name-block {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
 
-  .profile-name {
+  .profile-top-name {
     font-family: var(--font-body);
-    font-size: 22px;
+    font-size: 24px;
     font-weight: 600;
     color: var(--ink);
-    letter-spacing: -0.015em;
-    line-height: 1.15;
-    position: relative;
-    display: inline-block;
-  }
-  .profile-name::after {
-    content: '';
-    position: absolute;
-    left: 0; bottom: -3px;
-    width: 38px; height: 2px;
-    background: var(--primary);
-    border-radius: 2px;
+    letter-spacing: -0.018em;
+    line-height: 1.08;
   }
 
-  .profile-meta {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-top: 9px;
+  .profile-top-meta-row {
+    display: flex; align-items: center; gap: 7px;
     flex-wrap: wrap;
   }
 
-  .status-pill {
-    font-size: 11px;
-    font-weight: 600;
-    padding: 2.5px 9px;
-    border-radius: 20px;
-    letter-spacing: 0.01em;
-    border: 1px solid transparent;
-  }
-  .pill-active {
-    color: var(--status-active);
-    background: var(--status-active-bg);
-    border-color: #fde68a;
-  }
-  .pill-indigo {
-    color: var(--primary);
-    background: var(--primary-bg);
-    border-color: var(--primary-line);
-  }
-  .pill-cycle {
-    font-size: 11px;
-    color: var(--ink-2);
-    background: var(--bg);
-    border: 1px solid var(--line);
-    padding: 2.5px 9px;
-    border-radius: 20px;
-  }
-  .pill-ws {
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--ws-perfectionist);
-    background: var(--ws-perfectionist-bg);
-    border: 1px solid #ddd6fe;
-    padding: 2.5px 9px;
-    border-radius: 20px;
-    letter-spacing: 0.01em;
-  }
-
-  .profile-actions {
-    display: flex;
+  .profile-top-actions {
+    display: flex; align-items: center;
     gap: 8px;
     flex-shrink: 0;
-    align-items: center;
-  }
-
-  /* Inline stats — packed into header row (R2 layout fix).
-     Replaces the previous full-width 4-col grid in .profile-detail.
-     Stats live alongside the name-block; Hooks alone live in the expandable area. */
-  .profile-inline-stats {
-    display: flex;
-    align-items: center;
-    gap: 0;
-    flex-shrink: 0;
-    border-left: 1px solid var(--line);
-    margin-left: 4px;
-  }
-  .profile-inline-stat {
-    padding: 4px 14px;
-    border-right: 1px solid var(--line);
-    display: flex;
-    flex-direction: column;
-    gap: 1px;
-    min-width: 0;
-  }
-  .profile-inline-stat:last-child { border-right: none; }
-  .profile-inline-stat-label {
-    font-size: 9.5px;
-    color: var(--ink-3);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    font-weight: 600;
-    line-height: 1.1;
-  }
-  .profile-inline-stat-value {
-    font-family: var(--font-mono);
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--ink);
-    font-variant-numeric: tabular-nums;
-    line-height: 1.3;
-    letter-spacing: -0.005em;
-  }
-  .profile-inline-stat-value.text {
-    font-family: var(--font-body);
-    font-size: 12px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 160px;
   }
 
   .profile-collapse-btn {
-    width: 28px;
-    height: 28px;
-    border-radius: var(--radius);
-    border: 1px solid var(--line);
-    background: transparent;
+    font-family: var(--font-body);
+    font-size: 11.5px;
     color: var(--ink-2);
+    padding: 4px 10px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    background: transparent;
     cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background 0.1s;
-    flex-shrink: 0;
+    display: inline-flex; align-items: center; gap: 6px;
   }
-  .profile-collapse-btn:hover { background: var(--bg); color: var(--ink); }
-  .profile-collapse-btn svg { transition: transform 0.2s; }
-  body.profile-collapsed .profile-collapse-btn svg { transform: rotate(-90deg); }
+  .profile-collapse-btn:hover { background: var(--bg); }
+  .profile-collapse-btn svg {
+    transition: transform 0.18s ease;
+  }
+  body.profile-collapsed .profile-collapse-btn svg {
+    transform: rotate(-90deg);
+  }
 
-  /* Profile expandable area — now only contains the Hooks row.
-     Stats moved inline into .profile-strip-header. */
-  .profile-detail {
-    display: block;
-    border-top: 1px solid var(--line);
-    background: var(--surface);
+  /* Profile-top-body — Variant A: 4-column layout
+     Academic · Hooks · Engagement · Current Module. */
+  .profile-top-body {
+    display: grid;
+    grid-template-columns: minmax(170px, 1.05fr) minmax(150px, 0.9fr) minmax(170px, 1fr) minmax(200px, 1.2fr);
+    gap: 0;
+    transition: max-height 0.25s ease, opacity 0.2s ease;
+    max-height: 600px;
     overflow: hidden;
-    max-height: 120px;
-    transition: max-height 0.25s ease, opacity 0.2s ease, border-top-color 0.2s;
-    opacity: 1;
   }
-  body.profile-collapsed .profile-detail {
+  body.profile-collapsed .profile-top-body {
     max-height: 0;
     opacity: 0;
-    border-top-color: transparent;
   }
 
-  .profile-hooks-row {
-    padding: 10px 18px;
-    background: var(--surface);
+  .profile-block {
+    padding: 14px 18px;
+    border-right: 1px solid var(--line);
+  }
+  .profile-block:last-child { border-right: none; }
+
+  .profile-block-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+
+  .stats-mini-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px 16px;
+  }
+  .stats-mini-grid .stat {
+    display: flex; flex-direction: column; gap: 1px;
+  }
+  .stats-mini-grid .stat .label {
+    font-size: 10px;
+    color: var(--ink-3);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .stats-mini-grid .stat .value {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+  }
+  .stats-mini-grid .stat .value.text {
+    font-family: var(--font-body);
+    font-size: 12.5px;
+    font-weight: 500;
+  }
+
+  /* Hooks stack vertically in the profile block (parity with d1/d2). */
+  .hooks-row {
+    display: flex; flex-direction: column; gap: 4px;
+    align-items: flex-start;
+  }
+  .hooks-row .hook-tag {
+    width: 100%;
+  }
+  .hook-tag {
+    font-size: 11px;
+    color: var(--ink-2);
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    padding: 2px 8px;
+  }
+
+  .ws-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--line);
+    background: var(--bg);
+    color: var(--ink-2);
+    margin-right: 4px;
+    margin-bottom: 4px;
+  }
+  .ws-chip.ws-perfectionist {
+    /* STATUS (default) — deliberately muted */
+  }
+  .ws-chip.ws-anxious {
+    /* STATUS (default) — deliberately muted */
+  }
+  body.color-status-plus .ws-chip.ws-perfectionist {
+    color: var(--ws-perfectionist);
+    background: var(--ws-perfectionist-bg);
+    border-color: #ddd6fe;
+  }
+  body.color-status-plus .ws-chip.ws-anxious {
+    color: var(--ws-anxious);
+    background: var(--ws-anxious-bg);
+    border-color: #fecdd3;
+  }
+  body.color-full .ws-chip.ws-perfectionist {
+    color: var(--ws-perfectionist);
+    background: var(--ws-perfectionist-bg);
+    border-color: #ddd6fe;
+  }
+  body.color-full .ws-chip.ws-anxious {
+    color: var(--ws-anxious);
+    background: var(--ws-anxious-bg);
+    border-color: #fecdd3;
+  }
+  body.color-off .ws-chip {
+    color: var(--ink-2);
+    background: transparent;
+    border-color: var(--line);
+  }
+
+  .meeting-row {
+    display: flex; justify-content: space-between; align-items: baseline;
+    padding: 4px 0;
+  }
+  .meeting-row + .meeting-row { border-top: 1px dashed var(--line); }
+  .meeting-row .meeting-label {
+    font-size: 11.5px;
+    color: var(--ink-3);
+  }
+  .meeting-row .meeting-value {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+    font-weight: 500;
+  }
+
+  /* Module Block — in-card layout (rightmost column of profile-top-body).
+     Folds the standalone module-mini aside INTO the profile card. */
+  .profile-module-block {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .profile-module-block .pm-module-row {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 4px 6px;
+    margin-top: -2px;
+  }
+  .profile-module-block .pm-module-name {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--ink);
+    letter-spacing: -0.005em;
+  }
+  .profile-module-block .pm-module-pos {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-2);
+    font-variant-numeric: tabular-nums;
+  }
+  .profile-module-block .pm-lesson-label {
+    font-size: 10px;
+    color: var(--ink-3);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    margin-bottom: 2px;
+  }
+  .profile-module-block .pm-lesson-title {
+    font-size: 11.5px;
+    color: var(--ink-2);
+    line-height: 1.35;
+  }
+  .profile-module-block .pm-task {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    margin-top: 2px;
+    font-size: 11.5px;
+  }
+  .profile-module-block .pm-task-link {
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: 500;
+  }
+  .profile-module-block .pm-task-link:hover {
+    text-decoration: underline;
+  }
+  body.color-off .profile-module-block .pm-task-link { color: var(--ink); }
+  .profile-module-block .pm-task-due {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: var(--ink-3);
+  }
+  .profile-module-block .pm-track {
+    font-size: 10.5px;
+    color: var(--ink-3);
+    margin-top: 2px;
+    font-family: var(--font-mono);
+  }
+
+  /* Manage link on the Current Module block label */
+  .profile-block-label .manage-link {
+    font-family: var(--font-body);
+    font-size: 10px;
+    color: var(--primary);
+    text-transform: none;
+    letter-spacing: 0;
+    font-weight: 500;
+    text-decoration: none;
+  }
+  .profile-block-label .manage-link:hover {
+    text-decoration: underline;
+  }
+  body.color-off .profile-block-label .manage-link { color: var(--ink); }
+
+  /* Engagement block — Log meeting button + Prep notes link */
+  .engagement-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .engagement-action {
+    margin-top: 4px;
     display: flex;
     align-items: center;
     gap: 8px;
-    flex-wrap: wrap;
   }
-  .profile-hooks-label {
-    font-size: 10px;
-    color: var(--ink-3);
-    text-transform: uppercase;
-    letter-spacing: 0.07em;
-    font-weight: 600;
-    margin-right: 4px;
-  }
-  .profile-hook {
-    font-size: 11px;
-    padding: 2.5px 8px;
-    border-radius: 4px;
-    background: var(--bg);
-    color: var(--ink-2);
-    border: 1px solid var(--line);
+  .log-meeting-btn {
+    font-family: var(--font-body);
+    font-size: 11.5px;
+    color: var(--ink);
+    padding: 4px 10px;
+    border: 1px solid var(--line-2);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
     font-weight: 500;
+  }
+  .log-meeting-btn svg {
+    width: 11px;
+    height: 11px;
+  }
+  .prep-notes-link {
+    font-size: 11.5px;
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: 500;
+  }
+  .prep-notes-link:hover {
+    text-decoration: underline;
+  }
+  body.color-off .prep-notes-link { color: var(--ink); }
+
+  /* iPad-portrait fallback — fold 4-column body into 2x2 grid */
+  @media (max-width: 1000px) {
+    .profile-top-body {
+      grid-template-columns: 1fr 1fr;
+    }
+    .profile-top-body .profile-block:nth-child(2) {
+      border-right: none;
+    }
+    .profile-top-body .profile-block:nth-child(1),
+    .profile-top-body .profile-block:nth-child(2) {
+      border-bottom: 1px solid var(--line);
+    }
   }
 
   /* ── Tab nav (under profile) ── */
@@ -1332,18 +1532,19 @@
     --status-overdue-bg: var(--bg);
     --ws-perfectionist: var(--ink-3);
     --ws-perfectionist-bg: var(--bg);
+    --ws-anxious: var(--ink-3);
+    --ws-anxious-bg: var(--bg);
     --primary: var(--ink-2);            /* even brand muted */
     --primary-bg: var(--bg);
     --primary-line: var(--line);
   }
   body.color-off .pill-active,
-  body.color-off .pill-indigo,
-  body.color-off .pill-ws { border-color: var(--line); }
+  body.color-off .pill-neutral,
+  body.color-off .pill-indigo { border-color: var(--line); }
   body.color-off .status-badge { border-color: var(--line); }
   body.color-off .bucket-item { border-left-color: var(--line) !important; background: var(--surface) !important; }
   body.color-off .bucket-item:hover { background: var(--surface-2) !important; }
   body.color-off .bucket-item .item-status-pip { background: var(--ink-3) !important; }
-  body.color-off .profile-name::after { background: var(--ink-3); }
   /* Kanban — Mode A neutralization */
   body.color-off .kanban-col-header::before { background: var(--ink-3) !important; }
   body.color-off .stage-dot { background: var(--ink-3) !important; }
@@ -1359,9 +1560,10 @@
     --status-active-bg: var(--status-neutral-bg);
     --ws-perfectionist: var(--ink-3);
     --ws-perfectionist-bg: var(--status-neutral-bg);
+    --ws-anxious: var(--ink-3);
+    --ws-anxious-bg: var(--status-neutral-bg);
   }
-  body.color-minimal .pill-active,
-  body.color-minimal .pill-ws { border-color: var(--line); }
+  body.color-minimal .pill-active { border-color: var(--line); }
   /* R2.5 (2026-05-13): In-Progress is now indigo (a Mode-B retained color), so it stays saturated.
      Only Awaiting + Not-Started neutralize in Mode B. */
   body.color-minimal .status-badge[data-status="not-started"],
@@ -1387,19 +1589,10 @@
     background: var(--ink-3);
   }
 
-  /* STATUS (DEFAULT): locked 3-color status palette + indigo. Working-style chips muted. */
-  body.color-status .pill-ws {
-    color: var(--ink-2);
-    background: var(--status-neutral-bg);
-    border-color: var(--line);
-  }
+  /* STATUS (DEFAULT): locked 3-color status palette + indigo. Working-style chips muted via
+     .ws-chip base style. (Wave 5: legacy .pill-ws selector removed — superseded by .ws-chip.) */
 
-  /* STATUS+: status palette + working-style chips at full saturation (re-saturate ws chips). */
-  body.color-status-plus .pill-ws {
-    color: var(--ws-perfectionist);
-    background: var(--ws-perfectionist-bg);
-    border-color: #ddd6fe;
-  }
+  /* STATUS+ / FULL ws-chip saturation handled inline in the profile-card CSS block (above). */
 
   /* FULL: everything; restore decorative tints, secondary colors (essentially v1 behavior). */
   body.color-full .school-tag { color: var(--ink); border-color: var(--line-2); background: var(--surface); }
@@ -1408,12 +1601,6 @@
     padding-left: 10px;
   }
   body.color-full .school-tag[data-school-color] .school-tag-dot { background: var(--school-color); }
-  body.color-full .pill-cycle { background: #f1f5f9; }
-  body.color-full .pill-ws {
-    color: var(--ws-perfectionist);
-    background: var(--ws-perfectionist-bg);
-    border-color: #ddd6fe;
-  }
   body.color-full summary.bucket-header { background: linear-gradient(to bottom, #fcfcfd, var(--surface)); }
   body.color-full .kanban-col-header { background: linear-gradient(to bottom, #fcfcfd, var(--surface)); }
   /* Status-tinted column wash in Mode E (matches cross-tasks-kanban canonical)
@@ -1535,59 +1722,112 @@
       <main class="main-content">
         <div class="content-scroll">
 
-          <!-- ── PROFILE STRIP — top-of-page, collapsible (Pattern 1 reframed) ──
-               R2 layout: essentials (GPA / SAT / Major / Citizenship) inline in header row.
-               Only Hooks expand. Saves ~50px vertical space; eliminates header-row whitespace. -->
-          <section class="profile-strip" aria-label="Student profile">
-            <div class="profile-strip-header" id="profile-strip-header" role="button" tabindex="0" aria-expanded="true" aria-controls="profile-detail">
-              <div class="profile-avatar" aria-label="Maya Chen avatar">MC</div>
-              <div class="profile-name-block">
-                <h1 class="profile-name">Maya Chen</h1>
-                <div class="profile-meta">
-                  <span class="status-pill pill-active">Yale REA Deferred</span>
+          <!-- ─── UNIFIED PROFILE CARD (Wave 5, 5/18) — Variant A=Synthesis
+               Ported from dashboard-1-tabs-horizontal.html for cross-surface parity.
+               4-column body (Academic · Hooks · Engagement · Current Module). Replaces the
+               previous compact-horizontal `.profile-strip` pattern. Tabs strip + Tasks body
+               below this card are preserved. ─── -->
+          <div class="profile-top">
+            <div class="profile-top-header" id="profile-header">
+              <div class="profile-top-avatar">MC</div>
+
+              <div class="profile-top-name-block">
+                <div class="profile-top-name">Maya Chen</div>
+                <div class="profile-top-meta-row">
+                  <span class="status-pill pill-neutral">REA Deferred</span>
                   <span class="status-pill pill-indigo">LOCI active</span>
-                  <span class="pill-cycle">Class of 2027 · Senior</span>
-                  <span class="pill-ws" title="Working style — internal">Perfectionist</span>
+                  <span class="header-meta-divider"></span>
+                  <span class="header-year"><strong>Class of 2027</strong> · Senior · Studio Art</span>
+                  <span class="header-meta-divider"></span>
+                  <span class="ws-chip ws-perfectionist" title="Working style — counselor metadata, not status">Perfectionist</span>
+                  <span class="ws-chip ws-anxious" title="Working style — counselor metadata, not status">Stress-anxious</span>
                 </div>
               </div>
-              <div class="profile-inline-stats" aria-label="Student academic stats">
-                <div class="profile-inline-stat">
-                  <span class="profile-inline-stat-label">GPA</span>
-                  <span class="profile-inline-stat-value">3.96</span>
-                </div>
-                <div class="profile-inline-stat">
-                  <span class="profile-inline-stat-label">SAT</span>
-                  <span class="profile-inline-stat-value">1530</span>
-                </div>
-                <div class="profile-inline-stat">
-                  <span class="profile-inline-stat-label">Major</span>
-                  <span class="profile-inline-stat-value text" title="Studio Art / Art History">Studio Art / Art History</span>
-                </div>
-                <div class="profile-inline-stat">
-                  <span class="profile-inline-stat-label">Citizenship</span>
-                  <span class="profile-inline-stat-value text">US Citizen</span>
-                </div>
-              </div>
-              <div class="profile-actions">
-                <button class="btn btn-ghost fake-btn" data-tooltip="Logs a meeting for Maya — opens modal with date, duration, and notes fields" onclick="event.stopPropagation()">
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                  Log meeting
-                </button>
-                <button class="profile-collapse-btn" aria-label="Collapse hooks" title="Collapse hooks">
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
+
+              <div class="profile-top-actions">
+                <button id="profile-toggle" class="profile-collapse-btn" aria-expanded="true" aria-controls="profile-body">
+                  <span class="label">Hide profile</span>
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"/>
+                  </svg>
                 </button>
               </div>
             </div>
 
-            <div class="profile-detail" id="profile-detail">
-              <div class="profile-hooks-row">
-                <span class="profile-hooks-label">Hooks</span>
-                <span class="profile-hook">First-gen college</span>
-                <span class="profile-hook">Studio art portfolio</span>
-                <span class="profile-hook">NYC public school</span>
+            <div class="profile-top-body" id="profile-body">
+
+              <div class="profile-block">
+                <div class="profile-block-label">Academic</div>
+                <div class="stats-mini-grid">
+                  <div class="stat"><span class="label">GPA (UW)</span><span class="value">3.96</span></div>
+                  <div class="stat"><span class="label">SAT</span><span class="value">1530</span></div>
+                  <div class="stat"><span class="label">Major</span><span class="value text">Studio Art</span></div>
+                  <div class="stat"><span class="label">2nd</span><span class="value text">Art History</span></div>
+                  <div class="stat"><span class="label">Citizen</span><span class="value text">US</span></div>
+                </div>
               </div>
+
+              <div class="profile-block">
+                <div class="profile-block-label">Hooks</div>
+                <div class="hooks-row">
+                  <span class="hook-tag">First-gen college</span>
+                  <span class="hook-tag">Studio art portfolio</span>
+                  <span class="hook-tag">NYC public school</span>
+                </div>
+              </div>
+
+              <div class="profile-block">
+                <div class="profile-block-label">Engagement</div>
+                <div class="engagement-stack">
+                  <div class="meeting-row">
+                    <span class="meeting-label">Last</span>
+                    <span class="meeting-value">2d ago</span>
+                  </div>
+                  <div class="meeting-row">
+                    <span class="meeting-label">Next</span>
+                    <span class="meeting-value">Tom · 4pm</span>
+                  </div>
+                  <div class="meeting-row">
+                    <span class="meeting-label">Cadence</span>
+                    <span class="meeting-value">Weekly</span>
+                  </div>
+                  <div class="engagement-action">
+                    <button class="log-meeting-btn" data-tooltip="Logs a meeting after the fact — opens form with date, attendees, summary">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"/>
+                        <polyline points="12 6 12 12 16 14"/>
+                      </svg>
+                      Log meeting
+                    </button>
+                    <a href="#" class="prep-notes-link">Prep notes →</a>
+                  </div>
+                </div>
+              </div>
+
+              <div class="profile-block">
+                <div class="profile-block-label">
+                  Current Module
+                  <a class="manage-link" href="#">Manage</a>
+                </div>
+                <div class="profile-module-block">
+                  <div class="pm-module-row">
+                    <span class="pm-module-name">Application Strategy</span>
+                    <span class="pm-module-pos">· Lesson 2 of 5</span>
+                  </div>
+                  <div>
+                    <div class="pm-lesson-label">This lesson</div>
+                    <div class="pm-lesson-title">School research deep-dive</div>
+                  </div>
+                  <div class="pm-task">
+                    <a class="pm-task-link" href="#">Finish worksheet</a>
+                    <span class="pm-task-due">· Due Dec 19</span>
+                  </div>
+                  <div class="pm-track">9 of 16 lessons in track</div>
+                </div>
+              </div>
+
             </div>
-          </section>
+          </div>
 
           <!-- ── TAB NAV (under student name) ── -->
           <nav class="tab-nav" aria-label="Student page sections">
@@ -2293,26 +2533,14 @@
 </div><!-- /shell -->
 
 <script>
-  // Pattern 1 (reframed) — profile-strip collapse
-  const profileHeader = document.getElementById('profile-strip-header');
-  const collapseBtn = profileHeader.querySelector('.profile-collapse-btn');
-
-  function toggleProfile() {
-    const collapsed = document.body.classList.toggle('profile-collapsed');
-    profileHeader.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
-    collapseBtn.setAttribute('aria-label', collapsed ? 'Expand hooks' : 'Collapse hooks');
-    collapseBtn.setAttribute('title', collapsed ? 'Expand hooks' : 'Collapse hooks');
-  }
-
-  profileHeader.addEventListener('click', (e) => {
-    if (e.target.closest('button') && !e.target.closest('.profile-collapse-btn')) return;
-    toggleProfile();
-  });
-  profileHeader.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      toggleProfile();
-    }
+  // Wave 5 (5/18): Profile collapse — matches dashboard-1 Variant A pattern.
+  // Clicking the "Hide profile" / "Show profile" button toggles `profile-collapsed` on body.
+  document.getElementById('profile-toggle').addEventListener('click', (e) => {
+    e.stopPropagation();
+    document.body.classList.toggle('profile-collapsed');
+    const collapsed = document.body.classList.contains('profile-collapsed');
+    document.querySelector('#profile-toggle .label').textContent = collapsed ? 'Show profile' : 'Hide profile';
+    document.getElementById('profile-toggle').setAttribute('aria-expanded', collapsed ? 'false' : 'true');
   });
 
   // Filter chips visual toggle (mock affordance, no real filtering)

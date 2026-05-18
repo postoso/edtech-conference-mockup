@@ -41,6 +41,9 @@
     --ws-perfectionist:    #8b5cf6;
     --ws-perfectionist-bg: #f5f3ff;
     --ws-perfectionist-line: #d8d2f5;
+    --ws-anxious:          #e11d48;
+    --ws-anxious-bg:       #fff1f2;
+    --ws-anxious-line:     #fecdd3;
   }
 
   *, *::before, *::after { box-sizing: border-box; }
@@ -73,6 +76,9 @@
     --ws-perfectionist:    var(--ink-3);
     --ws-perfectionist-bg: #f1f5f9;
     --ws-perfectionist-line: var(--line);
+    --ws-anxious:          var(--ink-3);
+    --ws-anxious-bg:       #f1f5f9;
+    --ws-anxious-line:     var(--line);
     --primary:    var(--ink);
     --primary-bg: #f1f5f9;
     --primary-line: var(--line-2);
@@ -85,12 +91,17 @@
     --ws-perfectionist:    var(--ink-3);
     --ws-perfectionist-bg: #f1f5f9;
     --ws-perfectionist-line: var(--line);
+    --ws-anxious:          var(--ink-3);
+    --ws-anxious-bg:       #f1f5f9;
+    --ws-anxious-line:     var(--line);
   }
   /* STATUS+ — status palette + working-style chips at full saturation
      (defaults already give status saturation; bump WS chip background) */
   body.color-status-plus {
     --ws-perfectionist-bg: #ede9fe;
     --ws-perfectionist-line: #c4b5fd;
+    --ws-anxious-bg:       #ffe4e6;
+    --ws-anxious-line:     #fecdd3;
   }
   /* Mode A bypass override — topbar account chip uses hardcoded indigo-200/300 gradient
      + indigo-800 text. Neutralize in Off. (S1, 2026-05-12) */
@@ -507,15 +518,28 @@
   .ws-chip.ws-perfectionist {
     /* In STATUS mode (default) WS chips are deliberately muted */
   }
+  .ws-chip.ws-anxious {
+    /* In STATUS mode (default) WS chips are deliberately muted */
+  }
   body.color-status-plus .ws-chip.ws-perfectionist {
     color: var(--ws-perfectionist);
     background: var(--ws-perfectionist-bg);
     border-color: #ddd6fe;
   }
+  body.color-status-plus .ws-chip.ws-anxious {
+    color: var(--ws-anxious);
+    background: var(--ws-anxious-bg);
+    border-color: #fecdd3;
+  }
   body.color-full .ws-chip.ws-perfectionist {
     color: var(--ws-perfectionist);
     background: var(--ws-perfectionist-bg);
     border-color: #ddd6fe;
+  }
+  body.color-full .ws-chip.ws-anxious {
+    color: var(--ws-anxious);
+    background: var(--ws-anxious-bg);
+    border-color: #fecdd3;
   }
 
   .profile-collapse-btn {
@@ -1500,6 +1524,7 @@
                 <span class="header-year"><strong>Class of 2027</strong> · Senior · Studio Art</span>
                 <span class="header-meta-divider"></span>
                 <span class="ws-chip ws-perfectionist" title="Working style — counselor metadata, not status">Perfectionist</span>
+                <span class="ws-chip ws-anxious" title="Working style — counselor metadata, not status">Stress-anxious</span>
               </div>
             </div>
 
