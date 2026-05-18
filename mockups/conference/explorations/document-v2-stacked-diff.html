@@ -1,0 +1,1733 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Yale — Short Answer 2 · Maya Chen</title>
+<meta name="page-purpose" content="This page is for: a consultant reviewing essay history — see one draft cleanly, OR see what changed between two drafts inline.">
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500&family=Geist:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    /* base */
+    --bg:        #f7f8fa;
+    --surface:   #ffffff;
+    --surface-2: #fbfcfd;
+    --ink:       #0f1419;
+    --ink-2:     #475569;
+    --ink-3:     #94a3b8;
+    --line:      #e4e6eb;
+    --line-2:    #cbd5e1;
+
+    --sidebar:        #0f172a;
+    --sidebar-ink:    #cbd5e1;
+    --sidebar-ink-2:  #64748b;
+    --sidebar-line:   rgba(255,255,255,0.08);
+
+    --primary:        #5b5fcf;
+    --primary-bg:     #eef0fb;
+    --primary-line:   #c7cbe8;
+    --primary-ink:    #4338ca;
+
+    /* Locked v2 status palette — 3 colors only */
+    --status-done:      #047857;
+    --status-done-bg:   #d1fae5;
+    --status-done-line: #a7f3d0;
+    --status-active:    #b45309;
+    --status-active-bg: #fef3c7;
+    --status-active-line:#fde68a;
+    --status-overdue:   #be123c;
+    --status-overdue-bg:#ffe4e6;
+
+    --radius: 6px;
+    --radius-card: 8px;
+    --radius-chip: 4px;
+
+    --font-body: 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-mono: 'Geist Mono', 'SF Mono', Menlo, monospace;
+  }
+
+  html, body { height: 100%; }
+
+  body {
+    font-family: var(--font-body);
+    background: var(--bg);
+    color: var(--ink);
+    font-size: 13px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* ────── Pattern 4 — color intensity body modes (5-STATE) ────── */
+  /* Off → Minimal → Status (DEFAULT) → Status+ → Full */
+  body.color-off {
+    /* Maximum neutralization: even overdue + indigo collapse to ink */
+    --status-done:      var(--ink-3);
+    --status-done-bg:   transparent;
+    --status-done-line: var(--line);
+    --status-active:    var(--ink-3);
+    --status-active-bg: transparent;
+    --status-active-line:var(--line);
+    --status-overdue:   var(--ink);
+    --status-overdue-bg:transparent;
+    --primary:          var(--ink);
+    --primary-bg:       transparent;
+    --primary-line:     var(--line);
+    --primary-ink:      var(--ink);
+  }
+  body.color-minimal {
+    /* Overdue (rose) + brand indigo + status-done (emerald) retain saturation;
+       status-active (amber) + WS chips neutralize (D1=A, 2026-05-12) */
+    --status-active:    var(--ink-3);
+    --status-active-bg: transparent;
+    --status-active-line:var(--line);
+  }
+  /* color-status — DEFAULT — no overrides; locked 3-palette renders as-is */
+  body.color-status-plus {
+    /* Status palette + working-style chips at full saturation.
+       This surface has no working-style chips, so the body class is a no-op here
+       (kept for slider-state consistency across surfaces). */
+  }
+  body.color-full {
+    /* Restore decorative tints — v1-style "loud" mode */
+  }
+  body.color-full .doc-paper-deco {
+    background: linear-gradient(180deg, rgba(91,95,207,0.018) 0%, transparent 60%), var(--surface);
+  }
+  body.color-full .timeline-card {
+    background: linear-gradient(180deg, rgba(91,95,207,0.025) 0%, transparent 80%), var(--surface);
+  }
+
+  svg { display: block; }
+  a { color: inherit; text-decoration: none; }
+  button { font-family: inherit; }
+
+  /* ─────────────── Shell ─────────────── */
+  .shell {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  /* ─────────────── Topbar ─────────────── */
+  .topbar {
+    height: 48px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    gap: 12px;
+    flex-shrink: 0;
+  }
+
+  .brand-link {
+    text-decoration: none;
+    display: inline-flex;
+    cursor: pointer;
+    transition: opacity 180ms ease;
+  }
+  .brand-link:hover { opacity: 0.85; }
+  .brand-link:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+    border-radius: 8px;
+  }
+  .brand-mark {
+    width: 24px; height: 24px;
+    border-radius: 7px;
+    background: var(--primary);
+    display: inline-flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .brand-mark svg { display: block; }
+
+  .topbar-sep { color: var(--line); font-size: 16px; user-select: none; }
+
+  .breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12.5px;
+    color: var(--ink-2);
+    min-width: 0;
+  }
+  .breadcrumb a { color: var(--ink-2); }
+  .breadcrumb a:hover { color: var(--ink); }
+  .breadcrumb-sep { color: var(--line-2); }
+  .breadcrumb-current { color: var(--ink); font-weight: 500; }
+
+  .topbar-end {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .icon-btn {
+    width: 30px; height: 30px;
+    border-radius: var(--radius);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--ink-2);
+    background: transparent; border: none;
+    cursor: pointer;
+  }
+  .icon-btn:hover { background: var(--bg); color: var(--ink); }
+
+  /* ────── Top-chrome toggles (Pattern 1, 4, 5, design-notes) ────── */
+  .chrome-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 12px; color: var(--ink-2);
+    padding: 5px 9px; border-radius: var(--radius);
+    background: transparent; border: 1px solid var(--line);
+    cursor: pointer;
+    line-height: 1;
+    height: 28px;
+    white-space: nowrap;
+  }
+  .chrome-btn:hover { background: var(--bg); color: var(--ink); }
+
+  /* segmented control — used by Pattern 4 and Pattern 5 */
+  .seg {
+    display: inline-flex;
+    align-items: center;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 2px;
+    gap: 1px;
+    height: 28px;
+  }
+  .seg button {
+    font-family: inherit;
+    font-size: 11.5px;
+    font-weight: 500;
+    color: var(--ink-2);
+    padding: 3px 9px;
+    border-radius: 4px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    line-height: 1;
+    white-space: nowrap;
+    position: relative;
+  }
+  /* tooltip pattern for seg buttons (Pattern 2 alignment) */
+  .seg button[data-tooltip]::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--ink);
+    color: white;
+    padding: 6px 9px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 400;
+    line-height: 1.4;
+    white-space: normal;
+    width: max-content;
+    max-width: 220px;
+    text-align: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s ease;
+    z-index: 110;
+  }
+  .seg button[data-tooltip]:hover::after { opacity: 1; }
+  .seg button:hover {
+    color: var(--ink);
+    background: var(--bg);
+  }
+  .seg button[aria-pressed="true"] {
+    background: var(--primary);
+    color: white;
+  }
+  .seg button[aria-pressed="true"]:hover {
+    background: #4c50b8;
+  }
+  .seg-label {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ink-3);
+    margin-right: 6px;
+  }
+
+  .seg-group {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .avatar {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: var(--primary);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 600; color: white;
+    flex-shrink: 0;
+  }
+
+  /* ─────────────── Body row ─────────────── */
+  .body-row {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  /* ─────────────── Sidebar ─────────────── */
+  .sidebar {
+    width: 220px;
+    background: var(--sidebar);
+    flex-shrink: 0;
+    overflow-y: auto;
+    padding: 12px 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .sidebar::-webkit-scrollbar { width: 0; }
+
+  .sidebar-section-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--sidebar-ink-2);
+    padding: 6px 18px 4px;
+  }
+
+  .sidebar-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 18px;
+    color: var(--sidebar-ink-2);
+    font-size: 13px;
+    font-weight: 400;
+    cursor: pointer;
+    position: relative;
+  }
+  .sidebar-item:hover {
+    background: rgba(255,255,255,0.03);
+    color: var(--sidebar-ink);
+  }
+  .sidebar-item.active {
+    background: rgba(91,95,207,0.12);
+    color: #f1f5f9;
+    font-weight: 500;
+  }
+  .sidebar-item.active::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: var(--primary);
+  }
+
+  .sidebar-icon {
+    width: 16px; height: 16px;
+    flex-shrink: 0;
+    opacity: 0.85;
+  }
+  .sidebar-item.active .sidebar-icon { opacity: 1; }
+
+  .sidebar-count {
+    margin-left: auto;
+    font-size: 11px;
+    font-family: var(--font-mono);
+    color: var(--sidebar-ink-2);
+    font-variant-numeric: tabular-nums;
+  }
+  .sidebar-item.active .sidebar-count { color: var(--sidebar-ink); }
+
+  .sidebar-divider {
+    border: none;
+    border-top: 1px solid var(--sidebar-line);
+    margin: 10px 16px;
+  }
+
+  .student-nav-header {
+    padding: 8px 18px 4px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--sidebar-ink-2);
+  }
+
+  /* ─────────────── Main content ─────────────── */
+  .main-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .content-scroll {
+    flex: 1;
+    overflow-y: auto;
+    padding: 28px 36px 64px;
+  }
+  .content-scroll::-webkit-scrollbar { width: 8px; }
+  .content-scroll::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
+
+  /* ─────────────── Page header ─────────────── */
+  .page-header {
+    max-width: 1140px;
+    margin: 0 auto 22px;
+  }
+
+  .doc-title-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .doc-title {
+    font-family: var(--font-body);
+    font-size: 26px;
+    font-weight: 600;
+    color: var(--ink);
+    letter-spacing: -0.018em;
+    line-height: 1.15;
+  }
+
+  .page-purpose {
+    font-style: italic;
+    font-size: 12.5px;
+    color: var(--ink-2);
+    margin-top: 6px;
+    line-height: 1.5;
+    max-width: 640px;
+  }
+
+  .doc-meta {
+    margin-top: 10px;
+    font-size: 12px;
+    color: var(--ink-2);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .doc-meta .sep { color: var(--line-2); }
+  .doc-meta .num {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .doc-actions {
+    margin-left: auto;
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+    padding-top: 4px;
+  }
+
+  .fake-btn {
+    position: relative;
+    font-family: var(--font-body);
+    font-size: 12.5px;
+    font-weight: 500;
+    padding: 7px 12px;
+    border-radius: var(--radius);
+    cursor: pointer;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    color: var(--ink-2);
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+  }
+  .fake-btn:hover {
+    background: var(--bg);
+    color: var(--ink);
+    border-color: var(--line-2);
+  }
+
+  .fake-btn::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--ink);
+    color: white;
+    padding: 6px 10px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 400;
+    line-height: 1.4;
+    white-space: normal;
+    width: max-content;
+    max-width: 240px;
+    text-align: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s ease;
+    z-index: 100;
+  }
+  .fake-btn:hover::after { opacity: 1; }
+
+  /* ─────────────── Version timeline strip ─────────────── */
+  .timeline-card {
+    max-width: 1140px;
+    margin: 0 auto 18px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-card);
+    padding: 16px 22px 14px;
+  }
+
+  .timeline-label-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    gap: 12px;
+  }
+
+  .timeline-eyebrow {
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+  .timeline-eyebrow .accent { color: var(--primary-ink); }
+
+  .timeline-strip {
+    position: relative;
+    padding: 4px 0 24px;
+  }
+
+  .timeline-line {
+    position: absolute;
+    left: 6px; right: 6px;
+    top: 11px;
+    height: 1px;
+    background: var(--line);
+  }
+
+  .timeline-nodes {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    position: relative;
+    z-index: 1;
+  }
+
+  .v-node {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    min-width: 64px;
+  }
+
+  /* All nodes uniform — magnitude tagging dropped per v2 */
+  .v-circle {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: var(--surface);
+    border: 1.5px solid var(--line-2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    font-weight: 500;
+    color: var(--ink-2);
+    transition: border-color 0.15s ease;
+    position: relative;
+  }
+  .v-node:hover .v-circle { border-color: var(--ink-3); color: var(--ink); }
+
+  /* Pattern 5: in single-version mode, "compared" styling drops away — only "current" remains */
+  body.compare-single .v-node.compared .v-circle {
+    border-color: var(--line-2);
+    background: var(--surface);
+    color: var(--ink-2);
+    border-style: solid;
+    border-width: 1.5px;
+  }
+  body.compare-single .v-node.compared .v-flag { display: none; }
+
+  body.compare-inline .v-node.compared .v-circle {
+    border-color: var(--primary);
+    background: var(--surface);
+    color: var(--primary-ink);
+    border-style: dashed;
+    border-width: 1.5px;
+  }
+
+  .v-node.current .v-circle {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: white;
+    font-weight: 600;
+    box-shadow: 0 0 0 4px rgba(91,95,207,0.14);
+  }
+
+  .v-meta {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--ink-3);
+    text-align: center;
+    line-height: 1.3;
+    white-space: nowrap;
+  }
+  .v-node.current .v-meta { color: var(--primary-ink); font-weight: 500; }
+  body.compare-inline .v-node.compared .v-meta { color: var(--ink-2); }
+
+  .v-flag {
+    font-size: 9px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ink-3);
+    margin-top: 1px;
+  }
+  .v-node.current .v-flag { color: var(--primary-ink); }
+  body.compare-inline .v-node.compared .v-flag { color: var(--ink-2); }
+
+  /* Per-draft "Show comments" button — comments are tied to specific drafts, so
+     the affordance lives ON the draft node, not in page-level chrome. Only
+     renders on drafts that have comment threads anchored to them. */
+  .v-comments-btn {
+    margin-top: 4px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 7px;
+    border-radius: 10px;
+    border: 1px solid var(--primary-line);
+    background: var(--primary-bg);
+    color: var(--primary-ink);
+    font-family: var(--font-body);
+    font-size: 10.5px;
+    font-weight: 500;
+    line-height: 1.3;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.12s, border-color 0.12s, color 0.12s;
+  }
+  .v-comments-btn:hover {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: white;
+  }
+  .v-comments-btn svg {
+    width: 9px; height: 9px;
+    flex-shrink: 0;
+  }
+  .v-comments-btn .count {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+  }
+  /* When the rail is visible AND this is the active draft, show pressed state */
+  body:not(.rail-collapsed) .v-node[data-comments-active="true"] .v-comments-btn {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: white;
+  }
+
+  .compare-row {
+    margin-top: 8px;
+    padding-top: 12px;
+    border-top: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 14px;
+    justify-content: space-between;
+  }
+  /* Pattern 5 + persistent picker: the compare-row + picker stub stay visible in
+     BOTH single AND compare-inline modes (per Roei 5/12 L491: "the comparing
+     thing should always live there ... so we could sort of see both"). The
+     picker label swaps content based on mode: "Select a draft…" placeholder in
+     single mode (dashed border = empty state), "draft 8 ▾" in compare mode
+     (solid border = populated state). The compare-stats only render in
+     compare-inline mode since there's nothing to count in single. The "or use"
+     hint shows only in single mode (orientation cue). */
+  body.compare-single .compare-row .compare-stats { display: none; }
+  body.compare-inline .compare-row .compare-picker-stub .picker-hint { display: none; }
+
+  .compare-picker-stub {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12.5px;
+    color: var(--ink-2);
+  }
+  .compare-picker-stub .picker-eyebrow {
+    font-size: 10.5px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink-3);
+  }
+  .compare-picker-stub .picker-control {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 9px 4px 10px;
+    border-radius: var(--radius);
+    border: 1px dashed var(--line-2);
+    background: var(--surface);
+    color: var(--ink-3);
+    font-size: 12px;
+    font-family: var(--font-body);
+    cursor: pointer;
+    transition: border-color 0.12s, color 0.12s, background 0.12s;
+  }
+  .compare-picker-stub .picker-control:hover {
+    border-color: var(--primary-line);
+    color: var(--primary-ink);
+    background: var(--primary-bg);
+    border-style: solid;
+  }
+  .compare-picker-stub .picker-chev {
+    color: var(--ink-3);
+  }
+  .compare-picker-stub .picker-control:hover .picker-chev {
+    color: var(--primary);
+  }
+  .compare-picker-stub .picker-hint {
+    font-size: 11.5px;
+    color: var(--ink-3);
+    font-style: italic;
+  }
+
+  /* In compare-inline mode, the picker shows the currently-selected prior draft
+     (label "draft 8") with a solid border, since something IS now selected. */
+  body.compare-inline .compare-picker-stub .picker-control {
+    border-style: solid;
+    border-color: var(--primary-line);
+    background: var(--primary-bg);
+    color: var(--primary-ink);
+  }
+  body.compare-inline .compare-picker-stub .picker-control .picker-chev {
+    color: var(--primary);
+  }
+  body.compare-inline .compare-picker-stub .picker-control .picker-placeholder { display: none; }
+  body.compare-single .compare-picker-stub .picker-control .picker-selected { display: none; }
+
+  /* The old .compare-control (rich chip duo "draft 10 ←→ draft 8") still shows
+     ONLY in compare-inline mode — it's the supplementary visualization of the
+     active diff, not the picker itself. */
+  body.compare-single .compare-row .compare-control { display: none; }
+
+  .compare-control {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12.5px;
+    color: var(--ink-2);
+  }
+
+  .v-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 9px;
+    border-radius: 14px;
+    border: 1px solid var(--primary-line);
+    background: var(--primary-bg);
+    color: var(--primary-ink);
+    font-size: 11.5px;
+    font-weight: 500;
+    cursor: default;
+  }
+  .v-chip svg {
+    width: 9px; height: 9px;
+    color: var(--primary);
+    opacity: 0.8;
+  }
+  .v-chip .label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+  }
+
+  .compare-arrow {
+    color: var(--ink-3);
+    font-family: var(--font-mono);
+    font-size: 11px;
+  }
+
+  .compare-stats {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    font-size: 12px;
+    color: var(--ink-2);
+  }
+
+  .stat-added {
+    color: var(--primary-ink);
+    font-family: var(--font-mono);
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+  }
+  .stat-removed {
+    color: var(--status-overdue);
+    font-family: var(--font-mono);
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+  }
+  .stat-sep { color: var(--line-2); }
+  .stat-comments {
+    font-family: var(--font-mono);
+    color: var(--ink-2);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ─────────────── Document layout — essay paper + right rail handles comments ─────────────── */
+  .doc-layout {
+    max-width: 1140px;
+    margin: 0 auto;
+  }
+
+  .doc-paper, .doc-paper-deco {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-card);
+    padding: 40px 56px 44px;
+    position: relative;
+  }
+
+  .doc-display-title {
+    font-family: var(--font-body);
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+    margin-bottom: 4px;
+    line-height: 1.3;
+  }
+
+  .doc-display-sub {
+    font-size: 12px;
+    color: var(--ink-3);
+    margin-bottom: 20px;
+    font-weight: 400;
+    font-family: var(--font-mono);
+  }
+
+  .doc-prompt-card {
+    background: var(--surface-2);
+    border-left: 2px solid var(--line-2);
+    padding: 10px 14px;
+    margin-bottom: 28px;
+    font-size: 12.5px;
+    color: var(--ink-2);
+    line-height: 1.55;
+    border-radius: 0 var(--radius-chip) var(--radius-chip) 0;
+  }
+  .doc-prompt-card .prompt-label {
+    display: block;
+    font-size: 9.5px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink-3);
+    margin-bottom: 4px;
+  }
+  .doc-prompt-card .prompt-meta {
+    margin-top: 6px;
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: var(--ink-3);
+  }
+
+  .essay-body {
+    font-family: var(--font-body);
+    font-size: 14.5px;
+    line-height: 1.72;
+    color: var(--ink);
+    font-weight: 400;
+    letter-spacing: -0.005em;
+  }
+  .essay-body p {
+    margin-bottom: 1em;
+    position: relative;
+    padding-right: 36px; /* leave room for anchor numerals */
+  }
+  .essay-body p:last-child { margin-bottom: 0; }
+
+  /* diff spans */
+  .ins {
+    background: linear-gradient(to bottom, transparent 0%, transparent 74%, rgba(91,95,207,0.10) 74%, rgba(91,95,207,0.10) 100%);
+    color: var(--ink);
+    box-shadow: inset 0 -2px 0 0 var(--primary);
+    padding: 0 1.5px;
+    border-radius: 1px;
+  }
+  .del {
+    background: rgba(190,18,60,0.06);
+    color: var(--status-overdue);
+    text-decoration: line-through;
+    text-decoration-color: rgba(190,18,60,0.85);
+    text-decoration-thickness: 1.5px;
+    padding: 0 2px;
+    border-radius: 1px;
+    opacity: 0.85;
+  }
+  /* Mode A bypass overrides — .ins/.del use hardcoded rgba() (indigo 10% / rose
+     6% tints) which don't follow CSS var overrides. In Off, these tints must
+     collapse to neutral surface tones. (Wave 5b M4, 2026-05-12) */
+  body.color-off .ins {
+    background: var(--bg);
+    box-shadow: inset 0 -2px 0 0 var(--ink-3);
+  }
+  body.color-off .del {
+    background: var(--bg);
+    color: var(--ink-2);
+    text-decoration-color: var(--ink-3);
+  }
+  /* Pattern 5: in single-version mode, deletions disappear and insertions render as plain text */
+  body.compare-single .del { display: none; }
+  body.compare-single .ins {
+    background: none;
+    box-shadow: none;
+    padding: 0;
+    color: var(--ink);
+  }
+
+  /* paragraph anchor for marginalia/comment thread */
+  .anchor-bullet {
+    position: absolute;
+    right: 0;
+    top: 4px;
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: var(--primary-bg);
+    border: 1px solid var(--primary-line);
+    color: var(--primary-ink);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+  }
+  .anchor-bullet.resolved {
+    background: var(--status-done-bg);
+    border-color: var(--status-done-line);
+    color: var(--status-done);
+  }
+
+  .doc-footer {
+    margin-top: 28px;
+    padding-top: 14px;
+    border-top: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 11.5px;
+    color: var(--ink-3);
+  }
+  .doc-footer .num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+  .essay-footnote-stats {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ─────────────── Right rail (now: comments thread) ─────────────── */
+  .right-rail {
+    width: 320px;
+    flex-shrink: 0;
+    border-left: 1px solid var(--line);
+    background: var(--surface);
+    overflow-y: auto;
+    padding: 24px 20px;
+    transition: width 0.2s ease, opacity 0.2s ease, padding 0.2s ease;
+  }
+  .right-rail::-webkit-scrollbar { width: 0; }
+
+  body.rail-collapsed .right-rail {
+    width: 0;
+    opacity: 0;
+    padding-left: 0;
+    padding-right: 0;
+    border-left: none;
+  }
+
+  .rail-eyebrow {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .rail-eyebrow .count {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: var(--ink-2);
+    font-variant-numeric: tabular-nums;
+    text-transform: none;
+    letter-spacing: 0;
+  }
+
+  /* comment thread cards */
+  .thread {
+    border-left: 2px solid var(--primary-line);
+    padding: 4px 0 4px 14px;
+    margin-bottom: 18px;
+  }
+  .thread.resolved { border-left-color: var(--status-done-line); }
+
+  .thread-head {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+
+  .thread-num {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: var(--primary-bg);
+    border: 1px solid var(--primary-line);
+    color: var(--primary-ink);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .thread.resolved .thread-num {
+    background: var(--status-done-bg);
+    border-color: var(--status-done-line);
+    color: var(--status-done);
+  }
+
+  .thread-meta {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .thread-author {
+    font-size: 12.5px;
+    font-weight: 500;
+    color: var(--ink);
+    line-height: 1.3;
+  }
+
+  .thread-time {
+    font-size: 10.5px;
+    color: var(--ink-3);
+    font-family: var(--font-mono);
+    margin-top: 1px;
+  }
+
+  /* the essay phrase being responded to */
+  .thread-anchor {
+    font-style: italic;
+    font-size: 11.5px;
+    color: var(--ink-3);
+    line-height: 1.5;
+    margin-bottom: 8px;
+    padding-left: 8px;
+    border-left: 1.5px solid var(--line);
+    display: block;
+  }
+
+  /* the comment itself */
+  .thread-quote {
+    font-family: var(--font-body);
+    font-size: 12.5px;
+    color: var(--ink);
+    line-height: 1.55;
+    margin-bottom: 10px;
+    font-weight: 400;
+  }
+  .thread-quote .lead {
+    color: var(--ink-3);
+    font-family: var(--font-mono);
+    margin-right: 3px;
+  }
+
+  .thread-turns {
+    font-size: 11.5px;
+    color: var(--ink-3);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .thread-turns .num {
+    font-family: var(--font-mono);
+    color: var(--ink-2);
+    font-weight: 500;
+  }
+
+  /* status pills — locked to the 3-color v2 palette */
+  .thread-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 10.5px;
+    font-weight: 500;
+    padding: 2px 8px;
+    border-radius: 10px;
+    margin-bottom: 9px;
+  }
+  .thread-status.open {
+    background: var(--status-active-bg);
+    color: var(--status-active);
+  }
+  .thread-status.resolved-pill {
+    background: var(--status-done-bg);
+    color: var(--status-done);
+  }
+  body.color-minimal .thread-status.open {
+    background: transparent;
+    color: var(--ink-3);
+    border: 1px solid var(--line);
+    padding: 1px 7px;
+  }
+  .thread-status .dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+
+  .thread-expand {
+    position: relative;
+    font-size: 11.5px;
+    color: var(--primary-ink);
+    font-weight: 500;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: none;
+    border: none;
+    padding: 0;
+  }
+  .thread-expand:hover {
+    color: var(--primary);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+  .thread-expand::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    top: calc(100% + 5px);
+    left: 0;
+    background: var(--ink);
+    color: white;
+    padding: 5px 9px;
+    border-radius: 4px;
+    font-size: 10.5px;
+    font-weight: 400;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s ease;
+    z-index: 100;
+  }
+  .thread-expand:hover::after { opacity: 1; }
+
+  /* Pattern 5: when single-version mode is on, comments still show (Roei: keep anchored)
+     but diff stats inside the thread (e.g. "resolved by Maya in draft 10") still read,
+     because the *history* of the comment is still meaningful */
+
+  /* ─────────────── Pattern 3 — Design-intent overlay ─────────────── */
+  /* (System unchanged from wave 2 per v2 spec — annotations text refreshed for v2) */
+  body.design-notes-on .chrome-btn.notes-toggle {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: white;
+  }
+  body.design-notes-on .chrome-btn.notes-toggle:hover { background: #4c50b8; }
+
+  [data-design-note] { position: relative; }
+  body.design-notes-on [data-design-note] {
+    outline: 2px dashed var(--primary);
+    outline-offset: 3px;
+    border-radius: 3px;
+  }
+  body.design-notes-on [data-design-note]::before {
+    content: attr(data-note-num);
+    position: absolute;
+    top: -10px; left: -10px;
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: var(--primary);
+    color: white;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 90;
+    box-shadow: 0 0 0 2px white, 0 2px 6px rgba(91,95,207,0.35);
+    pointer-events: none;
+  }
+
+  .design-notes-panel {
+    position: fixed;
+    top: 64px;
+    right: 16px;
+    width: 320px;
+    max-height: calc(100vh - 96px);
+    background: var(--surface);
+    border: 1px solid var(--primary-line);
+    border-radius: var(--radius-card);
+    box-shadow: 0 12px 32px -8px rgba(15,20,25,0.18), 0 0 0 4px rgba(91,95,207,0.06);
+    z-index: 200;
+    overflow-y: auto;
+    opacity: 0;
+    transform: translateX(8px);
+    pointer-events: none;
+    transition: opacity 0.18s ease, transform 0.18s ease;
+  }
+  body.design-notes-on .design-notes-panel {
+    opacity: 1;
+    transform: translateX(0);
+    pointer-events: auto;
+  }
+  .design-notes-panel::-webkit-scrollbar { width: 6px; }
+  .design-notes-panel::-webkit-scrollbar-thumb { background: var(--line); border-radius: 3px; }
+
+  .dn-header {
+    padding: 14px 16px 10px;
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    background: linear-gradient(to right, var(--primary-bg) 0%, transparent 100%);
+  }
+  .dn-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--primary-ink);
+    letter-spacing: -0.005em;
+  }
+  .dn-count {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: var(--ink-3);
+    font-variant-numeric: tabular-nums;
+  }
+  .dn-list { padding: 6px 0 12px; }
+  .dn-item {
+    display: flex;
+    gap: 10px;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--line);
+    align-items: flex-start;
+  }
+  .dn-item:last-child { border-bottom: none; }
+  .dn-num {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: var(--primary-bg);
+    border: 1px solid var(--primary-line);
+    color: var(--primary-ink);
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .dn-body { flex: 1; min-width: 0; }
+  .dn-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--ink);
+    line-height: 1.35;
+    margin-bottom: 2px;
+  }
+  .dn-text {
+    font-size: 11.5px;
+    color: var(--ink-2);
+    line-height: 1.5;
+  }
+</style>
+</head>
+<body class="compare-single color-status rail-collapsed">
+
+<div class="shell">
+
+  <!-- ─────────────── Topbar ─────────────── -->
+  <header class="topbar">
+    <a href="../index.html" class="brand-link" aria-label="Back to demo index">
+      <div class="brand-mark" data-design-note data-note-num="1" aria-hidden="true">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="white" stroke-width="1.4">
+          <circle cx="7" cy="7" r="5.5"/>
+          <circle cx="7" cy="7" r="2.5"/>
+        </svg>
+      </div>
+    </a>
+    <span class="topbar-sep">/</span>
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <a href="#">Students</a>
+      <span class="breadcrumb-sep">›</span>
+      <a href="#">Maya Chen</a>
+      <span class="breadcrumb-sep">›</span>
+      <a href="#">Documents</a>
+      <span class="breadcrumb-sep">›</span>
+      <span class="breadcrumb-current">Yale — Short Answer 2</span>
+    </nav>
+
+    <div class="topbar-end">
+
+      <!-- Pattern 5 — Compare-mode A/B toggle -->
+      <div class="seg-group" data-design-note data-note-num="2">
+        <span class="seg-label">View</span>
+        <div class="seg" role="radiogroup" aria-label="Compare mode">
+          <button type="button" data-ab-mode="single" aria-pressed="true">Single version</button>
+          <button type="button" data-ab-mode="inline" aria-pressed="false">Comparative inline</button>
+        </div>
+      </div>
+
+      <div class="avatar" aria-label="Xiao Jin">XJ</div>
+    </div>
+  </header>
+
+  <div class="body-row">
+
+    <!-- ─────────────── Sidebar ─────────────── -->
+    <nav class="sidebar" aria-label="Main navigation">
+      <div class="sidebar-section-label">Workspace</div>
+
+      <a class="sidebar-item" href="#">
+        <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Students
+        <span class="sidebar-count">15</span>
+      </a>
+
+      <a class="sidebar-item" href="#">
+        <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="6" height="6" rx="1"/><rect x="3" y="13" width="6" height="6" rx="1"/><path d="M13 6h8"/><path d="M13 10h6"/><path d="M13 14h8"/><path d="M13 18h6"/></svg>
+        Cross-Tasks
+        <span class="sidebar-count">82</span>
+      </a>
+
+      <a class="sidebar-item" href="#">
+        <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/></svg>
+        Calendar
+      </a>
+
+      <a class="sidebar-item" href="#">
+        <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"/></svg>
+        Modules
+      </a>
+
+      <hr class="sidebar-divider">
+
+      <div class="student-nav-header">Maya Chen</div>
+
+      <a class="sidebar-item" href="#">
+        <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>
+        Overview
+      </a>
+
+      <a class="sidebar-item" href="#">
+        <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        Schools
+        <span class="sidebar-count">12</span>
+      </a>
+
+      <a class="sidebar-item" href="#">
+        <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 12H3"/><path d="m15 4 6 8-6 8"/><path d="M11 4H3"/><path d="M11 20H3"/></svg>
+        Tasks
+        <span class="sidebar-count">8</span>
+      </a>
+
+      <a class="sidebar-item" href="#">
+        <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
+        Snapshots
+        <span class="sidebar-count">18</span>
+      </a>
+
+      <a class="sidebar-item active" href="#" aria-current="page">
+        <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        Documents
+        <span class="sidebar-count">9</span>
+      </a>
+
+      <a class="sidebar-item" href="#">
+        <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Meetings
+        <span class="sidebar-count">7</span>
+      </a>
+
+      <a class="sidebar-item" href="#">
+        <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z"/><line x1="9" y1="9" x2="10" y2="9"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="15" y2="17"/></svg>
+        Notes
+        <span class="sidebar-count">11</span>
+      </a>
+    </nav>
+
+    <!-- ─────────────── Main content ─────────────── -->
+    <main class="main-content">
+      <div class="content-scroll">
+
+        <!-- PAGE HEADER -->
+        <div class="page-header">
+          <div class="doc-title-row">
+            <div style="min-width:0;flex:1;">
+              <h1 class="doc-title">Yale — Short Answer 2</h1>
+              <p class="page-purpose">For reviewing essay history — see one draft cleanly, OR see what changed between two drafts inline.</p>
+              <div class="doc-meta">
+                <span><span class="num">12</span> versions</span>
+                <span class="sep">·</span>
+                <span>Last edited <span class="num">2d</span> ago by Maya</span>
+                <span class="sep">·</span>
+                <span><span class="num">3</span> open comments</span>
+              </div>
+            </div>
+            <div class="doc-actions">
+              <button class="fake-btn" data-tooltip="Creates a new editable version branched from draft 10">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+                New version
+              </button>
+              <button class="fake-btn" data-tooltip="Saves a read-only snapshot of draft 10 — frozen for the record">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
+                Snapshot
+              </button>
+              <button class="fake-btn" data-tooltip="Sends draft 10 to Xiao for a review pass — opens a request panel">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                Send for review
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- VERSION TIMELINE STRIP -->
+        <section class="timeline-card" aria-label="Version timeline" data-design-note data-note-num="4">
+          <div class="timeline-label-row">
+            <span class="timeline-eyebrow">Version history · <span class="accent">draft 10 of 12</span></span>
+            <span class="timeline-eyebrow" style="color:var(--ink-3);font-weight:500;letter-spacing:0.04em;">Nov 14 — Dec 14</span>
+          </div>
+
+          <div class="timeline-strip">
+            <div class="timeline-line"></div>
+            <div class="timeline-nodes">
+              <div class="v-node" title="Draft 1">
+                <div class="v-circle">1</div>
+                <div class="v-meta">Nov 14</div>
+              </div>
+              <div class="v-node" title="Draft 2">
+                <div class="v-circle">2</div>
+                <div class="v-meta">Nov 17</div>
+              </div>
+              <div class="v-node" title="Draft 3">
+                <div class="v-circle">3</div>
+                <div class="v-meta">Nov 21</div>
+              </div>
+              <div class="v-node" title="Draft 4">
+                <div class="v-circle">4</div>
+                <div class="v-meta">Nov 25</div>
+              </div>
+              <div class="v-node" title="Draft 5">
+                <div class="v-circle">5</div>
+                <div class="v-meta">Nov 28</div>
+              </div>
+              <div class="v-node" title="Draft 6">
+                <div class="v-circle">6</div>
+                <div class="v-meta">Dec 1</div>
+              </div>
+              <div class="v-node" title="Draft 7">
+                <div class="v-circle">7</div>
+                <div class="v-meta">Dec 4</div>
+              </div>
+              <div class="v-node compared" title="Compared against this draft" data-draft="8">
+                <div class="v-circle">8</div>
+                <div class="v-meta">Dec 7</div>
+                <div class="v-flag">vs.</div>
+                <button type="button" class="v-comments-btn" data-toggle-comments data-draft="8" aria-label="Show 2 comments on draft 8">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                  <span class="count">2</span>
+                </button>
+              </div>
+              <div class="v-node" title="Draft 9">
+                <div class="v-circle">9</div>
+                <div class="v-meta">Dec 10</div>
+              </div>
+              <div class="v-node current" title="Currently viewing" data-draft="10">
+                <div class="v-circle">10</div>
+                <div class="v-meta">Dec 12</div>
+                <div class="v-flag">viewing</div>
+                <button type="button" class="v-comments-btn" data-toggle-comments data-draft="10" aria-label="Show 3 comments on draft 10">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                  <span class="count">3</span>
+                </button>
+              </div>
+              <div class="v-node" title="Draft 11">
+                <div class="v-circle">11</div>
+                <div class="v-meta">Dec 13</div>
+              </div>
+              <div class="v-node" title="Draft 12">
+                <div class="v-circle">12</div>
+                <div class="v-meta">Dec 14</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="compare-row">
+            <!-- Persistent picker stub — visible in BOTH single AND compare-inline modes
+                 per Roei 5/12 L491: "the comparing thing should always live there... so
+                 we could sort of see both." In single mode the picker is the empty state
+                 ("Select a draft…", dashed border). In compare-inline mode the picker is
+                 the populated state ("draft 8 ▾", solid indigo border) — it reads as the
+                 currently-selected compare target. Same DOM, two visual states. -->
+            <div class="compare-picker-stub" data-design-note data-note-num="9">
+              <span class="picker-eyebrow">Compare to</span>
+              <button type="button" class="picker-control" data-tooltip="Pick a prior draft to diff against draft 10. Selecting a draft loads it into the comparative view.">
+                <span class="picker-placeholder">Select a draft…</span>
+                <span class="picker-selected">draft 8</span>
+                <svg class="picker-chev" width="10" height="10" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+                  <path d="M3 4.5l3 3 3-3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+              <span class="picker-hint">or use the "Comparative inline" view above ↑</span>
+            </div>
+
+            <div class="compare-control">
+              <span>Comparing</span>
+              <span class="v-chip" title="Current view">
+                <svg viewBox="0 0 9 9" fill="currentColor"><circle cx="4.5" cy="4.5" r="3"/></svg>
+                <span class="label">draft 10</span>
+              </span>
+              <span class="compare-arrow">←→</span>
+              <span class="v-chip" title="Compared against" style="background:var(--surface);border-style:dashed;">
+                <svg viewBox="0 0 9 9" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="4.5" cy="4.5" r="3"/></svg>
+                <span class="label">draft 8</span>
+              </span>
+            </div>
+
+            <div class="compare-stats">
+              <span><span class="stat-added">+24</span> <span style="color:var(--ink-3);">added</span></span>
+              <span class="stat-sep">·</span>
+              <span><span class="stat-removed">−18</span> <span style="color:var(--ink-3);">removed</span></span>
+              <span class="stat-sep">·</span>
+              <span class="stat-comments"><span style="color:var(--ink);font-weight:500;">2</span> <span style="color:var(--ink-3);">comment threads</span></span>
+              <span class="stat-sep">·</span>
+              <span style="color:var(--ink-3);">last review <span class="num" style="color:var(--ink-2);">2d ago</span></span>
+            </div>
+          </div>
+        </section>
+
+        <!-- DOCUMENT BODY -->
+        <div class="doc-layout">
+          <article class="doc-paper doc-paper-deco" data-design-note data-note-num="5" aria-labelledby="essay-title">
+            <h2 class="doc-display-title" id="essay-title">Yale — Short Answer 2 (Draft 10)</h2>
+            <div class="doc-display-sub">Maya Chen · Common App supplement · 2026 cycle</div>
+
+            <div class="doc-prompt-card">
+              <span class="prompt-label">Prompt</span>
+              What is something about which you have changed your mind in the last three years? What changed it?
+              <div class="prompt-meta">Yale Short Answer 2 · 125 words max</div>
+            </div>
+
+            <div class="essay-body">
+
+              <!-- Paragraph 1 — comment thread ① -->
+              <p data-design-note data-note-num="6">
+                I used to think identity was a thing you <span class="del">picked</span><span class="ins">chose</span>. My mother is Nigerian, my father is Chinese-American, and for years I <span class="del">thought I needed to choose</span><span class="ins">assumed I had to pick</span> a side.
+                <span class="anchor-bullet" title="Comment thread 1">①</span>
+              </p>
+
+              <!-- Paragraph 2 — no anchor -->
+              <p>
+                <span class="del">Then last</span><span class="ins">Last</span> summer my grandmother <span class="del">handed me a stack of</span><span class="ins">flew in from Lagos with a folded stack of</span> Ankara fabric scraps <span class="del">from Lagos </span>and asked me to <span class="del">bring</span><span class="ins">take</span> them to my studio. I had been painting oil portraits — quiet, restrained<span class="del"> things</span><span class="ins">, deliberately unplaceable</span>.
+              </p>
+
+              <!-- Paragraph 3 — comment thread ② (resolved) -->
+              <p>
+                I layered the scraps under the oil <span class="del">paint </span>and we argued about it for an hour<span class="ins"> at the kitchen table</span>. She said I was hiding them. I said I was <span class="del">holding</span><span class="ins">protecting</span> them. <span class="del">We were both right</span><span class="ins">Neither of us was wrong</span>.
+                <span class="anchor-bullet resolved" title="Comment thread 2 — resolved">②</span>
+              </p>
+
+              <!-- Paragraph 4 — comment thread ③ -->
+              <p>
+                Identity<span class="ins">, I have learned,</span> is not a thing you <span class="del">pick</span><span class="ins">pick once</span>. It is a thing you keep arguing with<span class="del">, in the studio, at the kitchen table</span><span class="ins"> —</span> in the studio, in the work<span class="del"> itself</span><span class="ins">, out loud</span>.
+                <span class="anchor-bullet" title="Comment thread 3">③</span>
+              </p>
+
+            </div>
+
+            <div class="doc-footer">
+              <span class="essay-footnote-stats">
+                <span style="color:var(--ink-2);font-weight:500;">127</span>
+                <span>/ 125 words</span>
+                <span style="color:var(--status-overdue);margin-left:6px;">+2 over</span>
+              </span>
+              <span style="font-family:var(--font-mono);font-size:11px;">draft 10 · saved <span style="color:var(--ink-2);">Dec 12, 4:48 PM</span></span>
+            </div>
+          </article>
+        </div><!-- /doc-layout -->
+
+      </div><!-- /content-scroll -->
+    </main>
+
+    <!-- ─────────────── Right rail — comments thread ─────────────── -->
+    <aside class="right-rail" aria-label="Comments" data-design-note data-note-num="7">
+
+      <div class="rail-eyebrow">
+        <span>Comments</span>
+        <span class="count">3 threads · 2 open</span>
+      </div>
+
+      <!-- Thread 1 -->
+      <div class="thread">
+        <div class="thread-head">
+          <span class="thread-num">①</span>
+          <div class="thread-meta">
+            <div class="thread-author">Xiao Jin</div>
+            <div class="thread-time">Dec 8 · 11:22 AM</div>
+          </div>
+        </div>
+        <div class="thread-anchor">"identity was a thing you chose..."</div>
+        <p class="thread-quote">
+          <span class="lead">—</span>Love the Ankara scraps image, but the opening still reads as a thesis statement. Delay the abstract claim and let the fabric do more of the work.
+        </p>
+        <div class="thread-turns">
+          <span class="num">4</span>
+          <span>turns</span>
+          <span style="color:var(--ink-3);">·</span>
+          <span>last reply Maya, <span class="num">2d ago</span></span>
+        </div>
+        <span class="thread-status open"><span class="dot"></span>Open · awaiting Xiao</span>
+        <div>
+          <button class="thread-expand" data-tooltip="Opens full thread in side panel">
+            Expand thread
+            <svg width="9" height="9" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M3 6h6M6 3l3 3-3 3"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Thread 2 -->
+      <div class="thread resolved" data-design-note data-note-num="8">
+        <div class="thread-head">
+          <span class="thread-num">②</span>
+          <div class="thread-meta">
+            <div class="thread-author">Xiao Jin</div>
+            <div class="thread-time">Dec 9 · 9:41 AM</div>
+          </div>
+        </div>
+        <div class="thread-anchor">"we were both right..."</div>
+        <p class="thread-quote">
+          <span class="lead">—</span>Reframe sentence 5. "We were both right" lands flat. The kitchen-table reveal is the strongest moment here; let the verbs do more.
+        </p>
+        <div class="thread-turns">
+          <span class="num">3</span>
+          <span>turns</span>
+          <span style="color:var(--ink-3);">·</span>
+          <span>last reply Maya, <span class="num">3d ago</span></span>
+        </div>
+        <span class="thread-status resolved-pill"><span class="dot"></span>Resolved by Maya in draft 10</span>
+        <div>
+          <button class="thread-expand" data-tooltip="Opens full thread in side panel">
+            Expand thread
+            <svg width="9" height="9" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M3 6h6M6 3l3 3-3 3"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Thread 3 -->
+      <div class="thread">
+        <div class="thread-head">
+          <span class="thread-num">③</span>
+          <div class="thread-meta">
+            <div class="thread-author">Xiao Jin</div>
+            <div class="thread-time">Dec 10 · 5:08 PM</div>
+          </div>
+        </div>
+        <div class="thread-anchor">"in the studio, in the work, out loud..."</div>
+        <p class="thread-quote">
+          <span class="lead">—</span>Closing still feels rushed. "Out loud" is good, but the "in the studio, in the work" pair is doing double duty. Pick one and earn the other.
+        </p>
+        <div class="thread-turns">
+          <span class="num">2</span>
+          <span>turns</span>
+          <span style="color:var(--ink-3);">·</span>
+          <span>last reply Xiao, <span class="num">1d ago</span></span>
+        </div>
+        <span class="thread-status open"><span class="dot"></span>Open · awaiting Maya</span>
+        <div>
+          <button class="thread-expand" data-tooltip="Opens full thread in side panel">
+            Expand thread
+            <svg width="9" height="9" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M3 6h6M6 3l3 3-3 3"/></svg>
+          </button>
+        </div>
+      </div>
+
+    </aside>
+
+  </div><!-- /body-row -->
+</div><!-- /shell -->
+
+<script>
+  // ────── Pattern 5 — compare-mode A/B toggle ──────
+  document.querySelectorAll('[data-ab-mode]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.body.classList.remove('compare-single', 'compare-inline');
+      document.body.classList.add(`compare-${btn.dataset.abMode}`);
+      document.querySelectorAll('[data-ab-mode]').forEach(b => b.setAttribute('aria-pressed', b === btn ? 'true' : 'false'));
+    });
+  });
+
+  // ────── Per-draft "Show comments" toggle ──────
+  // Comments are tied to specific drafts. Clicking a per-draft button reveals
+  // the comments rail and marks that draft as the active one (Wave 2, 2026-05-17).
+  document.querySelectorAll('[data-toggle-comments]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const draft = btn.dataset.draft;
+      const node = btn.closest('.v-node');
+      const wasActive = node && node.dataset.commentsActive === 'true';
+      const railHidden = document.body.classList.contains('rail-collapsed');
+
+      // Clear active state on all draft nodes
+      document.querySelectorAll('.v-node[data-comments-active]').forEach(n => {
+        n.removeAttribute('data-comments-active');
+      });
+
+      if (railHidden) {
+        // Rail is hidden — reveal it and mark this draft active
+        document.body.classList.remove('rail-collapsed');
+        if (node) node.dataset.commentsActive = 'true';
+      } else if (wasActive) {
+        // Rail is showing for THIS draft — clicking again hides it
+        document.body.classList.add('rail-collapsed');
+      } else {
+        // Rail is showing for a different draft — switch active draft
+        if (node) node.dataset.commentsActive = 'true';
+      }
+    });
+  });
+</script>
+
+</body>
+</html>

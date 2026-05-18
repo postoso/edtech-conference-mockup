@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Counselor LMS — IECA Baltimore 2026</title>
+<meta name="description" content="Static HTML mockup index — Counselor LMS, IECA Baltimore booth 2026-05-18." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500&family=Geist:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    /* Locked tokens — match SHARED-SPEC v2 */
+    --bg: #f7f8fa;
+    --surface: #ffffff;
+    --surface-2: #fbfcfd;
+    --ink: #0f1419;
+    --ink-2: #475569;
+    --ink-3: #94a3b8;
+    --line: #e4e6eb;
+    --line-2: #cbd5e1;
+
+    --sidebar: #0f172a;
+    --sidebar-ink: #cbd5e1;
+
+    --primary: #5b5fcf;
+    --primary-bg: #eef0fb;
+    --primary-line: #c7cbe8;
+
+    --emerald: #047857;
+    --emerald-bg: #d1fae5;
+    --amber: #b45309;
+    --amber-bg: #fef3c7;
+    --rose: #be123c;
+
+    --radius: 6px;
+    --radius-card: 10px;
+    --radius-chip: 4px;
+  }
+
+  html, body { background: var(--bg); color: var(--ink); min-height: 100%; }
+  body {
+    font-family: 'Geist', system-ui, sans-serif;
+    font-size: 14px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    font-feature-settings: "ss01", "cv11";
+  }
+  .font-mono { font-family: 'Geist Mono', 'SF Mono', monospace; }
+
+  /* ─── Topbar ─── */
+  .topbar {
+    height: 56px;
+    background: var(--sidebar);
+    display: flex;
+    align-items: center;
+    padding: 0 32px;
+    color: #fff;
+  }
+  .topbar-brand {
+    display: flex; align-items: center; gap: 12px;
+  }
+  .brand-mark {
+    width: 30px; height: 30px;
+    border-radius: 8px;
+    background: var(--primary);
+    display: inline-flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .brand-mark svg { display: block; }
+  .topbar-title {
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: -0.005em;
+    color: #ffffff;
+  }
+  .topbar-eyebrow {
+    margin-left: 14px;
+    font-family: 'Geist Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(203, 213, 225, 0.7);
+    padding-left: 14px;
+    border-left: 1px solid rgba(255,255,255,0.12);
+  }
+  .topbar-meta {
+    margin-left: auto;
+    font-family: 'Geist Mono', monospace;
+    font-size: 11px;
+    color: rgba(203, 213, 225, 0.65);
+    letter-spacing: 0.04em;
+  }
+  .topbar-meta .live-dot {
+    display: inline-block;
+    width: 7px; height: 7px;
+    background: #34d399;
+    border-radius: 50%;
+    margin-right: 6px;
+    vertical-align: 1px;
+    box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.18);
+  }
+
+  /* ─── Page wrapper ─── */
+  .page {
+    max-width: 1240px;
+    margin: 0 auto;
+    padding: 56px 40px 80px;
+  }
+
+  /* ─── Hero ─── */
+  .hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+    gap: 56px;
+    align-items: end;
+    margin-bottom: 56px;
+    padding-bottom: 36px;
+    border-bottom: 1px solid var(--line);
+  }
+  .hero-headline h1 {
+    font-size: 38px;
+    font-weight: 600;
+    letter-spacing: -0.028em;
+    line-height: 1.08;
+    color: var(--ink);
+    margin-bottom: 18px;
+  }
+  .hero-headline h1 .accent {
+    color: var(--primary);
+  }
+  .hero-headline .lede {
+    font-size: 16px;
+    color: var(--ink-2);
+    max-width: 580px;
+    line-height: 1.55;
+  }
+  .hero-aside {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .hero-stat {
+    display: flex; align-items: baseline; gap: 12px;
+    padding: 14px 18px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-card);
+  }
+  .hero-stat .num {
+    font-family: 'Geist Mono', monospace;
+    font-size: 22px;
+    font-weight: 500;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+  }
+  .hero-stat .label {
+    font-size: 12.5px;
+    color: var(--ink-2);
+    letter-spacing: 0.005em;
+  }
+  .hero-stat .sublabel {
+    margin-left: auto;
+    font-family: 'Geist Mono', monospace;
+    font-size: 10.5px;
+    color: var(--ink-3);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  /* ─── Lane ─── */
+  .lane {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    gap: 40px;
+    padding: 36px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .lane:last-of-type { border-bottom: none; }
+  .lane-head {
+    padding-top: 4px;
+    position: sticky;
+    top: 32px;
+    align-self: start;
+  }
+  .lane-eyebrow {
+    font-family: 'Geist Mono', monospace;
+    font-size: 10.5px;
+    color: var(--ink-3);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .lane-eyebrow::before {
+    content: "";
+    width: 18px;
+    height: 1px;
+    background: var(--ink-3);
+  }
+  .lane-head h2 {
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: -0.018em;
+    color: var(--ink);
+    margin-bottom: 10px;
+    line-height: 1.18;
+  }
+  .lane-head .lane-blurb {
+    font-size: 13px;
+    color: var(--ink-2);
+    line-height: 1.55;
+    max-width: 200px;
+  }
+  .lane-head .lane-count {
+    margin-top: 14px;
+    font-family: 'Geist Mono', monospace;
+    font-size: 10.5px;
+    color: var(--ink-3);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  /* ─── Card grid (inside lane) ─── */
+  .card-grid {
+    display: grid;
+    gap: 14px;
+  }
+  .card-grid.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .card-grid.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+  /* ─── Surface card ─── */
+  .surface-card {
+    display: flex;
+    flex-direction: column;
+    padding: 22px 22px 20px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-card);
+    text-decoration: none;
+    color: var(--ink);
+    transition: border-color 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
+    position: relative;
+    overflow: hidden;
+    min-height: 168px;
+  }
+  .surface-card:hover {
+    border-color: var(--primary-line);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px -8px rgba(91, 95, 207, 0.18), 0 1px 2px rgba(15, 20, 25, 0.04);
+  }
+  .surface-card:hover .arrow {
+    color: var(--primary);
+    transform: translateX(2px);
+  }
+  .card-icon {
+    width: 32px; height: 32px;
+    background: var(--primary-bg);
+    border-radius: 7px;
+    display: inline-flex; align-items: center; justify-content: center;
+    color: var(--primary);
+    margin-bottom: 16px;
+  }
+  .card-icon svg { display: block; }
+  .card-name {
+    font-size: 15.5px;
+    font-weight: 600;
+    letter-spacing: -0.008em;
+    color: var(--ink);
+    margin-bottom: 6px;
+  }
+  .card-blurb {
+    font-size: 13px;
+    color: var(--ink-2);
+    line-height: 1.5;
+    margin-bottom: 18px;
+    flex: 1;
+  }
+  .card-foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: auto;
+    padding-top: 12px;
+    border-top: 1px dashed var(--line);
+  }
+  .card-tag {
+    font-family: 'Geist Mono', monospace;
+    font-size: 10.5px;
+    color: var(--ink-3);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .arrow {
+    width: 16px; height: 16px;
+    color: var(--ink-3);
+    transition: color 0.18s, transform 0.18s;
+    flex-shrink: 0;
+  }
+
+  /* ─── Hero card variant (lane-hero — bigger emphasis card) ─── */
+  .surface-card.hero-card {
+    grid-column: span 2;
+    flex-direction: row;
+    align-items: stretch;
+    padding: 26px 28px;
+    background: linear-gradient(135deg, #ffffff 0%, var(--primary-bg) 130%);
+    border-color: var(--primary-line);
+    min-height: 180px;
+  }
+  .surface-card.hero-card .hero-card-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding-right: 24px;
+  }
+  .surface-card.hero-card .card-icon {
+    background: var(--primary);
+    color: #fff;
+    width: 38px; height: 38px;
+  }
+  .surface-card.hero-card .card-name {
+    font-size: 19px;
+    letter-spacing: -0.014em;
+    margin-bottom: 8px;
+  }
+  .surface-card.hero-card .card-blurb {
+    font-size: 13.5px;
+    max-width: 480px;
+  }
+  .surface-card.hero-card .hero-card-visual {
+    width: 220px;
+    flex-shrink: 0;
+    background: rgba(255, 255, 255, 0.6);
+    border: 1px solid var(--primary-line);
+    border-radius: 8px;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-self: center;
+  }
+  .surface-card.hero-card .mini-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    background: #ffffff;
+    border-radius: 5px;
+    font-size: 11px;
+    color: var(--ink-2);
+  }
+  .surface-card.hero-card .mini-row .bar {
+    width: 3px; height: 14px;
+    background: var(--rose);
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+  .surface-card.hero-card .mini-row .bar.amber { background: var(--amber); }
+  .surface-card.hero-card .mini-row .bar.indigo { background: var(--primary); }
+  .surface-card.hero-card .mini-row .label {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .surface-card.hero-card .mini-row .pill {
+    font-family: 'Geist Mono', monospace;
+    font-size: 9px;
+    padding: 1px 5px;
+    border-radius: 3px;
+    background: var(--rose);
+    color: #fff;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    flex-shrink: 0;
+  }
+  .surface-card.hero-card .mini-row .pill.amber { background: var(--amber); }
+  .surface-card.hero-card .mini-row .pill.indigo { background: var(--primary); }
+  .surface-card.hero-card .mini-row .pill.neutral {
+    background: var(--ink-3);
+  }
+
+  /* ─── Footer ─── */
+  footer {
+    margin-top: 64px;
+    padding-top: 28px;
+    border-top: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: var(--ink-3);
+    font-size: 12px;
+    font-family: 'Geist Mono', monospace;
+    letter-spacing: 0.02em;
+  }
+  footer .footer-left { display: flex; align-items: center; gap: 12px; }
+  footer .footer-mark {
+    width: 16px; height: 16px;
+    border-radius: 4px;
+    background: var(--primary);
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  footer .footer-mark svg { display: block; }
+
+  /* ─── Responsive ─── */
+  @media (max-width: 1100px) {
+    .lane { grid-template-columns: 1fr; gap: 22px; padding: 32px 0; }
+    .lane-head { position: static; }
+    .lane-head .lane-blurb { max-width: none; }
+    .card-grid.three { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .surface-card.hero-card { grid-column: span 2; }
+    .hero { grid-template-columns: 1fr; gap: 28px; align-items: stretch; }
+  }
+  @media (max-width: 720px) {
+    .page { padding: 36px 24px 60px; }
+    .topbar { padding: 0 20px; }
+    .hero-headline h1 { font-size: 30px; }
+    .card-grid.two,
+    .card-grid.three { grid-template-columns: 1fr; }
+    .surface-card.hero-card { flex-direction: column; }
+    .surface-card.hero-card .hero-card-visual { width: 100%; margin-top: 14px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-brand">
+    <span class="brand-mark" aria-hidden="true">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="white" stroke-width="1.4">
+        <circle cx="7" cy="7" r="5.5"/>
+        <circle cx="7" cy="7" r="2.5"/>
+      </svg>
+    </span>
+    <span class="topbar-title">Counselor LMS</span>
+    <span class="topbar-eyebrow">IECA Baltimore · 2026-05-18</span>
+  </div>
+  <span class="topbar-meta"><span class="live-dot"></span>Live demo · 14 surfaces</span>
+</div>
+
+<div class="page">
+
+  <section class="hero">
+    <div class="hero-headline">
+      <h1>An LMS built for the way <span class="accent">consultants actually work.</span></h1>
+      <p class="lede">A working tour of the counselor side of our platform — per-student, cross-student, document review, and module delivery. Tap any card to open the live mockup.</p>
+    </div>
+    <div class="hero-aside">
+      <div class="hero-stat">
+        <span class="num">14</span>
+        <span class="label">Surfaces in the demo</span>
+        <span class="sublabel">Interactive</span>
+      </div>
+      <div class="hero-stat">
+        <span class="num">4</span>
+        <span class="label">Workflows covered</span>
+        <span class="sublabel">End-to-end</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── LANE 1: Per-student workflow ─── -->
+  <section class="lane">
+    <div class="lane-head">
+      <div class="lane-eyebrow">01 · Per-student</div>
+      <h2>The student page, six ways</h2>
+      <p class="lane-blurb">Everything a consultant needs to know about one student — orientation, college landscape, task pipeline.</p>
+      <div class="lane-count">3 surfaces</div>
+    </div>
+    <div class="card-grid two">
+
+      <a class="surface-card hero-card" href="explorations/dashboard-1-tabs-horizontal.html">
+        <div class="hero-card-body">
+          <div class="card-icon">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+              <circle cx="9" cy="5.5" r="2.5"/>
+              <path d="M3.5 14.5 c0-2.5 2.5-4.5 5.5-4.5 s5.5 2 5.5 4.5"/>
+            </svg>
+          </div>
+          <div class="card-name">Single-student dashboard</div>
+          <div class="card-blurb">Profile, schools, tasks, snapshots, documents, meetings, notes — one student, all of their work, organized in tabs.</div>
+          <div class="card-foot">
+            <span class="card-tag">dashboard-1-tabs-horizontal</span>
+            <svg class="arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+          </div>
+        </div>
+        <div class="hero-card-visual" aria-hidden="true">
+          <div class="mini-row"><span class="bar"></span><span class="label">Yale SA · draft 12</span><span class="pill">Overdue</span></div>
+          <div class="mini-row"><span class="bar amber"></span><span class="label">Stanford pre-read</span><span class="pill amber">Review</span></div>
+          <div class="mini-row"><span class="bar indigo"></span><span class="label">UCLA personal stmt</span><span class="pill indigo">Active</span></div>
+          <div class="mini-row"><span class="bar" style="background:var(--ink-3)"></span><span class="label">Brown supplements</span><span class="pill neutral">Not started</span></div>
+        </div>
+      </a>
+
+      <a class="surface-card" href="explorations/dashboard-2-schools-first.html">
+        <div class="card-icon">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round">
+            <path d="M2 7.5 9 3.5l7 4-7 4z"/>
+            <path d="M4.5 9v4c0 .8 2 2 4.5 2s4.5-1.2 4.5-2V9"/>
+          </svg>
+        </div>
+        <div class="card-name">Schools</div>
+        <div class="card-blurb">One student's full college landscape — where each school stands, what's in flight, deadline windows. Bubble-tab + inline toggle.</div>
+        <div class="card-foot">
+          <span class="card-tag">dashboard-2-schools-first</span>
+          <svg class="arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+        </div>
+      </a>
+
+      <a class="surface-card" href="explorations/dashboard-3-deadline-timeline.html">
+        <div class="card-icon">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 4h12M3 9h12M3 14h7"/>
+          </svg>
+        </div>
+        <div class="card-name">Tasks (single-student)</div>
+        <div class="card-blurb">The task pipeline for one student with school-deadline context band at top, grouped by time-bucket.</div>
+        <div class="card-foot">
+          <span class="card-tag">dashboard-3-deadline-timeline</span>
+          <svg class="arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+        </div>
+      </a>
+
+    </div>
+  </section>
+
+  <!-- ─── LANE 2: Cross-student ─── -->
+  <section class="lane">
+    <div class="lane-head">
+      <div class="lane-eyebrow">02 · Cross-student</div>
+      <h2>Triage the whole roster</h2>
+      <p class="lane-blurb">Where does my attention need to go right now, across every student I work with?</p>
+      <div class="lane-count">6 surfaces</div>
+    </div>
+    <div class="card-grid two">
+
+      <a class="surface-card hero-card" href="explorations/today-homepage.html">
+        <div class="hero-card-body">
+          <div class="card-icon">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="9" cy="9" r="6"/>
+              <path d="M9 5v4l2.5 2"/>
+            </svg>
+          </div>
+          <div class="card-name">Consultant Today</div>
+          <div class="card-blurb">Your top-of-nav homepage. Overdue, today's meetings, flagged follow-ups, snapshots awaiting review — all ordered by urgency.</div>
+          <div class="card-foot">
+            <span class="card-tag">today-homepage</span>
+            <svg class="arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+          </div>
+        </div>
+        <div class="hero-card-visual" aria-hidden="true">
+          <div class="mini-row"><span class="bar"></span><span class="label">Maya · Yale · overdue</span><span class="pill">2d</span></div>
+          <div class="mini-row"><span class="bar amber"></span><span class="label">Snapshot · Owen R.</span><span class="pill amber">Review</span></div>
+          <div class="mini-row"><span class="bar indigo"></span><span class="label">10:30 — Cassie B.</span><span class="pill indigo">Mtg</span></div>
+          <div class="mini-row"><span class="bar" style="background:var(--ink-3)"></span><span class="label">Module — Naomi H.</span><span class="pill neutral">Due</span></div>
+        </div>
+      </a>
+
+      <a class="surface-card" href="explorations/students-1-filterable-table.html">
+        <div class="card-icon">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round">
+            <rect x="2.5" y="3.5" width="13" height="11" rx="1.4"/>
+            <path d="M2.5 7.5h13M2.5 11h13M6 3.5v11"/>
+          </svg>
+        </div>
+        <div class="card-name">All students</div>
+        <div class="card-blurb">Filterable table — the whole roster, with stage, upcoming deadlines, next deliverable, working style.</div>
+        <div class="card-foot">
+          <span class="card-tag">students-1-filterable-table</span>
+          <svg class="arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+        </div>
+      </a>
+
+      <a class="surface-card" href="explorations/cross-tasks-kanban.html">
+        <div class="card-icon">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round">
+            <rect x="2.5" y="3" width="3.8" height="12" rx="0.8"/>
+            <rect x="7.1" y="3" width="3.8" height="8.5" rx="0.8"/>
+            <rect x="11.7" y="3" width="3.8" height="10" rx="0.8"/>
+          </svg>
+        </div>
+        <div class="card-name">Cross-tasks · Kanban</div>
+        <div class="card-blurb">5 universal columns (Not started → Done). Card hierarchy Student → Title → Due. Multi-student selector + quick filters.</div>
+        <div class="card-foot">
+          <span class="card-tag">cross-tasks-kanban</span>
+          <svg class="arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+        </div>
+      </a>
+
+      <a class="surface-card" href="explorations/cross-tasks-list.html">
+        <div class="card-icon">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 5h12M3 9h12M3 13h12"/>
+            <circle cx="5" cy="5" r="0.4" fill="currentColor"/>
+            <circle cx="5" cy="9" r="0.4" fill="currentColor"/>
+            <circle cx="5" cy="13" r="0.4" fill="currentColor"/>
+          </svg>
+        </div>
+        <div class="card-name">Cross-tasks · List</div>
+        <div class="card-blurb">Same data, list-shape — for consultants who prefer dense scannable rows over kanban cards.</div>
+        <div class="card-foot">
+          <span class="card-tag">cross-tasks-list</span>
+          <svg class="arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+        </div>
+      </a>
+
+      <a class="surface-card" href="explorations/calendar-week.html">
+        <div class="card-icon">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round">
+            <rect x="2.5" y="4" width="13" height="11" rx="1.4"/>
+            <path d="M2.5 7.8h13M6 2.5v3M12 2.5v3"/>
+          </svg>
+        </div>
+        <div class="card-name">Calendar · Week</div>
+        <div class="card-blurb">Meetings + tasks + deadlines, 7-day grid. Three-tier deadline coloring (neutral / amber-urgent / rose-overdue).</div>
+        <div class="card-foot">
+          <span class="card-tag">calendar-week</span>
+          <svg class="arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+        </div>
+      </a>
+
+      <a class="surface-card" href="explorations/calendar-month.html">
+        <div class="card-icon">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round">
+            <rect x="2.5" y="4" width="13" height="11" rx="1.4"/>
+            <path d="M2.5 7.8h13M6 2.5v3M12 2.5v3M5.5 10h1M8.5 10h1M11.5 10h1M5.5 12.5h1M8.5 12.5h1"/>
+          </svg>
+        </div>
+        <div class="card-name">Calendar · Month</div>
+        <div class="card-blurb">Horizon scanning. Defaults to school deadlines + cross-cutting events; tasks opt-in via filter.</div>
+        <div class="card-foot">
+          <span class="card-tag">calendar-month</span>
+          <svg class="arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+        </div>
+      </a>
+
+    </div>
+  </section>
+
+  <!-- ─── LANE 3: Documents ─── -->
+  <section class="lane">
+    <div class="lane-head">
+      <div class="lane-eyebrow">03 · Documents</div>
+      <h2>Essay review, two ways</h2>
+      <p class="lane-blurb">Maya's Yale Short Answer 2 — 12 drafts of essay history. Pick the review layout that fits the moment.</p>
+      <div class="lane-count">2 surfaces</div>
+    </div>
+    <div class="card-grid two">
+
+      <a class="surface-card" href="explorations/document-v2-stacked-diff.html">
+        <div class="card-icon">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 3.5h7l3 3v8a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-10a1 1 0 0 1 1-1z"/>
+            <path d="M11 3.5v3h3M6 9.5h6M6 12h4"/>
+          </svg>
+        </div>
+        <div class="card-name">Document · stacked + compare toggle</div>
+        <div class="card-blurb">Single version (default) vs comparative-inline. Comparison implicit on draft-pair selection — no Track Changes button.</div>
+        <div class="card-foot">
+          <span class="card-tag">document-v2-stacked-diff</span>
+          <svg class="arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+        </div>
+      </a>
+
+      <a class="surface-card" href="explorations/document-v1-sidebyside.html">
+        <div class="card-icon">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round">
+            <rect x="2.5" y="3.5" width="5.8" height="11" rx="0.8"/>
+            <rect x="9.7" y="3.5" width="5.8" height="11" rx="0.8"/>
+          </svg>
+        </div>
+        <div class="card-name">Document · side-by-side</div>
+        <div class="card-blurb">Two drafts opened next to each other for in-depth revision review. Alternative compare layout.</div>
+        <div class="card-foot">
+          <span class="card-tag">document-v1-sidebyside</span>
+          <svg class="arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+        </div>
+      </a>
+
+    </div>
+  </section>
+
+  <!-- ─── LANE 4: Modules ─── -->
+  <section class="lane">
+    <div class="lane-head">
+      <div class="lane-eyebrow">04 · Modules</div>
+      <h2>Learning modules</h2>
+      <p class="lane-blurb">Admin assigns; student progresses. Custom tracks built from a preset library, then delivered.</p>
+      <div class="lane-count">2 surfaces</div>
+    </div>
+    <div class="card-grid two">
+
+      <a class="surface-card" href="explorations/module-admin-assignment.html">
+        <div class="card-icon">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round">
+            <rect x="2.5" y="3.5" width="13" height="11" rx="1.4"/>
+            <path d="M2.5 7h13M5.5 10.5h2M5.5 12.5h5"/>
+          </svg>
+        </div>
+        <div class="card-name">Admin · module assignment</div>
+        <div class="card-blurb">Three-column workspace: preset library → preview → student's track. Custom learning paths assembled from presets.</div>
+        <div class="card-foot">
+          <span class="card-tag">module-admin-assignment</span>
+          <svg class="arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+        </div>
+      </a>
+
+      <a class="surface-card" href="explorations/module-student-sample.html">
+        <div class="card-icon">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round">
+            <rect x="3" y="3.5" width="12" height="11" rx="1.4"/>
+            <path d="M7.5 7l4 2-4 2z" fill="currentColor" stroke="none"/>
+          </svg>
+        </div>
+        <div class="card-name">Student · sample module</div>
+        <div class="card-blurb">What the student sees — section overview + one lesson with video, quiz, and resource example.</div>
+        <div class="card-foot">
+          <span class="card-tag">module-student-sample</span>
+          <svg class="arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+        </div>
+      </a>
+
+    </div>
+  </section>
+
+  <footer>
+    <div class="footer-left">
+      <span class="footer-mark">
+        <svg width="9" height="9" viewBox="0 0 14 14" fill="none" stroke="white" stroke-width="1.6"><circle cx="7" cy="7" r="5.5"/><circle cx="7" cy="7" r="2.5"/></svg>
+      </span>
+      <span>Counselor LMS · Conference build</span>
+    </div>
+    <div>IECA Baltimore · 2026-05-18</div>
+  </footer>
+
+</div>
+
+</body>
+</html>

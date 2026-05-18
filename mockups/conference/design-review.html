@@ -1,0 +1,1976 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>V3 Phase 1.6 — Design Review</title>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  /* =====================================================
+     SHARED-SPEC V2 TOKENS
+     ===================================================== */
+  :root {
+    --bg:        #f7f8fa;
+    --surface:   #ffffff;
+    --surface-2: #fbfcfd;
+    --ink:       #0f1419;
+    --ink-2:     #475569;
+    --ink-3:     #94a3b8;
+    --line:      #e4e6eb;
+    --line-2:    #cbd5e1;
+
+    --sidebar:        #0f172a;
+    --sidebar-ink:    #cbd5e1;
+    --sidebar-ink-2:  #64748b;
+
+    --primary:        #5b5fcf;
+    --primary-bg:     #eef0fb;
+    --primary-line:   #c7cbe8;
+
+    --status-done:       #047857;
+    --status-done-bg:    #d1fae5;
+    --status-active:     #b45309;
+    --status-active-bg:  #fef3c7;
+    --status-overdue:    #be123c;
+    --status-overdue-bg: #ffe4e6;
+    --status-neutral:    #94a3b8;
+
+    /* working-style chips */
+    --ws-perfectionist:    #8b5cf6;
+    --ws-perfectionist-bg: #f5f3ff;
+    --ws-anxious:          #e11d48;
+    --ws-anxious-bg:       #fff1f2;
+    --ws-self-directed:    #16a34a;
+    --ws-self-directed-bg: #f0fdf4;
+
+    /* review-page extras */
+    --verdict-bg:    #fffde7;
+    --verdict-line:  #fbc02d;
+    --divider:       #e4e6eb;
+
+    /* radius */
+    --r-chip:  4px;
+    --r-card:  8px;
+    --r-std:   6px;
+
+    /* font */
+    --font-body: 'Geist', system-ui, sans-serif;
+    --font-mono: 'Geist Mono', monospace;
+  }
+
+  /* =====================================================
+     GLOBAL RESET + BASE
+     ===================================================== */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--font-body);
+    background: var(--bg);
+    color: var(--ink);
+    font-size: 14px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* =====================================================
+     PAGE HEADER
+     ===================================================== */
+  .page-header {
+    background: var(--sidebar);
+    color: var(--sidebar-ink);
+    padding: 28px 48px 24px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .page-header-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  .page-header-meta {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--sidebar-ink-2);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .page-header h1 {
+    font-size: 22px;
+    font-weight: 600;
+    color: #f1f5f9;
+    margin-bottom: 6px;
+  }
+  .page-header-sub {
+    font-size: 13px;
+    color: var(--sidebar-ink-2);
+    font-style: italic;
+    line-height: 1.4;
+  }
+
+  /* =====================================================
+     PAGE BODY
+     ===================================================== */
+  .page-body {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 48px 80px;
+  }
+
+  /* =====================================================
+     SECTION
+     ===================================================== */
+  .section {
+    margin-bottom: 64px;
+  }
+  .section + .section {
+    border-top: 1px solid var(--divider);
+    padding-top: 56px;
+  }
+  .section-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin-bottom: 6px;
+  }
+  .section-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 8px;
+  }
+  .section-subtitle {
+    font-size: 13px;
+    color: var(--ink-2);
+    font-style: italic;
+    max-width: 720px;
+    line-height: 1.55;
+    margin-bottom: 32px;
+    padding: 12px 16px;
+    background: var(--surface);
+    border-left: 3px solid var(--primary-line);
+    border-radius: 0 var(--r-std) var(--r-std) 0;
+  }
+
+  /* =====================================================
+     VARIANT GRID
+     ===================================================== */
+  .variants {
+    display: flex;
+    gap: 24px;
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+  .variants.two-col > .variant { flex: 1; min-width: 300px; }
+  .variants.four-col > .variant { flex: 1; min-width: 220px; }
+
+  .variant {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--r-card);
+    overflow: hidden;
+  }
+  .variant-label {
+    padding: 10px 16px 8px;
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .variant-badge {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    background: var(--ink);
+    color: #fff;
+    border-radius: 3px;
+    padding: 2px 7px;
+    letter-spacing: 0.04em;
+  }
+  .variant-label-text {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .variant-current {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--status-active);
+    font-weight: 500;
+    background: var(--status-active-bg);
+    border-radius: 3px;
+    padding: 2px 6px;
+  }
+  .variant-body {
+    padding: 20px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  /* =====================================================
+     CONTEXT LABEL (inside variants)
+     ===================================================== */
+  .ctx-label {
+    font-size: 10px;
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink-3);
+    margin-bottom: 8px;
+  }
+
+  /* =====================================================
+     CHIPS / PILLS (shared)
+     ===================================================== */
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 10px;
+    border-radius: var(--r-chip);
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+  .chip-indigo {
+    background: var(--primary);
+    color: #fff;
+  }
+  .chip-amber {
+    background: #f59e0b;
+    color: #fff;
+  }
+  .chip-done {
+    background: var(--status-done-bg);
+    color: var(--status-done);
+  }
+  .chip-neutral {
+    background: #f1f5f9;
+    color: var(--ink-2);
+  }
+
+  /* =====================================================
+     SECTION 1 — ROW CONTEXT
+     ===================================================== */
+  .student-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 12px;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: var(--r-std);
+  }
+  .student-row-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink);
+    flex: 1;
+  }
+  .student-row-pills {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+
+  /* =====================================================
+     SECTION 1 — KANBAN CARD CONTEXT
+     ===================================================== */
+  .kanban-card {
+    border: 1px solid var(--line);
+    border-radius: var(--r-card);
+    overflow: hidden;
+  }
+  .kanban-card-header {
+    padding: 8px 12px 6px;
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .kanban-card-student {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--ink-2);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .kanban-card-body {
+    padding: 10px 12px;
+  }
+  .kanban-card-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ink);
+    margin-bottom: 6px;
+  }
+  .kanban-card-meta {
+    font-size: 11px;
+    color: var(--ink-3);
+    font-family: var(--font-mono);
+  }
+
+  /* =====================================================
+     SECTION 2 — STAGE PILL
+     ===================================================== */
+  .stage-pills-row {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .stage-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: var(--r-chip);
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--ink);
+    width: fit-content;
+  }
+  .stage-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  /* =====================================================
+     VERDICT BLOCK
+     ===================================================== */
+  .verdict-block {
+    margin-top: 28px;
+    padding: 16px 20px;
+    background: var(--verdict-bg);
+    border: 1px solid var(--verdict-line);
+    border-radius: var(--r-std);
+    border-left: 4px solid var(--verdict-line);
+  }
+  .verdict-block-label {
+    font-size: 10px;
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #92400e;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+  .verdict-text {
+    font-size: 13px;
+    color: #78350f;
+    font-style: italic;
+  }
+
+  /* =====================================================
+     PAGE FOOTER
+     ===================================================== */
+  .page-footer {
+    background: var(--surface);
+    border-top: 1px solid var(--line);
+    padding: 20px 48px;
+    color: var(--ink-3);
+    font-size: 12px;
+    font-style: italic;
+    line-height: 1.6;
+  }
+  .page-footer-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  /* =====================================================
+     OPACITY UTILITY (Section 2 — used inline via CSS var)
+     ===================================================== */
+  .op-85 { opacity: 0.85; }
+  .op-60 { opacity: 0.60; }
+  .op-40 { opacity: 0.40; }
+  .op-25 { opacity: 0.25; }
+
+  /* Variant grouping for opacity sections */
+  .opacity-grid {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+  .opacity-grid > .variant {
+    flex: 1;
+    min-width: 200px;
+  }
+
+  /* =====================================================
+     CONTEXT FRAME (above each section's variants)
+     ===================================================== */
+  .ctx-frame {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--r-std);
+    padding: 14px 18px;
+    margin-bottom: 28px;
+    font-size: 12.5px;
+    color: var(--ink-2);
+    line-height: 1.55;
+  }
+  .ctx-frame-row {
+    margin-bottom: 4px;
+  }
+  .ctx-frame-row:last-child {
+    margin-bottom: 0;
+  }
+  .ctx-frame strong {
+    color: var(--ink);
+    font-weight: 600;
+  }
+  .ctx-frame code {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    background: var(--surface-2);
+    padding: 1px 5px;
+    border-radius: 3px;
+    color: var(--ink-2);
+  }
+
+  /* =====================================================
+     CARD-VARIANTS SECTION (Round 5 card mockups)
+     ===================================================== */
+  .cv-variant-wrap {
+    margin-bottom: 36px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--r-card);
+    overflow: hidden;
+  }
+  .cv-variant-wrap.cv-recommended {
+    border: 2px solid #047857;
+    box-shadow: 0 2px 8px rgba(4, 120, 87, 0.08);
+  }
+  .cv-variant-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 18px;
+    background: var(--surface-2);
+    border-bottom: 1px solid var(--line);
+  }
+  .cv-variant-wrap.cv-recommended .cv-variant-header {
+    background: #ecfdf5;
+    border-bottom-color: #6ee7b7;
+  }
+  .cv-badge {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    background: var(--ink);
+    color: #fff;
+    border-radius: 3px;
+    padding: 2px 7px;
+    letter-spacing: 0.04em;
+  }
+  .cv-badge-rec {
+    background: #047857;
+  }
+  .cv-variant-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .cv-variant-tag {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--ink-3);
+    letter-spacing: 0.04em;
+  }
+  .cv-variant-tag.rec {
+    color: #047857;
+    background: #d1fae5;
+    border-radius: 3px;
+    padding: 2px 6px;
+    font-weight: 600;
+  }
+  .cv-variant-caption {
+    padding: 12px 18px;
+    border-bottom: 1px solid var(--line);
+    background: #fbfcfd;
+    font-size: 12.5px;
+    color: var(--ink-2);
+    line-height: 1.55;
+    font-style: italic;
+  }
+  .cv-variant-caption strong {
+    color: var(--ink);
+    font-style: normal;
+    font-weight: 600;
+  }
+  .cv-states {
+    display: flex;
+    flex-direction: column;
+    padding: 20px 18px;
+    gap: 24px;
+  }
+  .cv-state {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .cv-state-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--ink-3);
+    font-weight: 500;
+  }
+  .cv-state-label strong {
+    color: var(--ink-2);
+    font-weight: 600;
+  }
+
+  /* =====================================================
+     SHARED CARD ATOMS (matches mockup surface tokens)
+     ===================================================== */
+  .sc-avatar {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    background: var(--primary);
+    color: #fff;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .sc-avatar.sm {
+    width: 36px; height: 36px;
+    font-size: 13px;
+  }
+  .sc-pill {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 500;
+    border: 1px solid transparent;
+    line-height: 1.45;
+    white-space: nowrap;
+  }
+  .sc-pill-active {
+    background: var(--status-active-bg);
+    color: var(--status-active);
+    border-color: #fde68a;
+  }
+  .sc-pill-indigo {
+    background: var(--primary-bg);
+    color: var(--primary);
+    border-color: var(--primary-line);
+  }
+  .sc-pill-neutral {
+    background: #f1f5f9;
+    color: var(--ink-2);
+    border-color: var(--line-2);
+  }
+  .sc-divider {
+    width: 1px; height: 12px;
+    background: var(--line-2);
+    margin: 0 2px;
+    flex-shrink: 0;
+  }
+  .sc-year {
+    font-size: 12px;
+    color: var(--ink-3);
+    white-space: nowrap;
+  }
+  .sc-year strong {
+    color: var(--ink-2);
+    font-weight: 500;
+  }
+  .sc-ws-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: var(--r-chip);
+    border: 1px solid var(--line);
+    background: var(--bg);
+    color: var(--ink-2);
+    white-space: nowrap;
+  }
+  .sc-ws-chip.perfectionist {
+    background: var(--ws-perfectionist-bg);
+    color: var(--ws-perfectionist);
+    border-color: #ddd6fe;
+  }
+  .sc-ws-chip.anxious {
+    background: var(--ws-anxious-bg);
+    color: var(--ws-anxious);
+    border-color: #fecdd3;
+  }
+  .sc-hook-tag {
+    font-size: 11px;
+    color: var(--ink-2);
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: var(--r-chip);
+    padding: 2px 8px;
+    display: inline-block;
+  }
+  .sc-toggle-btn {
+    font-family: var(--font-body);
+    font-size: 11.5px;
+    color: var(--ink-2);
+    padding: 4px 10px;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    background: transparent;
+    cursor: pointer;
+    display: inline-flex; align-items: center; gap: 6px;
+    flex-shrink: 0;
+  }
+  .sc-toggle-btn svg {
+    width: 11px; height: 11px;
+  }
+  .sc-toggle-btn.up svg { transform: rotate(180deg); }
+  .sc-log-btn {
+    font-family: var(--font-body);
+    font-size: 11.5px;
+    color: var(--ink);
+    padding: 4px 10px;
+    border: 1px solid var(--line-2);
+    border-radius: 4px;
+    background: var(--surface);
+    cursor: pointer;
+    display: inline-flex; align-items: center; gap: 6px;
+    flex-shrink: 0;
+    font-weight: 500;
+  }
+
+  /* CARD shell — shared base */
+  .sc-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: 0 1px 2px rgba(15, 20, 25, 0.025);
+    position: relative;
+  }
+  .sc-card-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 18px;
+    background: linear-gradient(180deg, #f8f9fd 0%, var(--surface) 100%);
+    border-bottom: 1px solid var(--line);
+    position: relative;
+  }
+  .sc-card-header::before {
+    content: "";
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: var(--primary);
+    opacity: 0.55;
+  }
+  .sc-card-header.collapsed { border-bottom: none; }
+  .sc-name-block {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  .sc-name {
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--ink);
+    letter-spacing: -0.018em;
+    line-height: 1.08;
+  }
+  .sc-meta-row {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    flex-wrap: wrap;
+  }
+
+  /* 4-COL BODY (Variant A) */
+  .sc-body-4col {
+    display: grid;
+    grid-template-columns: minmax(160px, 1.05fr) minmax(150px, 0.9fr) minmax(170px, 1fr) minmax(190px, 1.2fr);
+    gap: 0;
+  }
+  .sc-block {
+    padding: 14px 18px;
+    border-right: 1px solid var(--line);
+  }
+  .sc-block:last-child { border-right: none; }
+  .sc-block-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+  .sc-block-label .manage-link {
+    font-family: var(--font-body);
+    font-size: 10px;
+    color: var(--primary);
+    text-transform: none;
+    letter-spacing: 0;
+    font-weight: 500;
+    text-decoration: none;
+  }
+  .sc-stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px 14px;
+  }
+  .sc-stat {
+    display: flex; flex-direction: column; gap: 1px;
+  }
+  .sc-stat-label {
+    font-size: 10px;
+    color: var(--ink-3);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .sc-stat-value {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+  }
+  .sc-stat-value.text {
+    font-family: var(--font-body);
+    font-size: 12.5px;
+    font-weight: 500;
+  }
+  .sc-hooks-stack {
+    display: flex; flex-direction: column; gap: 4px;
+    align-items: flex-start;
+  }
+  .sc-hooks-stack .sc-hook-tag { width: 100%; }
+  .sc-meeting-row {
+    display: flex; justify-content: space-between; align-items: baseline;
+    padding: 4px 0;
+  }
+  .sc-meeting-row + .sc-meeting-row { border-top: 1px dashed var(--line); }
+  .sc-meeting-label {
+    font-size: 11px;
+    color: var(--ink-3);
+  }
+  .sc-meeting-value {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+    font-weight: 500;
+  }
+  .sc-block-engagement {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .sc-engage-action {
+    margin-top: 4px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .sc-prep-link {
+    font-size: 11.5px;
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: 500;
+  }
+  .sc-module-block {
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .sc-module-name-row {
+    display: flex; align-items: baseline; gap: 4px; flex-wrap: wrap;
+  }
+  .sc-module-name {
+    font-size: 12.5px;
+    color: var(--ink);
+    font-weight: 600;
+  }
+  .sc-module-pos {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-2);
+  }
+  .sc-module-lesson {
+    font-size: 11.5px;
+    color: var(--ink-2);
+    line-height: 1.35;
+  }
+  .sc-module-lesson-label {
+    font-size: 10px;
+    color: var(--ink-3);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    margin-bottom: 2px;
+  }
+  .sc-module-task {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    margin-top: 4px;
+    font-size: 11.5px;
+  }
+  .sc-module-task-link {
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: 500;
+  }
+  .sc-module-due {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: var(--ink-3);
+  }
+  .sc-module-track {
+    font-size: 10.5px;
+    color: var(--ink-3);
+    margin-top: 4px;
+    font-family: var(--font-mono);
+  }
+
+  /* VARIANT B: card with right-column module-mini */
+  .sc-pair-row {
+    display: flex;
+    align-items: stretch;
+    gap: 14px;
+  }
+  .sc-pair-row > .sc-card {
+    flex: 1;
+    min-width: 0;
+  }
+  .sc-module-aside {
+    width: 240px;
+    flex-shrink: 0;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 14px 16px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    position: relative;
+    box-shadow: 0 1px 2px rgba(15, 20, 25, 0.025);
+  }
+  .sc-module-aside::before {
+    content: "";
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: var(--primary);
+    opacity: 0.55;
+    border-radius: 6px 0 0 6px;
+  }
+  .sc-module-aside-eyebrow {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+
+  /* 3-col body for Variant B */
+  .sc-body-3col {
+    display: grid;
+    grid-template-columns: minmax(170px, 1fr) minmax(150px, 1fr) minmax(180px, 1fr);
+    gap: 0;
+  }
+
+  /* VARIANT C: compact-by-default */
+  .sc-card-compact {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: 0 1px 2px rgba(15, 20, 25, 0.025);
+    position: relative;
+  }
+  .sc-card-compact-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 16px;
+    background: linear-gradient(180deg, #f8f9fd 0%, var(--surface) 100%);
+    border-bottom: 1px solid var(--line);
+    position: relative;
+  }
+  .sc-card-compact-header::before {
+    content: "";
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: var(--primary);
+    opacity: 0.55;
+  }
+  .sc-card-compact-header.solo { border-bottom: none; }
+  .sc-inline-stats {
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    flex-shrink: 0;
+    padding: 0 10px;
+    border-left: 1px solid var(--line);
+    border-right: 1px solid var(--line);
+  }
+  .sc-inline-stat {
+    display: flex; flex-direction: column; gap: 1px;
+  }
+  .sc-inline-stat .sc-stat-label {
+    font-size: 9.5px;
+  }
+  .sc-hooks-row-inline {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    background: #fbfcfd;
+    border-bottom: 1px solid var(--line);
+    flex-wrap: wrap;
+  }
+  .sc-hooks-row-inline-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin-right: 4px;
+  }
+  .sc-drawer {
+    padding: 14px 18px;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 0;
+  }
+  .sc-drawer-block {
+    padding: 0 14px;
+    border-right: 1px solid var(--line);
+  }
+  .sc-drawer-block:first-child { padding-left: 0; }
+  .sc-drawer-block:last-child { padding-right: 0; border-right: none; }
+  .sc-drawer-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin-bottom: 6px;
+  }
+  .sc-drawer-line {
+    font-size: 12px;
+    color: var(--ink);
+    line-height: 1.5;
+  }
+  .sc-drawer-line + .sc-drawer-line {
+    margin-top: 3px;
+  }
+  .sc-drawer-line .label {
+    color: var(--ink-3);
+    font-size: 10.5px;
+    margin-right: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .sc-drawer-line .value-mono {
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+  }
+
+  /* VARIANT D: dense strip — single-row max density */
+  .sc-card-dense {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: 0 1px 2px rgba(15, 20, 25, 0.025);
+    position: relative;
+  }
+  .sc-card-dense .sc-card-header {
+    padding: 12px 16px;
+  }
+  .sc-dense-strip {
+    display: flex;
+    align-items: stretch;
+    background: #fbfcfd;
+  }
+  .sc-dense-cell {
+    flex: 1;
+    padding: 10px 14px;
+    border-right: 1px solid var(--line);
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+  .sc-dense-cell:last-child { border-right: none; }
+  .sc-dense-cell.wide { flex: 2; }
+  .sc-dense-cell-label {
+    font-size: 9.5px;
+    color: var(--ink-3);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 600;
+  }
+  .sc-dense-cell-value {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .sc-dense-cell-value.text {
+    font-family: var(--font-body);
+    font-size: 11.5px;
+    font-weight: 500;
+  }
+  .sc-dense-cell-value.hooks {
+    font-family: var(--font-body);
+    font-size: 11px;
+    color: var(--ink-2);
+    white-space: normal;
+    line-height: 1.35;
+  }
+
+  /* Caption inline annotations */
+  .cv-caption-list {
+    margin-top: 6px;
+    list-style: none;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    font-style: normal;
+  }
+  .cv-caption-list li {
+    font-size: 12px;
+    color: var(--ink-2);
+  }
+  .cv-caption-list li::before {
+    content: "→ ";
+    color: var(--ink-3);
+    font-weight: 600;
+    margin-right: 4px;
+  }
+
+</style>
+</head>
+<body>
+
+<!-- PAGE HEADER -->
+<header class="page-header">
+  <div class="page-header-inner">
+    <div class="page-header-meta">V3 Phase 1.6 · Design Review</div>
+    <h1>Visual A/B comparisons</h1>
+    <p class="page-header-sub">Side-by-side mockups for design-decision verdicts. Full changelog and decision rationale live in <code style="font-family:var(--font-mono);font-size:11px;background:rgba(255,255,255,0.08);padding:1px 5px;border-radius:3px;color:#f1f5f9;">index.html</code>.</p>
+  </div>
+</header>
+
+<!-- BODY -->
+<main class="page-body">
+
+  <!-- ====================================================
+       SECTION 0: STUDENT CARD VARIANTS — Round 5 design build
+       ==================================================== -->
+  <section class="section" id="sec-card-variants">
+    <div class="section-label">Biggest design decision — pick a direction</div>
+    <h2 class="section-title">Student card variants — single-student surfaces</h2>
+    <p class="section-subtitle">Four card designs synthesizing the Opus + DeepSeek proposals and the Xiao quotes mining. Each variant shows both the EXPANDED state (landing surfaces like Overview, Schools-first) and the COLLAPSED state (sub-tabs like Tasks, Snapshots, Documents, Meetings, Notes). Pick a direction; field tweaks come after.</p>
+
+    <div class="ctx-frame">
+      <div class="ctx-frame-row"><strong>Locked (Alex):</strong> Module folded INTO the card · Working style chip in HEADER · Citizenship visible · Family/Contacts dropped from card · Two variants (EXPANDED + COLLAPSED) keyed off identity-vs-workspace, not per-surface.</div>
+      <div class="ctx-frame-row"><strong>Open:</strong> Module placement <em>(folded vs right-column vs strip)</em> · default state <em>(expanded vs compact-with-drawer)</em> · field grouping <em>(4-col blocks vs dense single-row)</em>.</div>
+      <div class="ctx-frame-row"><strong>Page(s):</strong> <code>dashboard-1-tabs-horizontal</code> · <code>dashboard-1-tabs-sidebar</code> · <code>dashboard-2-schools-first</code> · <code>dashboard-3-deadline-timeline</code>.</div>
+    </div>
+
+    <!-- =====================================
+         VARIANT A — RECOMMENDED: Synthesis
+         ===================================== -->
+    <div class="cv-variant-wrap cv-recommended">
+      <div class="cv-variant-header">
+        <span class="cv-badge cv-badge-rec">A</span>
+        <span class="cv-variant-title">Synthesis — module folded, 4-column body</span>
+        <span class="cv-variant-tag rec">RECOMMENDED</span>
+        <span class="cv-variant-tag">Both Opus + DeepSeek + Xiao converge here</span>
+      </div>
+      <div class="cv-variant-caption">
+        <strong>Design idea:</strong> Module Progress folded in as Block D (Alex's Option a). 4-column body (Academic · Hooks · Engagement · Module). Working-style chips in the header for triage-glance outreach (Xiao Q17). Family/Contacts dropped — drill-in for parent phone. Citizenship promoted into the Academic block.
+        <ul class="cv-caption-list">
+          <li>EXPANDED on Overview + Schools-first (landing surfaces where the card carries page state)</li>
+          <li>COLLAPSED on Tasks + Snapshots + Documents + Meetings + Notes (sub-pages where the page <em>is</em> the state)</li>
+        </ul>
+      </div>
+      <div class="cv-states">
+
+        <!-- A.EXPANDED -->
+        <div class="cv-state">
+          <div class="cv-state-label"><strong>EXPANDED</strong> · landing surfaces (Overview, Schools-first)</div>
+          <div class="sc-card">
+            <div class="sc-card-header">
+              <div class="sc-avatar">MC</div>
+              <div class="sc-name-block">
+                <div class="sc-name">Maya Chen</div>
+                <div class="sc-meta-row">
+                  <span class="sc-pill sc-pill-neutral">REA Deferred</span>
+                  <span class="sc-pill sc-pill-indigo">LOCI active</span>
+                  <span class="sc-divider"></span>
+                  <span class="sc-year"><strong>Class of 2027</strong> · Senior</span>
+                  <span class="sc-divider"></span>
+                  <span class="sc-ws-chip perfectionist">Perfectionist</span>
+                  <span class="sc-ws-chip anxious">Stress-anxious</span>
+                </div>
+              </div>
+              <button class="sc-toggle-btn up" aria-expanded="true">
+                <span>Hide profile</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+            </div>
+            <div class="sc-body-4col">
+              <div class="sc-block">
+                <div class="sc-block-label">Academic</div>
+                <div class="sc-stats-grid">
+                  <div class="sc-stat"><span class="sc-stat-label">GPA (UW)</span><span class="sc-stat-value">3.96</span></div>
+                  <div class="sc-stat"><span class="sc-stat-label">SAT</span><span class="sc-stat-value">1530</span></div>
+                  <div class="sc-stat"><span class="sc-stat-label">Major</span><span class="sc-stat-value text">Studio Art</span></div>
+                  <div class="sc-stat"><span class="sc-stat-label">2nd</span><span class="sc-stat-value text">Art History</span></div>
+                  <div class="sc-stat"><span class="sc-stat-label">Citizen</span><span class="sc-stat-value text">US</span></div>
+                </div>
+              </div>
+              <div class="sc-block">
+                <div class="sc-block-label">Hooks</div>
+                <div class="sc-hooks-stack">
+                  <span class="sc-hook-tag">First-gen college</span>
+                  <span class="sc-hook-tag">Studio art portfolio</span>
+                  <span class="sc-hook-tag">NYC public school</span>
+                </div>
+              </div>
+              <div class="sc-block">
+                <div class="sc-block-label">Engagement</div>
+                <div class="sc-block-engagement">
+                  <div class="sc-meeting-row"><span class="sc-meeting-label">Last</span><span class="sc-meeting-value">2d ago</span></div>
+                  <div class="sc-meeting-row"><span class="sc-meeting-label">Next</span><span class="sc-meeting-value">Tom · 4pm</span></div>
+                  <div class="sc-meeting-row"><span class="sc-meeting-label">Cadence</span><span class="sc-meeting-value">Weekly</span></div>
+                  <div class="sc-engage-action">
+                    <button class="sc-log-btn">
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                      Log meeting
+                    </button>
+                    <a href="#" class="sc-prep-link">Prep notes →</a>
+                  </div>
+                </div>
+              </div>
+              <div class="sc-block">
+                <div class="sc-block-label">Current Module<a class="manage-link" href="#">Manage</a></div>
+                <div class="sc-module-block">
+                  <div class="sc-module-name-row">
+                    <span class="sc-module-name">Application Strategy</span>
+                    <span class="sc-module-pos">· Lesson 2 of 5</span>
+                  </div>
+                  <div>
+                    <div class="sc-module-lesson-label">This lesson</div>
+                    <div class="sc-module-lesson">School research deep-dive</div>
+                  </div>
+                  <div class="sc-module-task">
+                    <a href="#" class="sc-module-task-link">Finish worksheet</a>
+                    <span class="sc-module-due">· Due Dec 19</span>
+                  </div>
+                  <div class="sc-module-track">9 of 16 lessons in track</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- A.COLLAPSED -->
+        <div class="cv-state">
+          <div class="cv-state-label"><strong>COLLAPSED</strong> · sub-page surfaces (Tasks, Snapshots, Documents, Meetings, Notes)</div>
+          <div class="sc-card">
+            <div class="sc-card-header collapsed">
+              <div class="sc-avatar">MC</div>
+              <div class="sc-name-block">
+                <div class="sc-name">Maya Chen</div>
+                <div class="sc-meta-row">
+                  <span class="sc-pill sc-pill-neutral">REA Deferred</span>
+                  <span class="sc-pill sc-pill-indigo">LOCI active</span>
+                  <span class="sc-divider"></span>
+                  <span class="sc-year"><strong>Class of 2027</strong> · Senior · Studio Art</span>
+                  <span class="sc-divider"></span>
+                  <span class="sc-ws-chip perfectionist">Perfectionist</span>
+                  <span class="sc-ws-chip anxious">Stress-anxious</span>
+                </div>
+              </div>
+              <button class="sc-toggle-btn" aria-expanded="false">
+                <span>Show profile</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- =====================================
+         VARIANT B — Module right column (Option b fallback)
+         ===================================== -->
+    <div class="cv-variant-wrap">
+      <div class="cv-variant-header">
+        <span class="cv-badge">B</span>
+        <span class="cv-variant-title">Module as right column — Option b fallback</span>
+        <span class="cv-variant-tag">Card stays 3-col · module is matched-height aside</span>
+      </div>
+      <div class="cv-variant-caption">
+        <strong>Design idea:</strong> Card stays a clean 3-column body (Academic · Hooks · Engagement). Module lives as a right-aligned column matched to card height — always visible, even when the card body collapses on sub-pages. This is the explicit fallback Opus called out: lighter-touch change from today's pattern, easier "no current module" empty state.
+        <ul class="cv-caption-list">
+          <li>EXPANDED: card body + module aside both visible</li>
+          <li>COLLAPSED: card header only; module aside <em>persists</em> beside the header — module is always at-a-glance regardless of card state</li>
+        </ul>
+      </div>
+      <div class="cv-states">
+
+        <!-- B.EXPANDED -->
+        <div class="cv-state">
+          <div class="cv-state-label"><strong>EXPANDED</strong> · landing surfaces</div>
+          <div class="sc-pair-row">
+            <div class="sc-card">
+              <div class="sc-card-header">
+                <div class="sc-avatar">MC</div>
+                <div class="sc-name-block">
+                  <div class="sc-name">Maya Chen</div>
+                  <div class="sc-meta-row">
+                    <span class="sc-pill sc-pill-neutral">REA Deferred</span>
+                    <span class="sc-pill sc-pill-indigo">LOCI active</span>
+                    <span class="sc-divider"></span>
+                    <span class="sc-year"><strong>Class of 2027</strong> · Senior</span>
+                    <span class="sc-divider"></span>
+                    <span class="sc-ws-chip perfectionist">Perfectionist</span>
+                    <span class="sc-ws-chip anxious">Stress-anxious</span>
+                  </div>
+                </div>
+                <button class="sc-toggle-btn up">
+                  <span>Hide</span>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
+              </div>
+              <div class="sc-body-3col">
+                <div class="sc-block">
+                  <div class="sc-block-label">Academic</div>
+                  <div class="sc-stats-grid">
+                    <div class="sc-stat"><span class="sc-stat-label">GPA (UW)</span><span class="sc-stat-value">3.96</span></div>
+                    <div class="sc-stat"><span class="sc-stat-label">SAT</span><span class="sc-stat-value">1530</span></div>
+                    <div class="sc-stat"><span class="sc-stat-label">Major</span><span class="sc-stat-value text">Studio Art</span></div>
+                    <div class="sc-stat"><span class="sc-stat-label">2nd</span><span class="sc-stat-value text">Art History</span></div>
+                    <div class="sc-stat"><span class="sc-stat-label">Citizen</span><span class="sc-stat-value text">US</span></div>
+                  </div>
+                </div>
+                <div class="sc-block">
+                  <div class="sc-block-label">Hooks</div>
+                  <div class="sc-hooks-stack">
+                    <span class="sc-hook-tag">First-gen college</span>
+                    <span class="sc-hook-tag">Studio art portfolio</span>
+                    <span class="sc-hook-tag">NYC public school</span>
+                  </div>
+                </div>
+                <div class="sc-block">
+                  <div class="sc-block-label">Engagement</div>
+                  <div class="sc-block-engagement">
+                    <div class="sc-meeting-row"><span class="sc-meeting-label">Last</span><span class="sc-meeting-value">2d ago</span></div>
+                    <div class="sc-meeting-row"><span class="sc-meeting-label">Next</span><span class="sc-meeting-value">Tom · 4pm</span></div>
+                    <div class="sc-meeting-row"><span class="sc-meeting-label">Cadence</span><span class="sc-meeting-value">Weekly</span></div>
+                    <div class="sc-engage-action">
+                      <button class="sc-log-btn">
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                        Log meeting
+                      </button>
+                      <a href="#" class="sc-prep-link">Prep →</a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <aside class="sc-module-aside">
+              <div class="sc-module-aside-eyebrow">Module progress</div>
+              <div class="sc-module-name-row">
+                <span class="sc-module-name">Application Strategy</span>
+                <span class="sc-module-pos">Lesson 2 of 5</span>
+              </div>
+              <div>
+                <div class="sc-module-lesson-label">This lesson</div>
+                <div class="sc-module-lesson">School research deep-dive</div>
+              </div>
+              <div>
+                <div class="sc-module-lesson-label">Linked task</div>
+                <div class="sc-module-task">
+                  <a href="#" class="sc-module-task-link">Finish worksheet</a>
+                </div>
+                <div class="sc-module-due">Due Dec 19</div>
+              </div>
+              <div class="sc-module-track">9 of 16 lessons in track</div>
+            </aside>
+          </div>
+        </div>
+
+        <!-- B.COLLAPSED -->
+        <div class="cv-state">
+          <div class="cv-state-label"><strong>COLLAPSED</strong> · sub-page surfaces · module aside persists</div>
+          <div class="sc-pair-row">
+            <div class="sc-card">
+              <div class="sc-card-header collapsed">
+                <div class="sc-avatar">MC</div>
+                <div class="sc-name-block">
+                  <div class="sc-name">Maya Chen</div>
+                  <div class="sc-meta-row">
+                    <span class="sc-pill sc-pill-neutral">REA Deferred</span>
+                    <span class="sc-pill sc-pill-indigo">LOCI active</span>
+                    <span class="sc-divider"></span>
+                    <span class="sc-year"><strong>Class of 2027</strong> · Senior · Studio Art</span>
+                    <span class="sc-divider"></span>
+                    <span class="sc-ws-chip perfectionist">Perfectionist</span>
+                  </div>
+                </div>
+                <button class="sc-toggle-btn">
+                  <span>Show</span>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
+              </div>
+            </div>
+            <aside class="sc-module-aside" style="align-self:stretch;">
+              <div class="sc-module-aside-eyebrow">Module progress</div>
+              <div class="sc-module-name-row">
+                <span class="sc-module-name">Application Strategy</span>
+                <span class="sc-module-pos">Lesson 2 of 5</span>
+              </div>
+              <div class="sc-module-task">
+                <a href="#" class="sc-module-task-link">Finish worksheet</a>
+                <span class="sc-module-due">· Dec 19</span>
+              </div>
+            </aside>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- =====================================
+         VARIANT C — Compact-by-default + drawer
+         ===================================== -->
+    <div class="cv-variant-wrap">
+      <div class="cv-variant-header">
+        <span class="cv-badge">C</span>
+        <span class="cv-variant-title">Compact-by-default + drawer-on-click</span>
+        <span class="cv-variant-tag">Header IS the card · drawer on click · same component everywhere</span>
+      </div>
+      <div class="cv-variant-caption">
+        <strong>Design idea:</strong> The header is the card by default — even on Overview. Click to expand into a tight drawer (hooks · engagement · module one-liners) rather than a 4-column block. Stats are promoted INTO the header row so they're always visible. Tackles Xiao's "function as a singular page that you don't necessarily have to scroll" directly. Same compact shell on every surface — drawer state is per-surface preference.
+        <ul class="cv-caption-list">
+          <li>COLLAPSED is the default on every surface — header + inline stats + hooks row below</li>
+          <li>EXPANDED is opt-in via click — drawer slides down with the rest</li>
+        </ul>
+      </div>
+      <div class="cv-states">
+
+        <!-- C.COLLAPSED (default) -->
+        <div class="cv-state">
+          <div class="cv-state-label"><strong>COLLAPSED</strong> · default state everywhere · header + stats + hooks-row</div>
+          <div class="sc-card-compact">
+            <div class="sc-card-compact-header">
+              <div class="sc-avatar">MC</div>
+              <div class="sc-name-block">
+                <div class="sc-name">Maya Chen</div>
+                <div class="sc-meta-row">
+                  <span class="sc-pill sc-pill-neutral">REA Deferred</span>
+                  <span class="sc-pill sc-pill-indigo">LOCI active</span>
+                  <span class="sc-divider"></span>
+                  <span class="sc-year"><strong>Class of 2027</strong> · Senior</span>
+                  <span class="sc-divider"></span>
+                  <span class="sc-ws-chip perfectionist">Perfectionist</span>
+                </div>
+              </div>
+              <div class="sc-inline-stats">
+                <div class="sc-inline-stat sc-stat"><span class="sc-stat-label">GPA</span><span class="sc-stat-value">3.96</span></div>
+                <div class="sc-inline-stat sc-stat"><span class="sc-stat-label">SAT</span><span class="sc-stat-value">1530</span></div>
+                <div class="sc-inline-stat sc-stat"><span class="sc-stat-label">Major</span><span class="sc-stat-value text">Studio Art</span></div>
+                <div class="sc-inline-stat sc-stat"><span class="sc-stat-label">Cit.</span><span class="sc-stat-value text">US</span></div>
+              </div>
+              <button class="sc-toggle-btn">
+                <span>Show more</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+            </div>
+            <div class="sc-hooks-row-inline">
+              <span class="sc-hooks-row-inline-label">Hooks</span>
+              <span class="sc-hook-tag">First-gen college</span>
+              <span class="sc-hook-tag">Studio art portfolio</span>
+              <span class="sc-hook-tag">NYC public school</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- C.EXPANDED (drawer open) -->
+        <div class="cv-state">
+          <div class="cv-state-label"><strong>EXPANDED</strong> · same header · drawer below adds engagement + module · narrower than A</div>
+          <div class="sc-card-compact">
+            <div class="sc-card-compact-header">
+              <div class="sc-avatar">MC</div>
+              <div class="sc-name-block">
+                <div class="sc-name">Maya Chen</div>
+                <div class="sc-meta-row">
+                  <span class="sc-pill sc-pill-neutral">REA Deferred</span>
+                  <span class="sc-pill sc-pill-indigo">LOCI active</span>
+                  <span class="sc-divider"></span>
+                  <span class="sc-year"><strong>Class of 2027</strong> · Senior</span>
+                  <span class="sc-divider"></span>
+                  <span class="sc-ws-chip perfectionist">Perfectionist</span>
+                </div>
+              </div>
+              <div class="sc-inline-stats">
+                <div class="sc-inline-stat sc-stat"><span class="sc-stat-label">GPA</span><span class="sc-stat-value">3.96</span></div>
+                <div class="sc-inline-stat sc-stat"><span class="sc-stat-label">SAT</span><span class="sc-stat-value">1530</span></div>
+                <div class="sc-inline-stat sc-stat"><span class="sc-stat-label">Major</span><span class="sc-stat-value text">Studio Art</span></div>
+                <div class="sc-inline-stat sc-stat"><span class="sc-stat-label">Cit.</span><span class="sc-stat-value text">US</span></div>
+              </div>
+              <button class="sc-toggle-btn up">
+                <span>Hide</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+            </div>
+            <div class="sc-hooks-row-inline">
+              <span class="sc-hooks-row-inline-label">Hooks</span>
+              <span class="sc-hook-tag">First-gen college</span>
+              <span class="sc-hook-tag">Studio art portfolio</span>
+              <span class="sc-hook-tag">NYC public school</span>
+            </div>
+            <div class="sc-drawer">
+              <div class="sc-drawer-block">
+                <div class="sc-drawer-label">Engagement</div>
+                <div class="sc-drawer-line"><span class="label">Last</span><span class="value-mono">2d ago</span></div>
+                <div class="sc-drawer-line"><span class="label">Next</span><span class="value-mono">Tom · 4pm</span></div>
+                <div class="sc-drawer-line"><span class="label">Cadence</span><span class="value-mono">Weekly</span></div>
+              </div>
+              <div class="sc-drawer-block">
+                <div class="sc-drawer-label">Module</div>
+                <div class="sc-drawer-line"><strong style="color:var(--ink);font-weight:600;">Application Strategy</strong> <span class="value-mono">2/5</span></div>
+                <div class="sc-drawer-line" style="color:var(--ink-2);">School research deep-dive</div>
+                <div class="sc-drawer-line">
+                  <a href="#" class="sc-module-task-link">Finish worksheet</a>
+                  <span class="sc-module-due">· Due Dec 19</span>
+                </div>
+              </div>
+              <div class="sc-drawer-block">
+                <div class="sc-drawer-label">Actions</div>
+                <div class="sc-engage-action" style="flex-direction:column;align-items:flex-start;gap:6px;">
+                  <button class="sc-log-btn">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    Log meeting
+                  </button>
+                  <a href="#" class="sc-prep-link">Prep notes →</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- =====================================
+         VARIANT D — Dense single-row strip
+         ===================================== -->
+    <div class="cv-variant-wrap">
+      <div class="cv-variant-header">
+        <span class="cv-badge">D</span>
+        <span class="cv-variant-title">Dense single-row strip — max density, no body columns</span>
+        <span class="cv-variant-tag">Everything at-a-glance · tests Xiao's density tolerance</span>
+      </div>
+      <div class="cv-variant-caption">
+        <strong>Design idea:</strong> Take Xiao's "lots of info at-a-glance is OK" (Q1) and the "no scrolling" goal (Q23) to their logical end. Header row 1 = identity. Header row 2 = a single horizontal stat strip showing GPA · SAT · Major · Citizen · Hooks · Last/Next meeting · Module — all in one band. No multi-column body. Trades visual breathing room for maximum information density.
+        <ul class="cv-caption-list">
+          <li>EXPANDED: both rows visible — identity + dense stat strip</li>
+          <li>COLLAPSED: identity row only · stat strip hidden</li>
+          <li>If this feels too cramped, it confirms A's body-block organization is right</li>
+        </ul>
+      </div>
+      <div class="cv-states">
+
+        <!-- D.EXPANDED -->
+        <div class="cv-state">
+          <div class="cv-state-label"><strong>EXPANDED</strong> · identity + dense stat strip</div>
+          <div class="sc-card-dense">
+            <div class="sc-card-header">
+              <div class="sc-avatar sm">MC</div>
+              <div class="sc-name-block">
+                <div class="sc-name" style="font-size:20px;">Maya Chen</div>
+                <div class="sc-meta-row">
+                  <span class="sc-pill sc-pill-neutral">REA Deferred</span>
+                  <span class="sc-pill sc-pill-indigo">LOCI active</span>
+                  <span class="sc-divider"></span>
+                  <span class="sc-year"><strong>Class of 2027</strong> · Senior · Studio Art</span>
+                  <span class="sc-divider"></span>
+                  <span class="sc-ws-chip perfectionist">Perfectionist</span>
+                  <span class="sc-ws-chip anxious">Stress-anxious</span>
+                </div>
+              </div>
+              <button class="sc-toggle-btn up">
+                <span>Hide</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+            </div>
+            <div class="sc-dense-strip">
+              <div class="sc-dense-cell">
+                <span class="sc-dense-cell-label">GPA</span>
+                <span class="sc-dense-cell-value">3.96</span>
+              </div>
+              <div class="sc-dense-cell">
+                <span class="sc-dense-cell-label">SAT</span>
+                <span class="sc-dense-cell-value">1530</span>
+              </div>
+              <div class="sc-dense-cell">
+                <span class="sc-dense-cell-label">Major</span>
+                <span class="sc-dense-cell-value text">Studio Art / Art Hist.</span>
+              </div>
+              <div class="sc-dense-cell">
+                <span class="sc-dense-cell-label">Citizen</span>
+                <span class="sc-dense-cell-value text">US</span>
+              </div>
+              <div class="sc-dense-cell wide">
+                <span class="sc-dense-cell-label">Hooks</span>
+                <span class="sc-dense-cell-value hooks">First-gen · Studio portfolio · NYC public</span>
+              </div>
+              <div class="sc-dense-cell">
+                <span class="sc-dense-cell-label">Last meeting</span>
+                <span class="sc-dense-cell-value">2d ago</span>
+              </div>
+              <div class="sc-dense-cell">
+                <span class="sc-dense-cell-label">Next</span>
+                <span class="sc-dense-cell-value">Tom · 4pm</span>
+              </div>
+              <div class="sc-dense-cell wide">
+                <span class="sc-dense-cell-label">Module</span>
+                <span class="sc-dense-cell-value text">App. Strategy · 2/5 · Dec 19</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- D.COLLAPSED -->
+        <div class="cv-state">
+          <div class="cv-state-label"><strong>COLLAPSED</strong> · identity row only</div>
+          <div class="sc-card-dense">
+            <div class="sc-card-header collapsed">
+              <div class="sc-avatar sm">MC</div>
+              <div class="sc-name-block">
+                <div class="sc-name" style="font-size:20px;">Maya Chen</div>
+                <div class="sc-meta-row">
+                  <span class="sc-pill sc-pill-neutral">REA Deferred</span>
+                  <span class="sc-pill sc-pill-indigo">LOCI active</span>
+                  <span class="sc-divider"></span>
+                  <span class="sc-year"><strong>Class of 2027</strong> · Senior · Studio Art</span>
+                  <span class="sc-divider"></span>
+                  <span class="sc-ws-chip perfectionist">Perfectionist</span>
+                  <span class="sc-ws-chip anxious">Stress-anxious</span>
+                </div>
+              </div>
+              <button class="sc-toggle-btn">
+                <span>Show</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- VERDICT -->
+    <div class="verdict-block">
+      <div class="verdict-block-label">Verdict — pick a direction Friday morning</div>
+      <div class="verdict-text">A is the synthesized recommendation. B is the safest fallback if folded module crowds the card. C tests "what if the card stayed compact everywhere by default?" D tests "how far can we push density before it cracks?" Field tweaks (which hooks, which stats, exact engagement copy) come AFTER the direction is locked.</div>
+    </div>
+
+  </section>
+
+
+  <!-- ====================================================
+       SECTION 1: AWAITING-REVIEW CHIP COLOR — open
+       ==================================================== -->
+  <section class="section" id="sec-chip-color">
+    <div class="section-label">A/B Section 1 — still open</div>
+    <h2 class="section-title">Awaiting-review chip — cross-tasks-list visual treatment</h2>
+    <p class="section-subtitle">Canonical (locked): Awaiting Review = amber, In Progress = indigo. Open question on <code>cross-tasks-list</code> in dense row layouts: keep solid amber (per spec) or add a visual differentiator (e.g., outline-border variant)?</p>
+
+    <div class="ctx-frame">
+      <div class="ctx-frame-row"><strong>Page(s):</strong> cross-tasks-list · cross-tasks-kanban · dashboard-1-tabs-horizontal.</div>
+      <div class="ctx-frame-row"><strong>Element:</strong> "Awaiting review" status chip on student rows + Kanban cards.</div>
+      <div class="ctx-frame-row"><strong>Alex's lean:</strong> keep spec-compliant solid amber — In Progress / Awaiting Review collision is mitigated by indigo for In Progress. Team weigh-in welcome.</div>
+    </div>
+
+    <div class="variants two-col">
+
+      <!-- VARIANT A: INDIGO -->
+      <div class="variant">
+        <div class="variant-label">
+          <span class="variant-badge">A</span>
+          <span class="variant-label-text">Indigo</span>
+          <span style="font-size:12px; color:var(--ink-3);">#5b5fcf bg · white text · historical / not adopted</span>
+        </div>
+        <div class="variant-body">
+
+          <!-- Context (a): Standalone chip -->
+          <div>
+            <div class="ctx-label">Context (a) — Standalone chip</div>
+            <span class="chip chip-indigo">Awaiting review</span>
+          </div>
+
+          <!-- Context (b): Row with student name + other pills -->
+          <div>
+            <div class="ctx-label">Context (b) — Student row</div>
+            <div class="student-row">
+              <div class="student-row-name">Maya Chen</div>
+              <div class="student-row-pills">
+                <span class="chip chip-indigo">Awaiting review</span>
+                <span class="chip chip-done">4 schools done</span>
+                <span class="chip chip-neutral" style="background:var(--ws-perfectionist-bg);color:var(--ws-perfectionist);">Perfectionist</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Context (c): Kanban card -->
+          <div>
+            <div class="ctx-label">Context (c) — Kanban card</div>
+            <div class="kanban-card">
+              <div class="kanban-card-header">
+                <span class="kanban-card-student">Maya Chen</span>
+                <span class="chip chip-indigo">Awaiting review</span>
+              </div>
+              <div class="kanban-card-body">
+                <div class="kanban-card-title">Yale Common App essay — draft 2</div>
+                <div class="kanban-card-meta">Due Dec 1, 2026</div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- VARIANT B: AMBER -->
+      <div class="variant">
+        <div class="variant-label">
+          <span class="variant-badge">B</span>
+          <span class="variant-label-text">Amber</span>
+          <span style="font-size:12px; color:var(--ink-3);">#f59e0b bg · white text</span>
+          <span class="variant-current">canonical (D1)</span>
+        </div>
+        <div class="variant-body">
+
+          <!-- Context (a): Standalone chip -->
+          <div>
+            <div class="ctx-label">Context (a) — Standalone chip</div>
+            <span class="chip chip-amber">Awaiting review</span>
+          </div>
+
+          <!-- Context (b): Row with student name + other pills -->
+          <div>
+            <div class="ctx-label">Context (b) — Student row</div>
+            <div class="student-row">
+              <div class="student-row-name">Maya Chen</div>
+              <div class="student-row-pills">
+                <span class="chip chip-amber">Awaiting review</span>
+                <span class="chip chip-done">4 schools done</span>
+                <span class="chip chip-neutral" style="background:var(--ws-perfectionist-bg);color:var(--ws-perfectionist);">Perfectionist</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Context (c): Kanban card -->
+          <div>
+            <div class="ctx-label">Context (c) — Kanban card</div>
+            <div class="kanban-card">
+              <div class="kanban-card-header">
+                <span class="kanban-card-student">Maya Chen</span>
+                <span class="chip chip-amber">Awaiting review</span>
+              </div>
+              <div class="kanban-card-body">
+                <div class="kanban-card-title">Yale Common App essay — draft 2</div>
+                <div class="kanban-card-meta">Due Dec 1, 2026</div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div><!-- /variants -->
+
+    <!-- VERDICT -->
+    <div class="verdict-block">
+      <div class="verdict-block-label">Verdict — open for team</div>
+      <div class="verdict-text">Canonical = B (amber). Team question: keep solid-amber on cross-tasks-list as-is, OR add a visual differentiator (outline border, lower-saturation bg, etc.) for the In-Progress vs Awaiting-Review distinction in the densest list view?</div>
+    </div>
+
+  </section>
+
+
+  <!-- ====================================================
+       SECTION 2: STAGE-PILL DOT OPACITY ON STUDENTS-1
+       ==================================================== -->
+  <section class="section" id="sec-opacity">
+    <div class="section-label">A/B Section 2 — still open</div>
+    <h2 class="section-title">Stage-pill dot opacity — students-1-filterable-table</h2>
+    <p class="section-subtitle">Current 0.85 opacity may read too dark on <code>students-1-filterable-table</code>. The dot should be a quiet accent supporting the stage label, not the headline. Three stage colors per opacity level so you can see how it varies across stages.</p>
+
+    <div class="ctx-frame">
+      <div class="ctx-frame-row"><strong>Page:</strong> <code>students-1-filterable-table.html</code> — colored dot in stage-pill chip ("● Research", "● Apps Open", "● Submitted").</div>
+      <div class="ctx-frame-row"><strong>Alex's lean:</strong> 0.60 — keeps decent saturation while letting text carry meaning. 0.40 also viable; 0.85 too aggressive; 0.25 too washed.</div>
+    </div>
+
+    <!-- Stage colors used: indigo (#6366f1), amber (#f59e0b), emerald (#047857) -->
+    <div class="opacity-grid">
+
+      <!-- A: 0.85 (current) -->
+      <div class="variant">
+        <div class="variant-label">
+          <span class="variant-badge">A</span>
+          <span class="variant-label-text">0.85 opacity</span>
+          <span class="variant-current">current</span>
+        </div>
+        <div class="variant-body">
+          <div>
+            <div class="ctx-label">Stage pills · 0.85</div>
+            <div class="stage-pills-row">
+              <div class="stage-pill">
+                <span class="stage-dot op-85" style="background:#6366f1;"></span>
+                Research
+              </div>
+              <div class="stage-pill">
+                <span class="stage-dot op-85" style="background:#f59e0b;"></span>
+                Apps Open
+              </div>
+              <div class="stage-pill">
+                <span class="stage-dot op-85" style="background:#047857;"></span>
+                Submitted
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- B: 0.60 -->
+      <div class="variant">
+        <div class="variant-label">
+          <span class="variant-badge">B</span>
+          <span class="variant-label-text">0.60 opacity</span>
+        </div>
+        <div class="variant-body">
+          <div>
+            <div class="ctx-label">Stage pills · 0.60</div>
+            <div class="stage-pills-row">
+              <div class="stage-pill">
+                <span class="stage-dot op-60" style="background:#6366f1;"></span>
+                Research
+              </div>
+              <div class="stage-pill">
+                <span class="stage-dot op-60" style="background:#f59e0b;"></span>
+                Apps Open
+              </div>
+              <div class="stage-pill">
+                <span class="stage-dot op-60" style="background:#047857;"></span>
+                Submitted
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- C: 0.40 -->
+      <div class="variant">
+        <div class="variant-label">
+          <span class="variant-badge">C</span>
+          <span class="variant-label-text">0.40 opacity</span>
+        </div>
+        <div class="variant-body">
+          <div>
+            <div class="ctx-label">Stage pills · 0.40</div>
+            <div class="stage-pills-row">
+              <div class="stage-pill">
+                <span class="stage-dot op-40" style="background:#6366f1;"></span>
+                Research
+              </div>
+              <div class="stage-pill">
+                <span class="stage-dot op-40" style="background:#f59e0b;"></span>
+                Apps Open
+              </div>
+              <div class="stage-pill">
+                <span class="stage-dot op-40" style="background:#047857;"></span>
+                Submitted
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- D: 0.25 -->
+      <div class="variant">
+        <div class="variant-label">
+          <span class="variant-badge">D</span>
+          <span class="variant-label-text">0.25 opacity</span>
+          <span style="font-size:11px;color:var(--ink-3);">very subtle</span>
+        </div>
+        <div class="variant-body">
+          <div>
+            <div class="ctx-label">Stage pills · 0.25</div>
+            <div class="stage-pills-row">
+              <div class="stage-pill">
+                <span class="stage-dot op-25" style="background:#6366f1;"></span>
+                Research
+              </div>
+              <div class="stage-pill">
+                <span class="stage-dot op-25" style="background:#f59e0b;"></span>
+                Apps Open
+              </div>
+              <div class="stage-pill">
+                <span class="stage-dot op-25" style="background:#047857;"></span>
+                Submitted
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /opacity-grid -->
+
+    <!-- Table context: show how these read in a real table row -->
+    <div style="margin-top:24px;">
+      <div class="ctx-label">All four in simulated table row context (name · stage pill · task count)</div>
+      <div style="border:1px solid var(--line); border-radius:var(--r-card); overflow:hidden; background:var(--surface);">
+        <table style="width:100%; border-collapse:collapse;">
+          <thead>
+            <tr style="background:var(--surface-2); border-bottom:1px solid var(--line);">
+              <th style="padding:9px 14px; text-align:left; font-size:11px; font-weight:600; color:var(--ink-3); letter-spacing:0.04em; text-transform:uppercase;">Student</th>
+              <th style="padding:9px 14px; text-align:left; font-size:11px; font-weight:600; color:var(--ink-3); letter-spacing:0.04em; text-transform:uppercase;">Stage (0.85 / A)</th>
+              <th style="padding:9px 14px; text-align:left; font-size:11px; font-weight:600; color:var(--ink-3); letter-spacing:0.04em; text-transform:uppercase;">Stage (0.60 / B)</th>
+              <th style="padding:9px 14px; text-align:left; font-size:11px; font-weight:600; color:var(--ink-3); letter-spacing:0.04em; text-transform:uppercase;">Stage (0.40 / C)</th>
+              <th style="padding:9px 14px; text-align:left; font-size:11px; font-weight:600; color:var(--ink-3); letter-spacing:0.04em; text-transform:uppercase;">Stage (0.25 / D)</th>
+              <th style="padding:9px 14px; text-align:left; font-size:11px; font-weight:600; color:var(--ink-3); letter-spacing:0.04em; text-transform:uppercase;">Tasks</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="border-bottom:1px solid var(--line);">
+              <td style="padding:9px 14px; font-size:13px; font-weight:500; color:var(--ink);">Maya Chen</td>
+              <td style="padding:9px 14px;">
+                <div class="stage-pill" style="border:none; padding:3px 8px;">
+                  <span class="stage-dot op-85" style="background:#6366f1;"></span>
+                  <span style="font-size:12px;">Research</span>
+                </div>
+              </td>
+              <td style="padding:9px 14px;">
+                <div class="stage-pill" style="border:none; padding:3px 8px;">
+                  <span class="stage-dot op-60" style="background:#6366f1;"></span>
+                  <span style="font-size:12px;">Research</span>
+                </div>
+              </td>
+              <td style="padding:9px 14px;">
+                <div class="stage-pill" style="border:none; padding:3px 8px;">
+                  <span class="stage-dot op-40" style="background:#6366f1;"></span>
+                  <span style="font-size:12px;">Research</span>
+                </div>
+              </td>
+              <td style="padding:9px 14px;">
+                <div class="stage-pill" style="border:none; padding:3px 8px;">
+                  <span class="stage-dot op-25" style="background:#6366f1;"></span>
+                  <span style="font-size:12px;">Research</span>
+                </div>
+              </td>
+              <td style="padding:9px 14px; font-size:12px; color:var(--ink-2); font-family:var(--font-mono);">3 overdue</td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--line);">
+              <td style="padding:9px 14px; font-size:13px; font-weight:500; color:var(--ink);">Jordan Kim</td>
+              <td style="padding:9px 14px;">
+                <div class="stage-pill" style="border:none; padding:3px 8px;">
+                  <span class="stage-dot op-85" style="background:#f59e0b;"></span>
+                  <span style="font-size:12px;">Apps Open</span>
+                </div>
+              </td>
+              <td style="padding:9px 14px;">
+                <div class="stage-pill" style="border:none; padding:3px 8px;">
+                  <span class="stage-dot op-60" style="background:#f59e0b;"></span>
+                  <span style="font-size:12px;">Apps Open</span>
+                </div>
+              </td>
+              <td style="padding:9px 14px;">
+                <div class="stage-pill" style="border:none; padding:3px 8px;">
+                  <span class="stage-dot op-40" style="background:#f59e0b;"></span>
+                  <span style="font-size:12px;">Apps Open</span>
+                </div>
+              </td>
+              <td style="padding:9px 14px;">
+                <div class="stage-pill" style="border:none; padding:3px 8px;">
+                  <span class="stage-dot op-25" style="background:#f59e0b;"></span>
+                  <span style="font-size:12px;">Apps Open</span>
+                </div>
+              </td>
+              <td style="padding:9px 14px; font-size:12px; color:var(--ink-2); font-family:var(--font-mono);">1 overdue</td>
+            </tr>
+            <tr>
+              <td style="padding:9px 14px; font-size:13px; font-weight:500; color:var(--ink);">Cody Reeves</td>
+              <td style="padding:9px 14px;">
+                <div class="stage-pill" style="border:none; padding:3px 8px;">
+                  <span class="stage-dot op-85" style="background:#047857;"></span>
+                  <span style="font-size:12px;">Submitted</span>
+                </div>
+              </td>
+              <td style="padding:9px 14px;">
+                <div class="stage-pill" style="border:none; padding:3px 8px;">
+                  <span class="stage-dot op-60" style="background:#047857;"></span>
+                  <span style="font-size:12px;">Submitted</span>
+                </div>
+              </td>
+              <td style="padding:9px 14px;">
+                <div class="stage-pill" style="border:none; padding:3px 8px;">
+                  <span class="stage-dot op-40" style="background:#047857;"></span>
+                  <span style="font-size:12px;">Submitted</span>
+                </div>
+              </td>
+              <td style="padding:9px 14px;">
+                <div class="stage-pill" style="border:none; padding:3px 8px;">
+                  <span class="stage-dot op-25" style="background:#047857;"></span>
+                  <span style="font-size:12px;">Submitted</span>
+                </div>
+              </td>
+              <td style="padding:9px 14px; font-size:12px; color:var(--ink-2); font-family:var(--font-mono);">—</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- VERDICT -->
+    <div class="verdict-block">
+      <div class="verdict-block-label">Verdict</div>
+      <div class="verdict-text">(not yet decided) — write your pick here: A (0.85), B (0.60), C (0.40), or D (0.25).</div>
+    </div>
+
+  </section>
+
+</main>
+
+<!-- PAGE FOOTER -->
+<footer class="page-footer">
+  <div class="page-footer-inner">
+    Visual A/B comparison tool. Verdict on each open A/B goes in the verdict block under that section. Locked sections kept as visual reference.
+  </div>
+</footer>
+
+</body>
+</html>

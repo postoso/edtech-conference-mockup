@@ -1,0 +1,1980 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Maya Chen — Yale Short Answer 2 — Side-by-side compare</title>
+<meta name="page-purpose" content="This page is for: a consultant comparing two essay drafts side-by-side — usable for in-depth revision review.">
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:        #f7f8fa;
+    --surface:   #ffffff;
+    --surface-2: #fbfcfd;
+    --ink:       #0f1419;
+    --ink-2:     #475569;
+    --ink-3:     #94a3b8;
+    --line:      #e4e6eb;
+    --line-2:    #cbd5e1;
+
+    --sidebar:        #0f172a;
+    --sidebar-active: #1e293b;
+    --sidebar-ink:    #cbd5e1;
+    --sidebar-ink-2:  #64748b;
+    --sidebar-line:   rgba(255,255,255,0.08);
+
+    --primary:        #5b5fcf;
+    --primary-ink:    #4338ca;
+    --primary-bg:     #eef0fb;
+    --primary-line:   #c7cbe8;
+
+    /* v2 locked 3-color status palette */
+    --status-done:       #047857;
+    --status-done-bg:    #d1fae5;
+    --status-active:     #b45309;
+    --status-active-bg:  #fef3c7;
+    --status-overdue:    #be123c;
+    --status-overdue-bg: #ffe4e6;
+    --status-overdue-line: #fecdd3;
+    --status-neutral:    #94a3b8;
+
+    /* legacy aliases for inline-edit highlighting (rose used here as an
+       editorial removal mark, NOT as a status — kept distinct for diff readability) */
+    --rose:    var(--status-overdue);
+    --rose-bg: var(--status-overdue-bg);
+    --warn:    var(--status-active);
+    --warn-bg: var(--status-active-bg);
+    --success: var(--status-done);
+    --success-bg: var(--status-done-bg);
+
+    --radius: 6px;
+    --radius-sm: 4px;
+    --radius-lg: 8px;
+    --font-body: 'Geist', -apple-system, sans-serif;
+    --font-display: 'Geist', -apple-system, sans-serif;
+    --font-mono: 'Geist Mono', 'SF Mono', monospace;
+  }
+
+  /* ── Pattern 4 — Color-intensity slider modes (5-state per v2 spec) ── */
+
+  /* OFF — maximum neutralization: even overdue + indigo go to ink */
+  body.color-off {
+    --status-done: var(--ink-3);
+    --status-done-bg: transparent;
+    --status-active: var(--ink-3);
+    --status-active-bg: transparent;
+    --status-overdue: var(--ink);
+    --status-overdue-bg: transparent;
+    --primary: var(--ink);
+    --primary-ink: var(--ink);
+    --primary-bg: transparent;
+    --primary-line: var(--line-2);
+    --rose: var(--ink);
+    --rose-bg: transparent;
+    --warn: var(--ink-3);
+    --warn-bg: transparent;
+    --success: var(--ink-3);
+    --success-bg: transparent;
+  }
+  body.color-off .legend-swatch.added { background: transparent; border: 1px solid var(--line); border-bottom: 1.5px solid var(--ink); }
+  body.color-off .legend-swatch.removed { background: transparent; border: 1px solid var(--line); }
+  body.color-off .legend-swatch.removed::after { background: var(--ink); }
+  body.color-off .added { background: transparent; border-bottom: 1.5px solid var(--ink); color: inherit; }
+  body.color-off .removed { background: transparent; color: var(--ink-2); text-decoration-color: var(--ink-2); }
+  body.color-off .badge-current { background: var(--surface); color: var(--ink); border-color: var(--ink); }
+  body.color-off .v-chip.active { background: var(--ink); color: white; border-color: var(--ink); box-shadow: 0 0 0 3px var(--bg); }
+  body.color-off .v-chip.compared { background: var(--surface); color: var(--ink); border-color: var(--ink-2); font-weight: 600; }
+  body.color-off .c-tag.xiao { background: var(--bg); color: var(--ink-2); }
+  body.color-off .thread-pill { background: var(--bg); color: var(--ink); border-color: var(--line-2); }
+  body.color-off .thread-pill .dot { background: var(--ink); }
+  body.color-off .pane.is-current .pane-header::before { background: var(--ink); }
+  body.color-off .page-header::before { background: var(--ink); }
+  body.color-off .btn-primary { background: var(--ink); color: white; }
+  body.color-off .c-avatar.xj { background: linear-gradient(135deg, #475569 0%, #94a3b8 100%); }
+  body.color-off .c-avatar.mc {
+    background: linear-gradient(135deg, #1f2937 0%, #6b7280 100%);
+    box-shadow: 0 0 0 1px rgba(15,20,25,0.18);
+  }
+  body.color-off .yale-tick { background: var(--ink); }
+
+  /* MINIMAL — overdue (rose) + brand indigo + status-done (emerald) retain saturation;
+     status-active (amber) + WS chips neutralize (D1=A, 2026-05-12) */
+  body.color-minimal {
+    --status-active: var(--ink-3);
+    --status-active-bg: transparent;
+    --warn: var(--ink-3);
+    --warn-bg: transparent;
+    /* overdue (rose) + indigo + status-done (emerald, also --success alias) retain saturation per spec */
+  }
+  body.color-minimal .legend-swatch.added { background: transparent; border: 1px solid var(--line); border-bottom: 1.5px solid var(--ink-3); }
+  body.color-minimal .added { background: transparent; border-bottom: 1.5px dashed var(--ink-3); color: inherit; }
+  body.color-minimal .badge-current { background: var(--surface); color: var(--ink-2); border-color: var(--line); }
+  body.color-minimal .v-chip.compared { background: var(--surface); color: var(--ink-2); border-color: var(--line-2); font-weight: 500; }
+  body.color-minimal .c-tag.xiao { background: var(--bg); color: var(--ink-2); }
+  body.color-minimal .thread-pill { background: var(--bg); color: var(--ink-2); border-color: var(--line); }
+  body.color-minimal .thread-pill .dot { background: var(--ink-3); }
+  /* Mode B bypass override — MC avatar gradient hardcoded rose (#be123c → #fb7185) stays
+     saturated in Minimal because gradient stops aren't var-driven. Neutralize. (S1, 2026-05-12) */
+  body.color-minimal .c-avatar.mc {
+    background: linear-gradient(135deg, #475569 0%, #94a3b8 100%);
+    box-shadow: 0 0 0 1px rgba(15,20,25,0.18);
+  }
+
+  /* STATUS (DEFAULT) — locked 3-color status palette, no overrides needed */
+
+  /* STATUS+ — working-style chips at full saturation (no working-style chips in this surface,
+     but the comments Consultant tag + thread "awaiting" pill get a small saturation boost
+     to read as the "more-color" rung between Status and Full). */
+  body.color-status-plus .c-tag.xiao { background: #ddd6fe; color: #6d28d9; }
+  body.color-status-plus .pane.is-prior .pane-header { background: #f1f5fc; }
+  body.color-status-plus .legend { background: linear-gradient(180deg, var(--primary-bg) 0%, var(--surface) 80%); }
+
+  /* FULL — restore decorative tints + slightly more saturation (essentially v1 behavior) */
+  body.color-full .pane.is-prior .essay { color: var(--ink); }
+  body.color-full .v-chip.compared { box-shadow: 0 0 0 2px var(--primary-bg); }
+  body.color-full .legend { background: linear-gradient(180deg, var(--primary-bg) 0%, var(--surface) 100%); }
+  body.color-full .c-tag.xiao { background: #ddd6fe; color: #6d28d9; }
+  body.color-full .thread-pill { background: var(--status-active-bg); color: var(--status-active); border-color: #fde68a; }
+  body.color-full .pane.is-prior { background: #eef0fb; }
+  body.color-full .pane.is-prior .pane-header { background: #f1f3fb; }
+  body.color-full .page-header { background: linear-gradient(180deg, var(--primary-bg) 0%, var(--surface) 60%); }
+
+  html, body { height: 100%; }
+
+  body {
+    font-family: var(--font-body);
+    background: var(--bg);
+    color: var(--ink);
+    font-size: 13px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* ── Layout shell ── */
+  .shell {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  /* ── Top chrome ── */
+  .topbar {
+    height: 48px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    gap: 14px;
+    flex-shrink: 0;
+    z-index: 40;
+  }
+
+  .breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 12.5px;
+    color: var(--ink-2);
+    min-width: 0;
+  }
+  .breadcrumb a { color: var(--ink-2); text-decoration: none; }
+  .breadcrumb a:hover { color: var(--ink); }
+  .breadcrumb-sep { color: var(--line-2); font-size: 11px; }
+  .breadcrumb-current {
+    color: var(--ink);
+    font-weight: 500;
+    font-family: var(--font-display);
+    font-size: 13.5px;
+    letter-spacing: -0.005em;
+  }
+
+  .topbar-end {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .icon-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--ink-2);
+    cursor: pointer;
+    background: transparent;
+    border: none;
+    position: relative;
+  }
+  .icon-btn:hover { background: var(--bg); color: var(--ink); }
+
+  .notif-dot {
+    position: absolute;
+    top: 7px; right: 7px;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--status-overdue);
+    border: 1.5px solid white;
+  }
+
+  .avatar {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: var(--primary);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 600; color: white;
+    cursor: pointer; flex-shrink: 0;
+    letter-spacing: 0.02em;
+  }
+
+  /* ── Universal Pattern 3 — Design-intent overlay ── */
+  .notes-toggle {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 12px; color: var(--ink-2);
+    padding: 5px 10px; border-radius: var(--radius);
+    background: transparent; border: 1px solid var(--line);
+    cursor: pointer;
+    font-family: var(--font-body);
+  }
+  .notes-toggle:hover { background: var(--bg); color: var(--ink); }
+  .notes-toggle svg { color: var(--ink-3); }
+  body.design-notes-on .notes-toggle {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+  }
+  body.design-notes-on .notes-toggle svg { color: rgba(255,255,255,0.85); }
+
+  /* Annotated element styling — only shown when notes ON */
+  [data-design-note] { position: relative; }
+  body.design-notes-on [data-design-note] {
+    outline: 2px dashed var(--primary);
+    outline-offset: 3px;
+    border-radius: 3px;
+  }
+  body.design-notes-on [data-design-note]::before {
+    content: attr(data-note-num);
+    position: absolute;
+    top: -10px; left: -10px;
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: var(--primary);
+    color: white;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    display: flex; align-items: center; justify-content: center;
+    z-index: 60;
+    box-shadow: 0 1px 3px rgba(15,20,25,0.25);
+    pointer-events: none;
+  }
+
+  /* Floating notes panel — fixed right side */
+  .notes-panel {
+    position: fixed;
+    top: 64px;
+    right: 16px;
+    width: 300px;
+    max-height: calc(100vh - 80px);
+    background: var(--surface);
+    border: 1px solid var(--primary-line);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 12px 32px rgba(15,20,25,0.18), 0 2px 8px rgba(15,20,25,0.06);
+    display: none;
+    flex-direction: column;
+    z-index: 200;
+    overflow: hidden;
+  }
+  body.design-notes-on .notes-panel { display: flex; }
+
+  .notes-panel-head {
+    padding: 14px 16px 12px;
+    border-bottom: 1px solid var(--line);
+    background: linear-gradient(180deg, var(--primary-bg) 0%, var(--surface) 100%);
+  }
+  .notes-panel-eyebrow {
+    font-family: var(--font-body);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--primary-ink);
+    margin-bottom: 4px;
+  }
+  .notes-panel-title {
+    font-family: var(--font-display);
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: -0.012em;
+    color: var(--ink);
+    line-height: 1.2;
+  }
+  .notes-panel-sub {
+    margin-top: 3px;
+    font-size: 11.5px;
+    color: var(--ink-2);
+  }
+  .notes-panel-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px 0 12px;
+  }
+  .notes-panel-list::-webkit-scrollbar { width: 4px; }
+  .notes-panel-list::-webkit-scrollbar-thumb { background: var(--line); border-radius: 2px; }
+
+  .note-item {
+    padding: 12px 16px 12px 44px;
+    position: relative;
+    border-bottom: 1px solid var(--line);
+  }
+  .note-item:last-child { border-bottom: none; }
+  .note-num {
+    position: absolute;
+    left: 14px; top: 13px;
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: var(--primary);
+    color: white;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .note-label {
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--ink);
+    letter-spacing: -0.005em;
+    margin-bottom: 3px;
+  }
+  .note-text {
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--ink-2);
+  }
+  .note-text em {
+    font-family: var(--font-display);
+    font-style: italic;
+    color: var(--ink);
+  }
+
+  /* ── Pattern 4 — Color-intensity slider (top chrome) ── */
+  .color-slider, .ab-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 2px;
+    height: 28px;
+  }
+  .color-slider-label, .ab-toggle-label {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink-3);
+    padding: 0 8px 0 6px;
+    border-right: 1px solid var(--line);
+    margin-right: 4px;
+    height: 100%;
+    display: inline-flex;
+    align-items: center;
+  }
+  .color-slider button, .ab-toggle .ab-btn {
+    font-family: var(--font-body);
+    font-size: 11.5px;
+    font-weight: 500;
+    color: var(--ink-2);
+    background: transparent;
+    border: none;
+    border-radius: 4px;
+    padding: 3px 9px;
+    cursor: pointer;
+    line-height: 1;
+    transition: background 0.12s, color 0.12s;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+  }
+  .color-slider button:hover, .ab-toggle .ab-btn:hover { color: var(--ink); }
+  .color-slider button[aria-pressed="true"],
+  .ab-toggle .ab-btn[aria-pressed="true"] {
+    background: var(--surface);
+    color: var(--ink);
+    box-shadow: 0 1px 2px rgba(15,20,25,0.08);
+  }
+
+  /* Rail toggle (Universal Pattern 1) */
+  .rail-toggle {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 12px; color: var(--ink-2);
+    padding: 5px 10px; border-radius: var(--radius);
+    background: transparent; border: 1px solid var(--line);
+    cursor: pointer;
+    font-family: var(--font-body);
+  }
+  .rail-toggle:hover { background: var(--bg); color: var(--ink); }
+  .rail-toggle svg { color: var(--ink-3); }
+
+  /* ── Body row ── */
+  .body-row {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  /* ── Sidebar (dark) ── */
+  .sidebar {
+    width: 220px;
+    background: var(--sidebar);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    overflow-y: auto;
+    padding: 14px 0 12px;
+  }
+  .sidebar::-webkit-scrollbar { width: 0; }
+
+  .sidebar-brand {
+    padding: 2px 16px 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .brand-link {
+    text-decoration: none;
+    display: inline-flex;
+    cursor: pointer;
+    transition: opacity 180ms ease;
+  }
+  .brand-link:hover { opacity: 0.85; }
+  .brand-link:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+    border-radius: 8px;
+  }
+  .brand-mark {
+    width: 24px; height: 24px;
+    border-radius: 7px;
+    background: var(--primary);
+    display: inline-flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .brand-mark svg { display: block; }
+
+  .sidebar-section-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #4b5563;
+    padding: 6px 16px 4px;
+  }
+
+  .sidebar-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 16px;
+    color: var(--sidebar-ink-2);
+    font-size: 13px;
+    font-weight: 400;
+    cursor: pointer;
+    transition: background 0.1s, color 0.1s;
+    position: relative;
+    text-decoration: none;
+  }
+  .sidebar-item:hover { background: var(--sidebar-active); color: var(--sidebar-ink); }
+  .sidebar-item.active {
+    background: var(--sidebar-active);
+    color: #f1f5f9;
+    font-weight: 500;
+  }
+  .sidebar-item.active::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: var(--primary);
+    border-radius: 0 1px 1px 0;
+  }
+  .sidebar-icon {
+    width: 16px; height: 16px;
+    flex-shrink: 0;
+    opacity: 0.75;
+  }
+  .sidebar-item.active .sidebar-icon { opacity: 1; color: #c7cbe8; }
+  .sidebar-count {
+    margin-left: auto;
+    font-size: 11px;
+    font-family: var(--font-mono);
+    color: var(--sidebar-ink-2);
+    font-variant-numeric: tabular-nums;
+  }
+  .sidebar-item.active .sidebar-count { color: #cbd5e1; }
+
+  .sidebar-divider {
+    border: none;
+    border-top: 1px solid var(--sidebar-line);
+    margin: 10px 16px;
+  }
+
+  .student-nav-header {
+    padding: 4px 16px 6px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--sidebar-ink-2);
+  }
+
+  /* ── Main content ── */
+  .main-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .page-header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--line);
+    padding: 22px 28px 18px;
+    flex-shrink: 0;
+    position: relative;
+  }
+  /* a single hairline of indigo at the top edge — quiet but signs the page */
+  .page-header::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0;
+    width: 56px;
+    height: 2px;
+    background: var(--primary);
+  }
+
+  .ph-top-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 14px;
+  }
+
+  .ph-eyebrow {
+    font-family: var(--font-body);
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .ph-eyebrow .yale-tick {
+    width: 6px; height: 6px;
+    background: #00356b;
+    border-radius: 50%;
+    display: inline-block;
+  }
+  .ph-eyebrow .sa-tag {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--ink-2);
+    background: var(--bg);
+    border: 1px solid var(--line);
+    padding: 1px 6px;
+    border-radius: 3px;
+    letter-spacing: 0.04em;
+  }
+
+  .doc-title {
+    font-family: var(--font-display);
+    font-size: 26px;
+    font-weight: 600;
+    letter-spacing: -0.022em;
+    line-height: 1.15;
+    color: var(--ink);
+    display: inline-block;
+    cursor: help;
+  }
+  .doc-title em {
+    font-style: normal;
+    font-weight: 400;
+    color: var(--ink-3);
+    letter-spacing: -0.018em;
+  }
+  /* page-purpose tooltip on the title (Pattern 2 styled) */
+  .doc-title { position: relative; }
+  .doc-title::after {
+    content: attr(data-purpose);
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    background: var(--ink);
+    color: white;
+    padding: 7px 10px;
+    border-radius: var(--radius-sm);
+    font-size: 11px;
+    font-weight: 400;
+    line-height: 1.4;
+    white-space: normal;
+    width: max-content;
+    max-width: 380px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s ease;
+    z-index: 100;
+    box-shadow: 0 4px 12px rgba(15,20,25,0.18);
+  }
+  .doc-title:hover::after { opacity: 1; }
+
+  .doc-meta {
+    margin-top: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    font-size: 12px;
+    color: var(--ink-2);
+  }
+  .doc-meta .sep { color: var(--ink-3); font-size: 10px; }
+  .doc-meta .num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; color: var(--ink); font-weight: 500; }
+  .doc-meta .strong { color: var(--ink); font-weight: 500; }
+
+  .ph-actions {
+    margin-left: auto;
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+    align-items: flex-start;
+  }
+
+  /* Buttons */
+  .btn {
+    font-family: var(--font-body);
+    font-size: 12.5px;
+    font-weight: 500;
+    padding: 7px 13px;
+    border-radius: var(--radius);
+    cursor: pointer;
+    border: 1px solid transparent;
+    white-space: nowrap;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    position: relative;
+  }
+  .btn-primary {
+    background: var(--primary);
+    color: white;
+  }
+  .btn-primary:hover { background: #4c50b8; }
+  .btn-ghost {
+    background: var(--surface);
+    color: var(--ink-2);
+    border-color: var(--line);
+  }
+  .btn-ghost:hover { background: var(--bg); color: var(--ink); border-color: var(--line-2); }
+
+  /* Universal Pattern 2 — fake-button hover tooltips */
+  .fake-btn::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    background: var(--ink);
+    color: white;
+    padding: 7px 10px;
+    border-radius: var(--radius-sm);
+    font-size: 11px;
+    font-weight: 400;
+    line-height: 1.4;
+    white-space: normal;
+    width: max-content;
+    max-width: 280px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s ease;
+    z-index: 100;
+    box-shadow: 0 4px 12px rgba(15,20,25,0.18);
+  }
+  .fake-btn::before {
+    content: '';
+    position: absolute;
+    top: calc(100% + 2px);
+    right: 14px;
+    border: 4px solid transparent;
+    border-bottom-color: var(--ink);
+    opacity: 0;
+    transition: opacity 0.15s ease;
+    z-index: 101;
+  }
+  .fake-btn:hover::after,
+  .fake-btn:hover::before { opacity: 1; }
+
+  /* ── 3-pane workspace ── */
+  .work-row {
+    flex: 1;
+    display: flex;
+    min-height: 0;
+    overflow: hidden;
+    background: var(--bg);
+  }
+
+  .panes {
+    flex: 1;
+    display: grid;
+    grid-template-columns: minmax(0,1fr) minmax(0,1fr) minmax(340px, 360px);
+    min-width: 0;
+    overflow: hidden;
+    transition: grid-template-columns 0.22s ease;
+  }
+  body.comments-collapsed .panes {
+    grid-template-columns: minmax(0,1fr) minmax(0,1fr) 0px;
+  }
+  body.comments-collapsed .comments-pane {
+    opacity: 0;
+    pointer-events: none;
+    overflow: hidden;
+  }
+
+  .pane {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    border-right: 1px solid var(--line);
+    background: var(--bg);
+    overflow: hidden;
+  }
+  .pane:last-child { border-right: none; }
+
+  /* Draft-8 pane recedes a touch — same tokens, less saturation by surface choice */
+  .pane.is-prior { background: #f3f4f7; }
+  .pane.is-prior .pane-header { background: #f8f9fb; }
+  .pane.is-prior .essay { color: #2a3140; }
+
+  /* Draft-10 pane signals "current" with a top hairline of indigo on the pane header */
+  .pane.is-current .pane-header { position: relative; }
+  .pane.is-current .pane-header::before {
+    content: '';
+    position: absolute;
+    left: 0; right: 0; top: 0;
+    height: 2px;
+    background: var(--primary);
+    opacity: 0.85;
+  }
+
+  .pane-header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--line);
+    padding: 14px 22px 12px;
+    flex-shrink: 0;
+  }
+
+  .version-strip {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    flex-wrap: nowrap;
+    position: relative;
+  }
+
+  .v-strip-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin-right: 10px;
+    padding-right: 10px;
+    border-right: 1px solid var(--line);
+    line-height: 22px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .v-strip-label .n {
+    color: var(--ink-2);
+    font-weight: 500;
+  }
+
+  /* timeline-style strip: chips connected by a hairline */
+  .v-chip-track {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    position: relative;
+  }
+  .v-chip-track::before {
+    content: '';
+    position: absolute;
+    left: 13px; right: 13px;
+    top: 50%;
+    height: 1px;
+    background: var(--line);
+    z-index: 0;
+  }
+
+  .v-chip {
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-2);
+    cursor: pointer;
+    transition: background 0.12s, border-color 0.12s, color 0.12s, transform 0.12s;
+    font-variant-numeric: tabular-nums;
+    position: relative;
+    z-index: 1;
+    margin-right: 2px;
+  }
+  .v-chip:hover {
+    background: var(--surface);
+    border-color: var(--ink-3);
+    color: var(--ink);
+  }
+  .v-chip.active {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: white;
+    font-weight: 600;
+    box-shadow: 0 0 0 3px var(--primary-bg);
+    transform: scale(1.06);
+  }
+  .v-chip.compared {
+    border-color: var(--primary-line);
+    color: var(--primary-ink);
+    background: var(--primary-bg);
+    font-weight: 600;
+  }
+  .v-chip.gap-marker {
+    border: none;
+    color: var(--ink-3);
+    background: transparent;
+    cursor: default;
+    font-size: 13px;
+    width: 14px;
+    letter-spacing: 1px;
+    margin-right: 2px;
+  }
+  .v-chip.gap-marker:hover { background: transparent; border-color: transparent; transform: none; }
+
+  .pane-meta-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px;
+    font-size: 12px;
+    color: var(--ink-2);
+    flex-wrap: wrap;
+  }
+  .pane-meta-row .sep { color: var(--ink-3); }
+  .pane-meta-row .num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+  .pane-meta-row .author { color: var(--ink); font-weight: 500; }
+  .pane-meta-row .badge {
+    font-size: 10.5px;
+    font-weight: 500;
+    padding: 2px 7px;
+    border-radius: 10px;
+    border: 1px solid var(--line);
+    color: var(--ink-2);
+    background: var(--bg);
+  }
+  .pane-meta-row .badge-current {
+    color: var(--primary-ink);
+    background: var(--primary-bg);
+    border-color: var(--primary-line);
+  }
+  .pane-meta-row .badge-rev {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Essay body */
+  .essay-scroll {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 28px 22px 80px;
+  }
+  .essay-scroll::-webkit-scrollbar { width: 6px; }
+  .essay-scroll::-webkit-scrollbar-track { background: transparent; }
+  .essay-scroll::-webkit-scrollbar-thumb { background: var(--line); border-radius: 3px; }
+  .essay-scroll::-webkit-scrollbar-thumb:hover { background: var(--line-2); }
+
+  .essay {
+    max-width: 62ch;
+    margin: 0 auto;
+    font-family: var(--font-body);
+    font-size: 14.5px;
+    line-height: 1.7;
+    color: var(--ink);
+    font-feature-settings: "kern" on, "calt" on;
+    font-weight: 400;
+    letter-spacing: -0.003em;
+  }
+  .essay .prompt {
+    font-family: var(--font-body);
+    font-size: 11.5px;
+    color: var(--ink-2);
+    line-height: 1.5;
+    border-left: 2px solid var(--line);
+    padding: 2px 0 2px 12px;
+    margin-bottom: 22px;
+    display: block;
+    letter-spacing: 0;
+    font-weight: 400;
+  }
+  .essay .prompt-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    display: block;
+    margin-bottom: 3px;
+  }
+  .essay p { margin-bottom: 1em; }
+  .essay p:last-child { margin-bottom: 0; }
+
+  /* change-marks */
+  .added,
+  .removed {
+    position: relative;
+    cursor: help;
+    border-radius: 2px;
+    padding: 1px 2px;
+    margin: 0 -1px;
+  }
+  .added {
+    background: var(--primary-bg);
+    border-bottom: 1.5px solid var(--primary-line);
+  }
+  .removed {
+    background: var(--status-overdue-bg);
+    text-decoration: line-through;
+    text-decoration-color: rgba(190, 18, 60, 0.55);
+    text-decoration-thickness: 1.5px;
+    color: #7c1d3a;
+  }
+  .added:hover { background: #e3e7f8; }
+  .removed:hover { background: #ffd0d4; }
+
+  /* Tooltip on changes (Universal Pattern 2 style) */
+  .added::after,
+  .removed::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    left: 50%;
+    bottom: calc(100% + 6px);
+    transform: translateX(-50%);
+    background: var(--ink);
+    color: white;
+    padding: 6px 9px;
+    border-radius: var(--radius-sm);
+    font-family: var(--font-body);
+    font-size: 11px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 1.4;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s ease;
+    z-index: 50;
+    letter-spacing: 0;
+  }
+  .added:hover::after,
+  .removed:hover::after { opacity: 1; }
+
+  /* anchor highlight (when hovered, glows to indicate the active comment) */
+  .anchor {
+    position: relative;
+  }
+  .anchor.is-active {
+    background: linear-gradient(transparent 60%, #fef3c7 60%);
+  }
+
+  /* ── Comments column ── */
+  .comments-pane {
+    background: var(--surface);
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    overflow: hidden;
+    border-right: 1px solid var(--line);
+  }
+  .comments-pane:last-child { border-right: none; }
+
+  .comments-header {
+    padding: 14px 18px 12px;
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+
+  .comments-title-block {
+    flex: 1;
+    min-width: 0;
+  }
+  .comments-title {
+    font-family: var(--font-display);
+    font-size: 14.5px;
+    font-weight: 600;
+    color: var(--ink);
+    letter-spacing: -0.005em;
+    line-height: 1.2;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .thread-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-family: var(--font-body);
+    font-size: 10.5px;
+    font-weight: 500;
+    color: var(--status-active);
+    background: var(--status-active-bg);
+    border: 1px solid #fde68a;
+    padding: 2px 8px;
+    border-radius: 10px;
+    letter-spacing: 0.01em;
+  }
+  .thread-pill .dot {
+    width: 5px; height: 5px;
+    background: var(--status-active);
+    border-radius: 50%;
+  }
+
+  .comments-sub {
+    margin-top: 4px;
+    font-size: 11.5px;
+    color: var(--ink-2);
+  }
+  .comments-sub .quote {
+    font-family: var(--font-display);
+    font-style: italic;
+    color: var(--ink);
+    font-size: 12px;
+  }
+
+  .comments-scroll {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px 18px 80px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .comments-scroll::-webkit-scrollbar { width: 6px; }
+  .comments-scroll::-webkit-scrollbar-thumb { background: var(--line); border-radius: 3px; }
+
+  .thread-line {
+    position: relative;
+  }
+  .thread-line::before {
+    content: '';
+    position: absolute;
+    left: 13px;
+    top: 30px;
+    bottom: -14px;
+    width: 1.5px;
+    background: var(--line);
+  }
+  .thread-line:last-child::before { display: none; }
+
+  .comment {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+
+  .c-avatar {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    color: white;
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    border: 2px solid var(--surface);
+    z-index: 2;
+    position: relative;
+  }
+  .c-avatar.xj { background: linear-gradient(135deg, #5b5fcf 0%, #818cf8 100%); }
+  /* Maya = student, slightly larger ring + soft inner glow to read as "writer"; Xiao stays compact */
+  .c-avatar.mc {
+    background: linear-gradient(135deg, #be123c 0%, #fb7185 100%);
+    box-shadow: 0 0 0 1px rgba(190,18,60,0.18);
+  }
+  /* Consultant marker — a tiny pencil dot on Xiao's avatar, signs "editor" not just "user" */
+  .c-avatar.xj::after {
+    content: '';
+    position: absolute;
+    right: -2px; bottom: -2px;
+    width: 11px; height: 11px;
+    border-radius: 50%;
+    background: var(--surface);
+    border: 1.5px solid var(--surface);
+    background-image: radial-gradient(circle at 50% 50%, var(--primary) 0 3px, transparent 3.5px);
+  }
+
+  .c-body {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .c-head {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    margin-bottom: 3px;
+  }
+  .c-name {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .c-time {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: var(--ink-3);
+    font-variant-numeric: tabular-nums;
+  }
+  .c-tag {
+    font-size: 10px;
+    font-weight: 500;
+    padding: 1px 6px;
+    border-radius: 8px;
+    letter-spacing: 0.02em;
+  }
+  .c-tag.xiao { color: var(--primary-ink); background: var(--primary-bg); }
+
+  .c-text {
+    font-size: 12.5px;
+    line-height: 1.55;
+    color: var(--ink);
+  }
+
+  .c-text .anchor-quote {
+    display: block;
+    font-family: var(--font-display);
+    font-style: italic;
+    font-weight: 500;
+    font-size: 12.5px;
+    color: var(--ink);
+    background: linear-gradient(90deg, var(--primary-bg) 0%, transparent 100%);
+    border-left: 2px solid var(--primary-line);
+    padding: 4px 8px 4px 10px;
+    margin: 7px 0;
+    line-height: 1.45;
+    border-radius: 0 3px 3px 0;
+  }
+
+  .c-meta {
+    margin-top: 6px;
+    display: flex;
+    gap: 12px;
+    font-size: 11px;
+    color: var(--ink-3);
+    align-items: center;
+  }
+  .c-meta a {
+    color: var(--ink-2);
+    text-decoration: none;
+  }
+  .c-meta a:hover { color: var(--primary-ink); }
+
+  .c-resolved {
+    color: var(--status-done);
+    background: var(--status-done-bg);
+    font-size: 10px;
+    font-weight: 500;
+    padding: 1px 7px;
+    border-radius: 8px;
+  }
+
+  /* compose box */
+  .compose {
+    border-top: 1px solid var(--line);
+    padding: 12px 18px;
+    flex-shrink: 0;
+    background: var(--surface-2);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .compose-input {
+    flex: 1;
+    font-size: 12px;
+    color: var(--ink-3);
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 7px 10px;
+  }
+
+  /* ── Right rail (profile) ── */
+  .right-rail {
+    width: 240px;
+    flex-shrink: 0;
+    background: var(--surface);
+    border-left: 1px solid var(--line);
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    transition: width 0.2s ease, opacity 0.2s ease, border-left-color 0.2s ease;
+  }
+  body.rail-collapsed .right-rail {
+    width: 0;
+    opacity: 0;
+    border-left-color: transparent;
+  }
+  .right-rail::-webkit-scrollbar { width: 4px; }
+  .right-rail::-webkit-scrollbar-thumb { background: var(--line); border-radius: 2px; }
+
+  .rail-card {
+    padding: 18px 18px 16px;
+  }
+
+  .rail-avatar-row {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+  .rail-avatar {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #be123c 0%, #fb7185 100%);
+    color: white;
+    font-size: 15px;
+    font-weight: 600;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    letter-spacing: 0.01em;
+  }
+  .rail-name {
+    font-family: var(--font-display);
+    font-size: 17px;
+    font-weight: 600;
+    line-height: 1.15;
+    color: var(--ink);
+    letter-spacing: -0.012em;
+  }
+  .rail-sub {
+    margin-top: 2px;
+    font-size: 11.5px;
+    color: var(--ink-2);
+  }
+
+  .rail-chip-row {
+    margin-top: 12px;
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .rail-chip {
+    font-size: 10.5px;
+    font-weight: 500;
+    padding: 2px 8px;
+    border-radius: 10px;
+    border: 1px solid var(--line);
+    color: var(--ink-2);
+    background: var(--bg);
+    letter-spacing: 0.01em;
+  }
+  .rail-chip.ws-perfectionist {
+    color: var(--ws-perfectionist);
+    background: var(--ws-perfectionist-bg);
+    border-color: #ddd6fe;
+  }
+
+  .rail-section {
+    border-top: 1px solid var(--line);
+    padding: 14px 18px;
+  }
+  .rail-section-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin-bottom: 8px;
+  }
+
+  .rail-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px 12px;
+  }
+  .rail-stat-num {
+    font-family: var(--font-mono);
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--ink);
+    line-height: 1.1;
+    font-variant-numeric: tabular-nums;
+  }
+  .rail-stat-label {
+    font-size: 10.5px;
+    color: var(--ink-2);
+    margin-top: 1px;
+  }
+
+  .rail-line {
+    font-size: 12px;
+    color: var(--ink-2);
+    line-height: 1.5;
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 3px 0;
+  }
+  .rail-line .k { color: var(--ink-3); flex-shrink: 0; }
+  .rail-line .v { color: var(--ink); font-weight: 500; text-align: right; }
+
+  .rail-school {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 0;
+  }
+  .school-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .school-dot.yale { background: #00356b; }
+  .school-name {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--ink);
+  }
+  .school-status {
+    margin-left: auto;
+    font-size: 10.5px;
+    color: var(--status-active);
+    background: var(--status-active-bg);
+    border: 1px solid #fde68a;
+    padding: 1px 7px;
+    border-radius: 10px;
+    font-weight: 500;
+  }
+
+  /* editorial caption strip — replaces "legend bar" treatment */
+  .legend {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    font-size: 11px;
+    color: var(--ink-2);
+    padding: 9px 28px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--line);
+    flex-shrink: 0;
+  }
+
+  /* Persistent "Compare to: [draft]" picker — sits inside the legend strip.
+     Per Roei 5/12 L491: the comparing affordance should always be visible.
+     On V1 side-by-side, the prior pane is always populated — the picker makes
+     it explicit that the prior draft is swappable. */
+  .legend-picker {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: 4px;
+  }
+  .legend-picker .picker-eyebrow {
+    font-family: var(--font-body);
+    font-style: normal;
+    font-size: 10.5px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink-3);
+  }
+  .legend-picker .picker-control {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 9px 3px 10px;
+    border-radius: var(--radius);
+    border: 1px dashed var(--line-2);
+    background: var(--surface);
+    color: var(--ink);
+    font-size: 11.5px;
+    font-family: var(--font-body);
+    font-weight: 500;
+    cursor: pointer;
+    transition: border-color 0.12s, color 0.12s, background 0.12s, border-style 0.12s;
+  }
+  .legend-picker .picker-control:hover {
+    border-color: var(--primary-line);
+    color: var(--primary-ink);
+    background: var(--primary-bg);
+    border-style: solid;
+  }
+  .legend-picker .picker-control .label {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    font-size: 11px;
+    font-weight: 500;
+  }
+  .legend-picker .picker-chev {
+    color: var(--ink-3);
+    transition: color 0.12s;
+  }
+  .legend-picker .picker-control:hover .picker-chev {
+    color: var(--primary);
+  }
+  .legend-label {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 12px;
+    color: var(--ink-2);
+    font-weight: 400;
+    letter-spacing: -0.005em;
+  }
+  .legend-arrow {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-variant-numeric: tabular-nums;
+  }
+  .legend-arrow .arrow {
+    display: inline-block;
+    width: 14px;
+    height: 1px;
+    background: var(--primary);
+    position: relative;
+  }
+  .legend-arrow .arrow::after {
+    content: '';
+    position: absolute;
+    right: -1px; top: -2px;
+    border: 2.5px solid transparent;
+    border-left-color: var(--primary);
+  }
+  .legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .legend-swatch {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+  .legend-swatch.added {
+    background: var(--primary-bg);
+    border-bottom: 1.5px solid var(--primary-line);
+  }
+  .legend-swatch.removed {
+    background: var(--rose-bg);
+    position: relative;
+  }
+  .legend-swatch.removed::after {
+    content: '';
+    position: absolute;
+    left: 1px; right: 1px;
+    top: 50%;
+    height: 1.5px;
+    background: rgba(190,18,60,0.55);
+  }
+  .legend-spacer { flex: 1; }
+  .legend-meta {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: var(--ink-3);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.01em;
+  }
+  .legend-sep { color: var(--ink-3); font-size: 9px; }
+
+</style>
+</head>
+
+<body class="comments-collapsed">
+<!-- Comments column default = COLLAPSED per Xiao 5/12 prep doc: "V1 with comments
+     default off — without comments, side-by-side is fine; with comments it's
+     overwhelming." Reveal via the "Show comments" toggle in top chrome. -->
+
+<div class="shell">
+
+  <!-- ── TOP CHROME ── -->
+  <header class="topbar">
+    <a href="../index.html" class="brand-link" aria-label="Back to demo index">
+      <div class="brand-mark" data-design-note="brand" data-note-num="7" aria-hidden="true">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="white" stroke-width="1.4">
+          <circle cx="7" cy="7" r="5.5"/>
+          <circle cx="7" cy="7" r="2.5"/>
+        </svg>
+      </div>
+    </a>
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <a href="#">Students</a>
+      <span class="breadcrumb-sep">›</span>
+      <a href="#">Maya Chen</a>
+      <span class="breadcrumb-sep">›</span>
+      <a href="#">Documents</a>
+      <span class="breadcrumb-sep">›</span>
+      <span class="breadcrumb-current">Yale — Short Answer 2</span>
+    </nav>
+    <div class="topbar-end">
+      <!-- Pattern 5 — Compare-mode toggle (this view = Side-by-side; alt = Inline at Doc V2) -->
+      <div class="ab-toggle" role="radiogroup" aria-label="Compare mode">
+        <span class="ab-toggle-label">Compare</span>
+        <a href="document-v2-stacked-diff.html" class="ab-btn fake-btn" data-tooltip="Inline diff — see one draft with edits highlighted in place." aria-pressed="false">Inline</a>
+        <button class="ab-btn" data-ab-mode="sidebyside" aria-pressed="true">Side-by-side</button>
+      </div>
+
+      <div class="avatar" title="Xiao Jin — Consultant" aria-label="Xiao Jin">XJ</div>
+    </div>
+  </header>
+
+  <!-- ── BODY ROW ── -->
+  <div class="body-row">
+
+    <!-- ── DARK SIDEBAR ── -->
+    <nav class="sidebar" aria-label="Main navigation">
+      <div class="sidebar-section-label">Workspace</div>
+
+      <a class="sidebar-item" href="#">
+        <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Students
+        <span class="sidebar-count">15</span>
+      </a>
+
+      <a class="sidebar-item" href="#">
+        <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+        Cross-Tasks
+        <span class="sidebar-count">23</span>
+      </a>
+
+      <a class="sidebar-item" href="#">
+        <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Calendar
+      </a>
+
+      <a class="sidebar-item" href="#">
+        <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+        Modules
+      </a>
+
+      <hr class="sidebar-divider">
+
+      <div class="student-nav-header">Maya Chen</div>
+
+      <a class="sidebar-item" href="#">
+        <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+        Overview
+      </a>
+
+      <a class="sidebar-item" href="#">
+        <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+        Schools
+        <span class="sidebar-count">12</span>
+      </a>
+
+      <a class="sidebar-item" href="#">
+        <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        Tasks
+        <span class="sidebar-count">8</span>
+      </a>
+
+      <a class="sidebar-item" href="#">
+        <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        Snapshots
+        <span class="sidebar-count">18</span>
+      </a>
+
+      <a class="sidebar-item active" href="#" aria-current="page">
+        <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        Documents
+        <span class="sidebar-count">9</span>
+      </a>
+
+      <a class="sidebar-item" href="#">
+        <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Meetings
+        <span class="sidebar-count">7</span>
+      </a>
+
+      <a class="sidebar-item" href="#">
+        <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/></svg>
+        Notes
+        <span class="sidebar-count">11</span>
+      </a>
+    </nav>
+
+    <!-- ── MAIN CONTENT ── -->
+    <main class="main-content">
+
+      <!-- DOC HEADER -->
+      <header class="page-header">
+        <div class="ph-top-row">
+          <div>
+            <div class="ph-eyebrow">
+              <span class="yale-tick" aria-hidden="true"></span>
+              Yale University
+              <span class="sa-tag">SA · 02</span>
+              <span style="color: var(--ink-3); font-weight: 400; letter-spacing: 0; text-transform: none;">REA Deferred · LOCI active</span>
+            </div>
+            <h1 class="doc-title" data-design-note="title" data-note-num="1" data-purpose="This page is for: a consultant comparing two essay drafts side-by-side — usable for in-depth revision review.">Short Answer 2 <em>— “changed my mind”</em></h1>
+            <div class="doc-meta">
+              <span><span class="num">12</span> versions</span>
+              <span class="sep">·</span>
+              <span>Last edited <span class="num">2 days ago</span> by Maya</span>
+              <span class="sep">·</span>
+              <span><span class="num">~125</span> word target</span>
+              <span class="sep">·</span>
+              <span><span class="num">3</span> snapshots</span>
+            </div>
+          </div>
+          <div class="ph-actions">
+            <button class="btn btn-ghost fake-btn" data-tooltip="Creates a new version branched from the current draft (draft 12). Carries comments forward.">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              New version
+            </button>
+            <button class="btn btn-ghost fake-btn" data-tooltip="Saves a named checkpoint at the current version with an optional review note. Snapshots appear in the Snapshots tab.">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+              Snapshot
+            </button>
+            <button class="btn btn-primary fake-btn" data-tooltip="Notifies Xiao with the current version (draft 10) plus a review request. Pings appear in Xiao's inbox.">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+              Send for review
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <!-- COMPARISON CAPTION + persistent compare-to picker (Roei 5/12 L491) -->
+      <div class="legend" aria-label="Comparison legend">
+        <span class="legend-label">Comparing</span>
+        <span class="legend-arrow">Draft 8 <span class="arrow"></span> Draft 10</span>
+        <span class="legend-sep">·</span>
+        <span class="legend-picker" data-design-note="compare-picker" data-note-num="9">
+          <span class="picker-eyebrow">Compare to</span>
+          <button type="button" class="picker-control fake-btn" data-tooltip="Pick a different prior draft to compare against draft 10. Selecting one would reload the left pane with that draft.">
+            <span class="label">draft 8</span>
+            <svg class="picker-chev" width="10" height="10" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+              <path d="M3 4.5l3 3 3-3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </span>
+        <span class="legend-sep">·</span>
+        <span class="legend-item"><span class="legend-swatch added"></span>Added in 10</span>
+        <span class="legend-item"><span class="legend-swatch removed"></span>Removed from 8</span>
+        <span class="legend-spacer"></span>
+        <span class="legend-meta">26 changes · 24 Maya · 2 Xiao · 7 comments</span>
+      </div>
+
+      <!-- 3-PANE WORKSPACE -->
+      <div class="work-row">
+
+        <div class="panes">
+
+          <!-- ── PANE 1 — DRAFT 8 (prior) ── -->
+          <section class="pane is-prior" data-design-note="prior" data-note-num="3" aria-label="Draft 8">
+            <header class="pane-header">
+              <div class="version-strip" aria-label="Versions">
+                <span class="v-strip-label"><span class="n">12</span> ver</span>
+                <div class="v-chip-track" data-design-note="timeline" data-note-num="2">
+                  <span class="v-chip">1</span>
+                  <span class="v-chip">2</span>
+                  <span class="v-chip">3</span>
+                  <span class="v-chip">4</span>
+                  <span class="v-chip">5</span>
+                  <span class="v-chip">6</span>
+                  <span class="v-chip">7</span>
+                  <span class="v-chip active">8</span>
+                  <span class="v-chip gap-marker" title="No draft 9 — Maya skipped from 8 to 10">·</span>
+                  <span class="v-chip compared">10</span>
+                  <span class="v-chip">12</span>
+                </div>
+              </div>
+              <div class="pane-meta-row">
+                <span class="num">Dec 8</span>
+                <span class="sep">·</span>
+                <span><span class="num">142</span> words</span>
+                <span class="sep">·</span>
+                <span class="author">Maya</span>
+                <span class="sep">·</span>
+                <span class="badge badge-rev">+18 from v7</span>
+              </div>
+            </header>
+
+            <div class="essay-scroll">
+              <article class="essay">
+                <span class="prompt"><span class="prompt-label">Yale SA · 02 · ~125 words</span>“What is something about which you have changed your mind in the last three years? What changed it?”</span>
+
+                <p>For most of my life I thought my grandmother's <span class="anchor" data-aid="ankara">Ankara fabric scraps</span> were sentimental — the soft <span class="removed" data-tooltip="Removed in draft 10">orange-and-cobalt remnants</span> she carried from Lagos in a tin tea box, <span class="removed" data-tooltip="Removed in draft 10 — see Xiao's note about “cumin”">and the way her hands smelled like cumin when she folded them</span>. I kept them in a drawer and called it heritage.</p>
+
+                <p>Then last spring, I started layering them under the oil portraits I was painting for my <span class="anchor" data-aid="portfolio">studio portfolio</span>. The fabric showed through the skin — not as background, but as the thing the face was made of.</p>
+
+                <p><span class="removed" data-tooltip="Replaced in draft 10 with a sharper thesis sentence">That was the first time I understood that family is identity — that whose face I'm painting is also whose cloth I'm painting on, and the two cannot be separated.</span></p>
+
+                <p>I used to think the scraps were a souvenir. I was wrong. <span class="removed" data-tooltip="Removed in draft 10 — Xiao flagged the closing as too neat">They are an argument, and I am still learning to make it.</span></p>
+              </article>
+            </div>
+          </section>
+
+          <!-- ── PANE 2 — DRAFT 10 (current) ── -->
+          <section class="pane is-current" data-design-note="current" data-note-num="4" aria-label="Draft 10">
+            <header class="pane-header">
+              <div class="version-strip" aria-label="Versions">
+                <span class="v-strip-label"><span class="n">12</span> ver</span>
+                <div class="v-chip-track">
+                  <span class="v-chip">1</span>
+                  <span class="v-chip">2</span>
+                  <span class="v-chip">3</span>
+                  <span class="v-chip">4</span>
+                  <span class="v-chip">5</span>
+                  <span class="v-chip">6</span>
+                  <span class="v-chip">7</span>
+                  <span class="v-chip compared">8</span>
+                  <span class="v-chip gap-marker" title="No draft 9 — Maya skipped from 8 to 10">·</span>
+                  <span class="v-chip active">10</span>
+                  <span class="v-chip">12</span>
+                </div>
+              </div>
+              <div class="pane-meta-row">
+                <span class="num">Dec 10</span>
+                <span class="sep">·</span>
+                <span><span class="num">138</span> words</span>
+                <span class="sep">·</span>
+                <span class="author">Maya</span>
+                <span class="sep">·</span>
+                <span class="badge badge-rev">+24 from v8</span>
+                <span class="badge badge-current">Current</span>
+              </div>
+            </header>
+
+            <div class="essay-scroll">
+              <article class="essay">
+                <span class="prompt"><span class="prompt-label">Yale SA · 02 · ~125 words</span>“What is something about which you have changed your mind in the last three years? What changed it?”</span>
+
+                <p>For most of my life I thought my grandmother's <span class="anchor" data-aid="ankara">Ankara fabric scraps</span> were sentimental — the <span class="added" data-design-note="changemark" data-note-num="5" data-tooltip="Added in draft 10 — replaces “orange-and-cobalt remnants”">indigo and saffron remnants</span> she carried from Lagos in a tin tea box, kept in the back of a drawer I rarely opened.<span class="added" data-tooltip="Added in draft 10 — tightens the opening and removes the “cumin” line"> I called it heritage and left it there.</span></p>
+
+                <p>Then last spring, I started layering them under the oil portraits I was painting for my <span class="anchor" data-aid="portfolio">studio portfolio</span>.<span class="added" data-tooltip="Added in draft 10 — sharper transition"> The cloth bled through the skin.</span> The fabric showed through the face — not as background, but as the thing the face was made of.</p>
+
+                <p><span class="added is-active" data-aid="thesis" data-tooltip="Reframed in draft 10 — Xiao's note: ‘family is the question, not the answer’">I had been painting an answer; the cloth made it a question. Whose family is in any given face — and who decides?</span></p>
+
+                <p>I used to think the scraps were a souvenir.<span class="added" data-tooltip="Added in draft 10 — sharper closer"> They are an argument I am still learning how to make in oil.</span></p>
+              </article>
+            </div>
+          </section>
+
+          <!-- ── PANE 3 — COMMENTS THREAD ── -->
+          <aside class="comments-pane" data-design-note="comments" data-note-num="6" aria-label="Comment thread">
+            <header class="comments-header">
+              <div class="comments-title-block">
+                <div class="comments-title">
+                  Thread
+                  <span class="thread-pill"><span class="dot"></span>Open · awaiting Maya</span>
+                </div>
+                <div class="comments-sub">
+                  Anchored to <span class="quote">“the cloth made it a question…”</span>
+                </div>
+              </div>
+            </header>
+
+            <div class="comments-scroll" id="comments">
+
+              <div class="thread-line">
+                <div class="comment">
+                  <div class="c-avatar xj" data-design-note="asymmetry" data-note-num="8">XJ</div>
+                  <div class="c-body">
+                    <div class="c-head">
+                      <span class="c-name">Xiao</span>
+                      <span class="c-tag xiao">Consultant</span>
+                      <span class="c-time">Dec 8 · 12:34</span>
+                    </div>
+                    <div class="c-text">
+                      I love the Ankara scraps image — but draft 8 still hides the argument under sentiment. The reader needs to know <em>why</em> the layering matters by sentence three.
+                      <span class="anchor-quote">“…and the way her hands smelled like cumin when she folded them.”</span>
+                      This line is beautiful but it pulls the essay back into nostalgia. Try cutting it and letting the cloth do the work.
+                    </div>
+                    <div class="c-meta">
+                      <a href="#">Reply</a>
+                      <a href="#">Anchor in draft</a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="thread-line">
+                <div class="comment">
+                  <div class="c-avatar mc">MC</div>
+                  <div class="c-body">
+                    <div class="c-head">
+                      <span class="c-name">Maya</span>
+                      <span class="c-time">Dec 9 · 08:15</span>
+                    </div>
+                    <div class="c-text">
+                      Agree — does this rewrite feel less sentimental? I cut the cumin line and pulled the layering up to the second paragraph.
+                    </div>
+                    <div class="c-meta">
+                      <a href="#">Reply</a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="thread-line">
+                <div class="comment">
+                  <div class="c-avatar xj">XJ</div>
+                  <div class="c-body">
+                    <div class="c-head">
+                      <span class="c-name">Xiao</span>
+                      <span class="c-tag xiao">Consultant</span>
+                      <span class="c-time">Dec 9 · 09:02</span>
+                    </div>
+                    <div class="c-text">
+                      Better. Now reframe sentence five — it's still your “family is identity” thesis. Try “family is the <em>question</em>.” The cloth doesn't answer who's in the face; it asks.
+                    </div>
+                    <div class="c-meta">
+                      <a href="#">Reply</a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="thread-line">
+                <div class="comment">
+                  <div class="c-avatar mc">MC</div>
+                  <div class="c-body">
+                    <div class="c-head">
+                      <span class="c-name">Maya</span>
+                      <span class="c-time">Dec 9 · 21:43</span>
+                    </div>
+                    <div class="c-text">
+                      Tried it. <span class="anchor-quote">“I had been painting an answer; the cloth made it a question.”</span>
+                      Let me know if 10 lands. The closer feels softer than I want but I didn't want to over-rotate.
+                    </div>
+                    <div class="c-meta">
+                      <a href="#">Reply</a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="thread-line">
+                <div class="comment">
+                  <div class="c-avatar xj">XJ</div>
+                  <div class="c-body">
+                    <div class="c-head">
+                      <span class="c-name">Xiao</span>
+                      <span class="c-tag xiao">Consultant</span>
+                      <span class="c-time">Dec 10 · 11:15</span>
+                    </div>
+                    <div class="c-text">
+                      Closer — the new thesis lands. One more pass on the closing: “an argument I am still learning how to make in oil” is good but the “in oil” feels like it's reaching. See suggested cuts inline.
+                    </div>
+                    <div class="c-meta">
+                      <a href="#">Reply</a>
+                      <span class="c-resolved">2 suggestions</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="thread-line">
+                <div class="comment">
+                  <div class="c-avatar mc">MC</div>
+                  <div class="c-body">
+                    <div class="c-head">
+                      <span class="c-name">Maya</span>
+                      <span class="c-time">Dec 10 · 16:48</span>
+                    </div>
+                    <div class="c-text">
+                      Working on it tomorrow morning before our 4pm. I want to keep “in oil” — it's the only place the medium shows up. Open to swapping it elsewhere though.
+                    </div>
+                    <div class="c-meta">
+                      <a href="#">Reply</a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="thread-line">
+                <div class="comment">
+                  <div class="c-avatar xj">XJ</div>
+                  <div class="c-body">
+                    <div class="c-head">
+                      <span class="c-name">Xiao</span>
+                      <span class="c-tag xiao">Consultant</span>
+                      <span class="c-time">Dec 10 · 18:02</span>
+                    </div>
+                    <div class="c-text">
+                      Fair. Keep the medium in the closer if you can fold it into the second paragraph too — once at the start, once at the end. Otherwise it reads like a stage direction. Bring v11 to tomorrow's session.
+                    </div>
+                    <div class="c-meta">
+                      <a href="#">Reply</a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            <div class="compose">
+              <div class="c-avatar mc" style="width:24px; height:24px; font-size:9.5px;">MC</div>
+              <div class="compose-input">Reply as Maya…</div>
+            </div>
+          </aside>
+
+        </div>
+
+        <!-- right rail dropped per v2 — comments column in the 3-pane grid carries the
+             anchored-comments role; profile lives on Dashboard 1 per spec -->
+
+
+      </div>
+
+    </main>
+
+  </div>
+
+</div>
+
+<script>
+  // initialize default = status
+  document.body.classList.add('color-status');
+</script>
+
+</body>
+</html>

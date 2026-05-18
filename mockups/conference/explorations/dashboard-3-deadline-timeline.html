@@ -1,0 +1,2346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Maya Chen — Tasks</title>
+<meta name="page-purpose" content="This page is for: a consultant viewing all tasks for one student — pipeline visualization with school-deadline context.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    /* Locked tokens from SHARED-SPEC v2 */
+    --bg:        #f7f8fa;
+    --surface:   #ffffff;
+    --surface-2: #fbfcfd;
+    --ink:       #0f1419;
+    --ink-2:     #475569;
+    --ink-3:     #94a3b8;
+    --line:      #e4e6eb;
+    --line-2:    #cbd5e1;
+
+    --sidebar:        #0f172a;
+    --sidebar-ink:    #cbd5e1;
+    --sidebar-ink-2:  #64748b;
+    --sidebar-line:   rgba(255,255,255,0.08);
+
+    --primary:        #5b5fcf;
+    --primary-bg:     #eef0fb;
+    --primary-line:   #c7cbe8;
+
+    /* Status palette — locked 3 + neutral */
+    --status-done:        #047857;
+    --status-done-bg:     #d1fae5;
+    --status-active:      #b45309;
+    --status-active-bg:   #fef3c7;
+    --status-overdue:     #be123c;
+    --status-overdue-bg:  #ffe4e6;
+    --status-neutral:     var(--ink-3);
+    --status-neutral-bg:  #f1f5f9;
+
+    /* Working-style chips */
+    --ws-perfectionist:    #8b5cf6;
+    --ws-perfectionist-bg: #f5f3ff;
+
+    --radius:    6px;
+    --radius-sm: 4px;
+    --radius-lg: 8px;
+
+    --font-body: 'Geist', -apple-system, sans-serif;
+    --font-mono: 'Geist Mono', 'SF Mono', monospace;
+  }
+
+  html, body { height: 100%; }
+
+  body {
+    font-family: var(--font-body);
+    background: var(--bg);
+    color: var(--ink);
+    font-size: 13px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── Layout shell ── */
+  .shell { display: flex; height: 100vh; overflow: hidden; }
+
+  /* ── Sidebar ── */
+  .sidebar {
+    width: 220px;
+    background: var(--sidebar);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    overflow-y: auto;
+    padding: 14px 0 16px;
+  }
+  .sidebar::-webkit-scrollbar { width: 0; }
+
+  .brand-link {
+    text-decoration: none;
+    display: inline-flex;
+    cursor: pointer;
+    transition: opacity 180ms ease;
+    margin: 0 16px 14px;
+  }
+  .brand-link:hover { opacity: 0.85; }
+  .brand-link:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+    border-radius: 8px;
+  }
+  .brand-mark {
+    width: 24px;
+    height: 24px;
+    border-radius: 7px;
+    background: var(--primary);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .brand-mark svg { display: block; }
+
+  .sidebar-section-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #475569;
+    padding: 8px 16px 4px;
+  }
+
+  .sidebar-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 16px;
+    color: var(--sidebar-ink-2);
+    font-size: 13px;
+    font-weight: 400;
+    cursor: pointer;
+    position: relative;
+    text-decoration: none;
+    transition: background 0.1s, color 0.1s;
+  }
+  .sidebar-item:hover { background: #1e293b; color: var(--sidebar-ink); }
+  .sidebar-item.active {
+    background: #1e293b;
+    color: #f1f5f9;
+    font-weight: 500;
+  }
+  .sidebar-item.active::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: var(--primary);
+  }
+  .sidebar-item.active .sidebar-icon { color: var(--primary); opacity: 1; }
+  .sidebar-icon { width: 16px; height: 16px; flex-shrink: 0; opacity: 0.7; }
+  .sidebar-count {
+    margin-left: auto;
+    font-size: 11px;
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    color: var(--sidebar-ink-2);
+    font-weight: 400;
+  }
+  .sidebar-item.active .sidebar-count { color: var(--sidebar-ink); }
+  .sidebar-divider {
+    border: none;
+    border-top: 1px solid var(--sidebar-line);
+    margin: 12px 16px;
+  }
+  .student-nav-header {
+    padding: 4px 16px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #475569;
+  }
+
+  /* ── Main frame ── */
+  .main-frame {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  /* ── Top chrome ── */
+  .topbar {
+    height: 48px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    padding: 0 18px;
+    gap: 12px;
+    flex-shrink: 0;
+    position: relative;
+  }
+
+  .breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12.5px;
+    color: var(--ink-2);
+    min-width: 0;
+  }
+  .breadcrumb a { color: var(--ink-2); text-decoration: none; }
+  .breadcrumb a:hover { color: var(--ink); }
+  .breadcrumb-sep { color: var(--ink-3); }
+  .breadcrumb-current { color: var(--ink); font-weight: 500; }
+
+  .topbar-end {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* Pattern 4 — color-intensity slider (5 states) */
+  .color-slider {
+    display: inline-flex;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--surface);
+    overflow: hidden;
+  }
+  .color-slider button {
+    position: relative;
+    font-family: var(--font-body);
+    font-size: 11.5px;
+    font-weight: 500;
+    padding: 5px 9px;
+    background: transparent;
+    border: none;
+    border-right: 1px solid var(--line);
+    color: var(--ink-2);
+    cursor: pointer;
+    line-height: 1;
+  }
+  .color-slider button:last-child { border-right: none; }
+  .color-slider button:hover { background: var(--bg); color: var(--ink); }
+  .color-slider button[aria-pressed="true"] {
+    background: var(--primary);
+    color: white;
+  }
+  /* Per-button tooltip */
+  .color-slider button[data-tooltip]::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--ink);
+    color: white;
+    padding: 6px 10px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 400;
+    line-height: 1.4;
+    white-space: normal;
+    width: max-content;
+    max-width: 220px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s ease;
+    z-index: 100;
+  }
+  .color-slider button[data-tooltip]:hover::after { opacity: 1; }
+
+  .icon-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--ink-2);
+    cursor: pointer;
+    background: transparent;
+    border: none;
+    position: relative;
+  }
+  .icon-btn:hover { background: var(--bg); color: var(--ink); }
+
+  .notif-dot {
+    position: absolute;
+    top: 7px; right: 7px;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--status-overdue);
+    border: 1.5px solid white;
+  }
+
+  .avatar {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: var(--primary);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 600; color: white;
+    cursor: pointer; flex-shrink: 0;
+  }
+
+  /* ── Body row (main only — no rail on this surface) ── */
+  .body-row {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+  }
+  .main-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .content-scroll {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 22px 28px 48px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+  .content-scroll::-webkit-scrollbar { width: 6px; }
+  .content-scroll::-webkit-scrollbar-track { background: transparent; }
+  .content-scroll::-webkit-scrollbar-thumb { background: var(--line); border-radius: 3px; }
+  .content-scroll > * { flex-shrink: 0; }
+
+  /* ── PROFILE — collapsible, top-of-page ── */
+  .profile-strip {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    transition: border-color 0.15s;
+  }
+
+  .profile-strip-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 18px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .profile-strip-header:hover { background: var(--surface-2); }
+
+  .profile-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #818cf8 0%, #5b5fcf 60%, #4338ca 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-body);
+    font-size: 16px;
+    font-weight: 600;
+    color: white;
+    letter-spacing: -0.01em;
+    flex-shrink: 0;
+  }
+
+  .profile-name-block { min-width: 0; flex: 1; }
+
+  .profile-name {
+    font-family: var(--font-body);
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--ink);
+    letter-spacing: -0.015em;
+    line-height: 1.15;
+    position: relative;
+    display: inline-block;
+  }
+  .profile-name::after {
+    content: '';
+    position: absolute;
+    left: 0; bottom: -3px;
+    width: 38px; height: 2px;
+    background: var(--primary);
+    border-radius: 2px;
+  }
+
+  .profile-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 9px;
+    flex-wrap: wrap;
+  }
+
+  .status-pill {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2.5px 9px;
+    border-radius: 20px;
+    letter-spacing: 0.01em;
+    border: 1px solid transparent;
+  }
+  .pill-active {
+    color: var(--status-active);
+    background: var(--status-active-bg);
+    border-color: #fde68a;
+  }
+  .pill-indigo {
+    color: var(--primary);
+    background: var(--primary-bg);
+    border-color: var(--primary-line);
+  }
+  .pill-cycle {
+    font-size: 11px;
+    color: var(--ink-2);
+    background: var(--bg);
+    border: 1px solid var(--line);
+    padding: 2.5px 9px;
+    border-radius: 20px;
+  }
+  .pill-ws {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--ws-perfectionist);
+    background: var(--ws-perfectionist-bg);
+    border: 1px solid #ddd6fe;
+    padding: 2.5px 9px;
+    border-radius: 20px;
+    letter-spacing: 0.01em;
+  }
+
+  .profile-actions {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+    align-items: center;
+  }
+
+  /* Inline stats — packed into header row (R2 layout fix).
+     Replaces the previous full-width 4-col grid in .profile-detail.
+     Stats live alongside the name-block; Hooks alone live in the expandable area. */
+  .profile-inline-stats {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    flex-shrink: 0;
+    border-left: 1px solid var(--line);
+    margin-left: 4px;
+  }
+  .profile-inline-stat {
+    padding: 4px 14px;
+    border-right: 1px solid var(--line);
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    min-width: 0;
+  }
+  .profile-inline-stat:last-child { border-right: none; }
+  .profile-inline-stat-label {
+    font-size: 9.5px;
+    color: var(--ink-3);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 600;
+    line-height: 1.1;
+  }
+  .profile-inline-stat-value {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+    line-height: 1.3;
+    letter-spacing: -0.005em;
+  }
+  .profile-inline-stat-value.text {
+    font-family: var(--font-body);
+    font-size: 12px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 160px;
+  }
+
+  .profile-collapse-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: var(--radius);
+    border: 1px solid var(--line);
+    background: transparent;
+    color: var(--ink-2);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.1s;
+    flex-shrink: 0;
+  }
+  .profile-collapse-btn:hover { background: var(--bg); color: var(--ink); }
+  .profile-collapse-btn svg { transition: transform 0.2s; }
+  body.profile-collapsed .profile-collapse-btn svg { transform: rotate(-90deg); }
+
+  /* Profile expandable area — now only contains the Hooks row.
+     Stats moved inline into .profile-strip-header. */
+  .profile-detail {
+    display: block;
+    border-top: 1px solid var(--line);
+    background: var(--surface);
+    overflow: hidden;
+    max-height: 120px;
+    transition: max-height 0.25s ease, opacity 0.2s ease, border-top-color 0.2s;
+    opacity: 1;
+  }
+  body.profile-collapsed .profile-detail {
+    max-height: 0;
+    opacity: 0;
+    border-top-color: transparent;
+  }
+
+  .profile-hooks-row {
+    padding: 10px 18px;
+    background: var(--surface);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .profile-hooks-label {
+    font-size: 10px;
+    color: var(--ink-3);
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    font-weight: 600;
+    margin-right: 4px;
+  }
+  .profile-hook {
+    font-size: 11px;
+    padding: 2.5px 8px;
+    border-radius: 4px;
+    background: var(--bg);
+    color: var(--ink-2);
+    border: 1px solid var(--line);
+    font-weight: 500;
+  }
+
+  /* ── Tab nav (under profile) ── */
+  .tab-nav {
+    display: flex;
+    align-items: flex-end;
+    gap: 0;
+    border-bottom: 1px solid var(--line);
+    padding: 0 4px;
+    margin-top: -2px;
+  }
+  .tab-nav-item {
+    padding: 9px 14px 11px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ink-3);
+    text-decoration: none;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: color 0.1s, border-color 0.1s;
+  }
+  .tab-nav-item:hover { color: var(--ink-2); }
+  .tab-nav-item.active {
+    color: var(--ink);
+    border-bottom-color: var(--primary);
+    font-weight: 600;
+  }
+  .tab-nav-item .tab-count {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--ink-3);
+    background: var(--bg);
+    border: 1px solid var(--line);
+    padding: 1px 6px;
+    border-radius: 10px;
+    line-height: 1.4;
+  }
+  .tab-nav-item.active .tab-count {
+    background: var(--primary-bg);
+    color: var(--primary);
+    border-color: var(--primary-line);
+  }
+
+  /* ── Page purpose subtitle (legacy — replaced by demo-note-box in topbar) ── */
+  .page-purpose {
+    font-style: italic;
+    font-size: 12.5px;
+    color: var(--ink-3);
+    padding: 2px 2px 0;
+    line-height: 1.4;
+  }
+
+  /* ─── Demo-note box (R2.5 pattern, 2026-05-13)
+     Visual container for demo/dev metadata that's NOT product copy — page-purpose
+     statements, demo-only hints, dev affordance explanations. Lives in TOPBAR, left of
+     the color-slider (vertically centered, sized to content). Compact pill shape with
+     dashed left-border + "DEMO" mono tag signals "this is scaffolding, not UI".
+     Color-mode-invariant (stays neutral gray in all 5 modes). ─── */
+  .demo-note-box {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 10px 4px 8px;
+    background: #f0f2f5;
+    border: 1px dashed var(--line-2);
+    border-left: 3px dashed var(--ink-3);
+    border-radius: 4px;
+    font-size: 11.5px;
+    color: var(--ink-2);
+    line-height: 1.3;
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+  .demo-note-box .demo-note-label {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    flex-shrink: 0;
+    padding: 1px 5px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    line-height: 1.4;
+  }
+  .demo-note-box .demo-note-text {
+    font-style: italic;
+    white-space: nowrap;
+  }
+  .demo-note-box .demo-note-text strong {
+    font-style: normal;
+    font-weight: 600;
+    color: var(--ink-2);
+  }
+  body.color-off .demo-note-box { background: #f3f4f6; }
+
+  /* ── Tasks header (page sub-header) ── */
+  .tasks-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 4px 2px 0;
+  }
+
+  .tasks-header-title-block { min-width: 0; }
+  .tasks-header-title {
+    font-family: var(--font-body);
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+  }
+  .tasks-header-meta {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-3);
+    margin-top: 4px;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.02em;
+  }
+
+  .tasks-header-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-shrink: 0;
+  }
+
+  .btn {
+    font-family: var(--font-body);
+    font-size: 12.5px;
+    font-weight: 500;
+    padding: 7px 13px;
+    border-radius: var(--radius);
+    cursor: pointer;
+    border: none;
+    white-space: nowrap;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .btn-primary { background: var(--primary); color: white; }
+  .btn-primary:hover { background: #4c50b8; }
+  .btn-ghost {
+    background: transparent;
+    color: var(--ink-2);
+    border: 1px solid var(--line);
+  }
+  .btn-ghost:hover { background: var(--surface); color: var(--ink); }
+
+  /* Pattern 2 — fake-action tooltip (right-aligned for top action buttons) */
+  .fake-btn { position: relative; }
+  .fake-btn::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    background: var(--ink);
+    color: white;
+    padding: 7px 10px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 400;
+    line-height: 1.4;
+    white-space: normal;
+    width: max-content;
+    max-width: 240px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s ease;
+    z-index: 100;
+  }
+  .fake-btn:hover::after { opacity: 1; }
+
+  /* Filter chips row */
+  .filter-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    padding: 0 2px;
+  }
+  .filter-label {
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 600;
+    color: var(--ink-3);
+    margin-right: 4px;
+  }
+  .filter-chip {
+    font-family: var(--font-body);
+    font-size: 11.5px;
+    font-weight: 500;
+    padding: 4px 10px;
+    border-radius: 20px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    color: var(--ink-2);
+    cursor: pointer;
+    line-height: 1.3;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .filter-chip:hover { color: var(--ink); border-color: var(--line-2); }
+  .filter-chip[aria-pressed="true"] {
+    background: var(--primary-bg);
+    color: var(--primary);
+    border-color: var(--primary-line);
+  }
+  /* Status-tinted filter chips — match the in-list status-badge treatment per D49.
+     Awaiting review = solid amber (matches In progress badge style — the LABEL differentiates). */
+  .filter-chip.chip-awaiting {
+    background: var(--status-active-bg);
+    color: var(--status-active);
+    border-color: #fde68a;
+  }
+  .filter-chip.chip-awaiting:hover { color: var(--status-active); border-color: #fcd34d; }
+  .filter-chip.chip-overdue {
+    background: var(--status-overdue-bg);
+    color: var(--status-overdue);
+    border-color: #fecdd3;
+  }
+  .filter-chip.chip-overdue:hover { color: var(--status-overdue); border-color: #fda4af; }
+  .filter-chip-count {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: inherit;
+    opacity: 0.65;
+    font-variant-numeric: tabular-nums;
+  }
+  .filter-chip-dropdown,
+  .filter-chip-advanced {
+    background: var(--surface);
+    border-style: solid;
+  }
+  .filter-chip-advanced { color: var(--ink-2); }
+  .filter-divider {
+    width: 1px;
+    align-self: stretch;
+    background: var(--line);
+    margin: 4px 2px;
+  }
+  .filter-spacer { flex: 1; }
+  .filter-sort {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font-body);
+    font-size: 11.5px;
+    color: var(--ink-2);
+    padding: 4px 8px;
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    background: var(--surface);
+    cursor: default;
+  }
+  .filter-sort:hover { color: var(--ink); border-color: var(--line-2); }
+
+  /* ── View-mode toggle (Kanban / By time) ──
+     Per D50 (locked decision, SHARED-SPEC-V2 + Meeting Summary 2026-05-12 §4):
+     "Per-student Tasks default = Kanban; list view as toggle."
+     Default body class: view-kanban. Toggle swaps to view-list.
+     Uses the Pattern 4/5 JS class-swap idiom adapted for view-mode semantics.
+  */
+  .view-toggle {
+    display: inline-flex;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--surface);
+    overflow: hidden;
+  }
+  .view-toggle button {
+    position: relative;
+    font-family: var(--font-body);
+    font-size: 12px;
+    font-weight: 500;
+    padding: 6px 12px;
+    background: transparent;
+    border: none;
+    border-right: 1px solid var(--line);
+    color: var(--ink-2);
+    cursor: pointer;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .view-toggle button:last-child { border-right: none; }
+  .view-toggle button:hover { background: var(--bg); color: var(--ink); }
+  .view-toggle button[aria-pressed="true"] {
+    background: var(--primary);
+    color: white;
+  }
+  .view-toggle button[aria-pressed="true"] svg { color: white; }
+
+  /* ── View-mode display swap ── */
+  body.view-kanban .bucket-section { display: none; }
+  body.view-list   .kanban-shell    { display: none; }
+
+  /* ── KANBAN BOARD (Pattern locked: cross-tasks-kanban.html) ──
+     Single-student variant: drop the student-row element from each card,
+     since every card is the same student (Maya). Card hierarchy collapses to
+     Title → Due → divider → School (+ working-style chip in D/E modes).
+  */
+  .kanban-shell {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  .kanban-wrapper {
+    overflow-x: auto;
+    overflow-y: visible;
+    padding: 4px 2px 6px;
+    margin: 0 -2px;
+  }
+  .kanban-wrapper::-webkit-scrollbar { height: 6px; }
+  .kanban-wrapper::-webkit-scrollbar-track { background: var(--bg); border-radius: 3px; }
+  .kanban-wrapper::-webkit-scrollbar-thumb { background: var(--line-2); border-radius: 3px; }
+
+  .kanban-board {
+    display: flex;
+    gap: 12px;
+    min-width: max-content;
+    align-items: flex-start;
+  }
+
+  .kanban-col {
+    width: 252px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    border: 1px solid var(--line);
+    background: var(--surface);
+  }
+
+  .kanban-col-header {
+    padding: 11px 13px 9px;
+    flex-shrink: 0;
+    border-bottom: 1px solid var(--line);
+    background: var(--surface);
+    position: relative;
+  }
+  /* 2px stage-color rule across top of column header */
+  .kanban-col-header::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+  }
+  .kanban-col.status-not-started   .kanban-col-header::before { background: var(--status-neutral); }
+  /* R2.5 (2026-05-13): In-Progress flipped to indigo (was amber). Resolves collision with Awaiting Review. */
+  .kanban-col.status-in-progress   .kanban-col-header::before { background: var(--primary); }
+  /* Awaiting-review = amber (canonical per Alex 5/13 11:05 PM). */
+  .kanban-col.status-awaiting      .kanban-col-header::before { background: var(--status-active); }
+  /* Stuck = neutral top-rule. Rose reserved for overdue only. */
+  .kanban-col.status-stuck         .kanban-col-header::before { background: var(--line-2); }
+  .kanban-col.status-done          .kanban-col-header::before { background: var(--status-done); }
+
+  .col-stage-row {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin-bottom: 2px;
+  }
+  .stage-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .kanban-col.status-not-started   .stage-dot { background: var(--status-neutral); }
+  /* R2.5 (2026-05-13): In-Progress = indigo. */
+  .kanban-col.status-in-progress   .stage-dot { background: var(--primary); }
+  /* Awaiting-review = amber (canonical). */
+  .kanban-col.status-awaiting      .stage-dot { background: var(--status-active); }
+  /* Stuck = ink-2 dot with ring (neutral-dashed canonical). Rose reserved for overdue. */
+  .kanban-col.status-stuck         .stage-dot { background: var(--ink-2); box-shadow: 0 0 0 1.5px var(--surface), 0 0 0 2.5px var(--ink-2); width: 4px; height: 4px; }
+  .kanban-col.status-done          .stage-dot { background: var(--status-done); }
+
+  .col-stage-name {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--ink);
+    letter-spacing: -0.008em;
+  }
+  .col-count {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--ink-2);
+    background: var(--status-neutral-bg);
+    padding: 1px 7px;
+    border-radius: 10px;
+    font-variant-numeric: tabular-nums;
+  }
+  .col-add-btn {
+    margin-left: auto;
+    font-size: 11px;
+    color: var(--ink-3);
+    padding: 2px 8px;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    background: var(--surface);
+    cursor: default;
+    position: relative;
+    line-height: 1.2;
+    font-family: var(--font-body);
+  }
+  .col-add-btn:hover { color: var(--ink-2); border-color: var(--line-2); }
+  .col-add-btn::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    background: var(--ink);
+    color: white;
+    padding: 6px 10px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 400;
+    white-space: normal;
+    width: max-content;
+    max-width: 240px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s ease;
+    z-index: 100;
+  }
+  .col-add-btn:hover::after { opacity: 1; }
+
+  .col-desc {
+    font-size: 11px;
+    color: var(--ink-3);
+    line-height: 1.3;
+    font-weight: 400;
+  }
+
+  .kanban-col-body {
+    padding: 10px 9px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-height: 80px;
+  }
+
+  /* TASK CARD — Single-student variant: Title → Due → divider → School */
+  .task-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    padding: 10px 11px 9px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    cursor: default;
+    transition: box-shadow 0.12s, border-color 0.12s;
+  }
+  .task-card:hover {
+    box-shadow: 0 2px 8px rgba(15,20,25,0.07);
+    border-color: var(--line-2);
+  }
+
+  .card-core {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .card-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ink);
+    line-height: 1.3;
+    letter-spacing: -0.005em;
+  }
+
+  .card-due {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 4px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
+    color: var(--ink-3);
+  }
+  .card-due svg { width: 11px; height: 11px; flex-shrink: 0; }
+  .card-due .due-label { color: var(--ink-3); font-weight: 400; }
+  .card-due .due-date { color: var(--ink-2); font-weight: 500; }
+  .card-due.overdue { color: var(--status-overdue); }
+  .card-due.overdue .due-date,
+  .card-due.overdue .due-label { color: var(--status-overdue); font-weight: 600; }
+  .card-due.due-soon .due-date { color: var(--ink-2); font-weight: 500; }
+  body.color-status-plus .card-due.due-soon,
+  body.color-full       .card-due.due-soon { color: var(--status-active); }
+  body.color-status-plus .card-due.due-soon .due-date,
+  body.color-full       .card-due.due-soon .due-date { color: var(--status-active); font-weight: 600; }
+
+  .card-divider {
+    height: 1px;
+    background: var(--line);
+    margin: 9px -11px 8px -12px;
+  }
+
+  .card-supplemental {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .card-school-chip {
+    font-size: 10.5px;
+    font-weight: 500;
+    color: var(--ink-2);
+    background: var(--status-neutral-bg);
+    padding: 2px 7px;
+    border-radius: 4px;
+    line-height: 1.3;
+    letter-spacing: -0.005em;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .card-school-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    background: var(--ink-3);
+  }
+  body.color-full .card-school-chip[data-school-color] {
+    box-shadow: inset 3px 0 0 var(--school-color, transparent);
+    padding-left: 10px;
+  }
+  body.color-full .card-school-chip[data-school-color] .card-school-dot { background: var(--school-color); }
+
+  .add-task-card {
+    border: 1px dashed var(--line-2);
+    border-radius: 7px;
+    padding: 8px 10px;
+    font-size: 11.5px;
+    color: var(--ink-3);
+    text-align: center;
+    background: transparent;
+    cursor: default;
+    margin-top: 2px;
+  }
+  .add-task-card:hover { color: var(--ink-2); border-color: var(--ink-3); }
+
+  /* Done column subtle fade in Mode E (Full) only */
+  body.color-full .kanban-col.status-done .task-card { opacity: 0.85; }
+  body.color-full .kanban-col.status-done .card-title { color: var(--ink-2); }
+
+  /* ── Time-bucket task groups (list view via <details> for collapsibles, bm-g03w.1.31) ── */
+  .bucket-section { display: flex; flex-direction: column; gap: 14px; }
+
+  /* Each .bucket is now a <details>; <summary> wraps the bucket header.
+     Default open state set inline via `open` attribute: This Week + Next Week.
+     Closed by default: Within 2 Weeks + This Month. */
+  details.bucket {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+  }
+  details.bucket[open] > summary.bucket-header { border-bottom: 1px solid var(--line); }
+
+  /* Reset native list marker on the summary; use a custom chevron for affordance */
+  summary.bucket-header::-webkit-details-marker { display: none; }
+  summary.bucket-header { list-style: none; }
+
+  summary.bucket-header {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    padding: 11px 18px 10px;
+    background: var(--surface-2);
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.1s;
+  }
+  summary.bucket-header:hover { background: var(--bg); }
+
+  .bucket-chevron {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+    color: var(--ink-3);
+    align-self: center;
+    transition: transform 0.15s ease;
+  }
+  details.bucket[open] > summary.bucket-header .bucket-chevron {
+    transform: rotate(90deg);
+  }
+
+  .bucket-title {
+    font-family: var(--font-body);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink);
+    letter-spacing: -0.005em;
+  }
+
+  .bucket-date-range {
+    font-size: 11px;
+    color: var(--ink-3);
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .bucket-count {
+    margin-left: auto;
+    font-size: 11px;
+    color: var(--ink-3);
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .bucket-items { padding: 0; }
+
+  /* Density tweak (Phase 1.6): vertical padding 11→8, gap 3→2 — fit more rows per screen */
+  .bucket-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 18px;
+    border-bottom: 1px solid var(--line);
+    border-left: 3px solid transparent;
+    transition: background 0.1s, border-left-color 0.1s;
+    cursor: default;
+  }
+  .bucket-item:last-child { border-bottom: none; }
+  .bucket-item:hover { background: var(--surface-2); border-left-color: var(--primary-line); }
+
+  /* Status-based left accent — single color per row (color discipline) */
+  .bucket-item[data-status="overdue"] { border-left-color: var(--status-overdue); background: linear-gradient(to right, rgba(190, 18, 60, 0.025), transparent 100px); }
+  .bucket-item[data-status="overdue"]:hover { background: linear-gradient(to right, rgba(190, 18, 60, 0.05), var(--surface-2) 100px); }
+  /* R2.5 (2026-05-13): In-Progress = indigo (was amber); Awaiting-Review stays amber. */
+  .bucket-item[data-status="in-progress"] { border-left-color: var(--primary); }
+  .bucket-item[data-status="awaiting-review"] { border-left-color: var(--status-active); }
+  /* Stuck = neutral left-accent. Rose reserved for overdue. */
+  .bucket-item[data-status="stuck"] { border-left-color: var(--line-2); }
+  .bucket-item[data-status="done"] { border-left-color: var(--status-done); opacity: 0.7; }
+  .bucket-item[data-status="not-started"] { border-left-color: var(--status-neutral); }
+
+  .item-status-pip {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    background: var(--status-neutral);
+  }
+  .bucket-item[data-status="not-started"] .item-status-pip { background: var(--status-neutral); }
+  .bucket-item[data-status="in-progress"] .item-status-pip { background: var(--primary); }
+  .bucket-item[data-status="awaiting-review"] .item-status-pip { background: var(--status-active); }
+  /* Stuck = ink-2 pip with ring (neutral-dashed canonical). */
+  .bucket-item[data-status="stuck"] .item-status-pip { background: var(--ink-2); box-shadow: 0 0 0 1.5px var(--surface), 0 0 0 2.5px var(--ink-2); width: 4px; height: 4px; }
+  .bucket-item[data-status="overdue"] .item-status-pip { background: var(--status-overdue); }
+  .bucket-item[data-status="done"] .item-status-pip { background: var(--status-done); }
+
+  .item-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+
+  .item-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ink);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.3;
+  }
+
+  .item-due {
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    font-weight: 500;
+    color: var(--ink-2);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.01em;
+  }
+  .item-due.overdue { color: var(--status-overdue); font-weight: 600; }
+
+  .item-supplemental {
+    font-size: 11.5px;
+    color: var(--ink-3);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Status badge — universal */
+  .status-badge {
+    font-size: 10.5px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 3px;
+    white-space: nowrap;
+    letter-spacing: 0.01em;
+    line-height: 1.4;
+    border: 1px solid transparent;
+  }
+  .status-badge[data-status="not-started"] {
+    color: var(--status-neutral);
+    background: var(--status-neutral-bg);
+    border-color: #e2e8f0;
+  }
+  /* R2.5 (2026-05-13): In-Progress = indigo; Awaiting-Review = amber. */
+  .status-badge[data-status="in-progress"] {
+    color: var(--primary);
+    background: var(--primary-bg);
+    border-color: #c7cbe8;
+  }
+  .status-badge[data-status="awaiting-review"] {
+    color: var(--status-active);
+    background: var(--status-active-bg);
+    border-color: #fde68a;
+  }
+  /* Stuck = neutral-dashed badge. Rose reserved for overdue only. */
+  .status-badge[data-status="stuck"] {
+    color: var(--ink-2);
+    background: var(--surface);
+    border-color: var(--line-2);
+    border-style: dashed;
+  }
+  .status-badge[data-status="overdue"] {
+    color: var(--status-overdue);
+    background: var(--status-overdue-bg);
+    border-color: #fecdd3;
+  }
+  .status-badge[data-status="done"] {
+    color: var(--status-done);
+    background: var(--status-done-bg);
+    border-color: #a7f3d0;
+  }
+
+  .school-tag {
+    font-size: 10.5px;
+    font-weight: 500;
+    padding: 1.5px 7px;
+    border-radius: 3px;
+    background: var(--bg);
+    color: var(--ink-2);
+    border: 1px solid var(--line);
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .school-tag-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    background: var(--ink-3);
+  }
+
+  .item-end {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+
+  /* SR-only */
+  .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); }
+
+  svg { display: block; }
+
+  /* ── PATTERN 4 — Color-intensity modes (5 states) ──
+     Off → Minimal → Status (default) → Status+ → Full
+     Default body class is 'color-status'.
+  */
+
+  /* OFF: no semantic color anywhere; everything in neutrals. */
+  body.color-off {
+    --status-done: var(--ink-3);
+    --status-done-bg: var(--bg);
+    --status-active: var(--ink-3);
+    --status-active-bg: var(--bg);
+    --status-overdue: var(--ink-2);    /* even overdue muted */
+    --status-overdue-bg: var(--bg);
+    --ws-perfectionist: var(--ink-3);
+    --ws-perfectionist-bg: var(--bg);
+    --primary: var(--ink-2);            /* even brand muted */
+    --primary-bg: var(--bg);
+    --primary-line: var(--line);
+  }
+  body.color-off .pill-active,
+  body.color-off .pill-indigo,
+  body.color-off .pill-ws { border-color: var(--line); }
+  body.color-off .status-badge { border-color: var(--line); }
+  body.color-off .bucket-item { border-left-color: var(--line) !important; background: var(--surface) !important; }
+  body.color-off .bucket-item:hover { background: var(--surface-2) !important; }
+  body.color-off .bucket-item .item-status-pip { background: var(--ink-3) !important; }
+  body.color-off .profile-name::after { background: var(--ink-3); }
+  /* Kanban — Mode A neutralization */
+  body.color-off .kanban-col-header::before { background: var(--ink-3) !important; }
+  body.color-off .stage-dot { background: var(--ink-3) !important; }
+  body.color-off .card-due.overdue { color: var(--ink-2); }
+  body.color-off .card-due.overdue .due-date,
+  body.color-off .card-due.overdue .due-label { color: var(--ink-2); }
+  body.color-off .view-toggle button[aria-pressed="true"] { background: var(--ink-2); }
+
+  /* MINIMAL: overdue (rose) + brand indigo + status-done (emerald) retain saturation;
+     status-active (amber) + WS chips neutralize (D1=A, 2026-05-12) */
+  body.color-minimal {
+    --status-active: var(--ink-3);
+    --status-active-bg: var(--status-neutral-bg);
+    --ws-perfectionist: var(--ink-3);
+    --ws-perfectionist-bg: var(--status-neutral-bg);
+  }
+  body.color-minimal .pill-active,
+  body.color-minimal .pill-ws { border-color: var(--line); }
+  /* R2.5 (2026-05-13): In-Progress is now indigo (a Mode-B retained color), so it stays saturated.
+     Only Awaiting + Not-Started neutralize in Mode B. */
+  body.color-minimal .status-badge[data-status="not-started"],
+  body.color-minimal .status-badge[data-status="awaiting-review"] {
+    border-color: var(--line);
+  }
+  body.color-minimal .bucket-item[data-status="awaiting-review"],
+  body.color-minimal .bucket-item[data-status="not-started"] {
+    border-left-color: var(--line);
+  }
+  body.color-minimal .bucket-item[data-status="awaiting-review"] .item-status-pip,
+  body.color-minimal .bucket-item[data-status="not-started"] .item-status-pip {
+    background: var(--ink-3);
+  }
+  /* Kanban — Mode B neutralization (awaiting + not-started drop to neutral;
+     overdue + done + indigo retain per Mode B definition — and In-Progress is now indigo) */
+  body.color-minimal .kanban-col.status-awaiting .kanban-col-header::before,
+  body.color-minimal .kanban-col.status-not-started .kanban-col-header::before {
+    background: var(--ink-3);
+  }
+  body.color-minimal .kanban-col.status-awaiting .stage-dot,
+  body.color-minimal .kanban-col.status-not-started .stage-dot {
+    background: var(--ink-3);
+  }
+
+  /* STATUS (DEFAULT): locked 3-color status palette + indigo. Working-style chips muted. */
+  body.color-status .pill-ws {
+    color: var(--ink-2);
+    background: var(--status-neutral-bg);
+    border-color: var(--line);
+  }
+
+  /* STATUS+: status palette + working-style chips at full saturation (re-saturate ws chips). */
+  body.color-status-plus .pill-ws {
+    color: var(--ws-perfectionist);
+    background: var(--ws-perfectionist-bg);
+    border-color: #ddd6fe;
+  }
+
+  /* FULL: everything; restore decorative tints, secondary colors (essentially v1 behavior). */
+  body.color-full .school-tag { color: var(--ink); border-color: var(--line-2); background: var(--surface); }
+  body.color-full .school-tag[data-school-color] {
+    box-shadow: inset 3px 0 0 var(--school-color, transparent);
+    padding-left: 10px;
+  }
+  body.color-full .school-tag[data-school-color] .school-tag-dot { background: var(--school-color); }
+  body.color-full .pill-cycle { background: #f1f5f9; }
+  body.color-full .pill-ws {
+    color: var(--ws-perfectionist);
+    background: var(--ws-perfectionist-bg);
+    border-color: #ddd6fe;
+  }
+  body.color-full summary.bucket-header { background: linear-gradient(to bottom, #fcfcfd, var(--surface)); }
+  body.color-full .kanban-col-header { background: linear-gradient(to bottom, #fcfcfd, var(--surface)); }
+  /* Status-tinted column wash in Mode E (matches cross-tasks-kanban canonical)
+     R2.5 (2026-05-13): In-Progress = indigo tint, Awaiting = amber tint. */
+  body.color-full .kanban-col.status-not-started { background: rgba(241, 245, 249, 0.55); }
+  body.color-full .kanban-col.status-in-progress { background: rgba(199, 203, 232, 0.32); }
+  body.color-full .kanban-col.status-awaiting    { background: rgba(254, 243, 199, 0.32); }
+  /* Stuck column wash = neutral (matches neutral-dashed treatment). Rose reserved for overdue. */
+  body.color-full .kanban-col.status-stuck       { background: rgba(241, 245, 249, 0.55); }
+  body.color-full .kanban-col.status-done        { background: rgba(209, 250, 229, 0.28); }
+
+  /* ── Pattern 3 — design-intent overlay (toggle infrastructure only; annotations empty for v2) ── */
+  .design-notes-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--ink-2);
+    padding: 5px 9px;
+    border-radius: 4px;
+    background: transparent;
+    border: 1px solid var(--line);
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .design-notes-toggle:hover { background: var(--bg); color: var(--ink); }
+  body.design-notes-on .design-notes-toggle {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+  }
+</style>
+</head>
+<body class="color-status view-kanban">
+
+<div class="shell">
+
+  <!-- ── SIDEBAR ── -->
+  <nav class="sidebar" aria-label="Main navigation">
+    <div class="sidebar-section-label">Workspace</div>
+
+    <a class="sidebar-item active" href="#" aria-current="page">
+      <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Students
+      <span class="sidebar-count">15</span>
+    </a>
+
+    <a class="sidebar-item" href="#">
+      <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17 7 21l4-4"/><path d="M3 7l4 4 4-4"/><path d="M14 8h7"/><path d="M14 16h7"/></svg>
+      Cross-Tasks
+      <span class="sidebar-count">42</span>
+    </a>
+
+    <a class="sidebar-item" href="#">
+      <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
+      Calendar
+    </a>
+
+    <a class="sidebar-item" href="#">
+      <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+      Modules
+    </a>
+
+    <hr class="sidebar-divider">
+
+    <div class="student-nav-header">Students</div>
+
+    <a class="sidebar-item" href="#" style="background: #1e293b; color: #f1f5f9;">
+      <span style="display: inline-flex; width: 18px; height: 18px; border-radius: 50%; background: linear-gradient(135deg, #818cf8, #5b5fcf); align-items: center; justify-content: center; font-size: 9px; font-weight: 600; color: white; flex-shrink: 0;">MC</span>
+      Maya Chen
+    </a>
+    <a class="sidebar-item" href="#">
+      <span style="display: inline-flex; width: 18px; height: 18px; border-radius: 50%; background: #475569; align-items: center; justify-content: center; font-size: 9px; font-weight: 600; color: white; flex-shrink: 0;">JL</span>
+      Jordan Liu
+    </a>
+    <a class="sidebar-item" href="#">
+      <span style="display: inline-flex; width: 18px; height: 18px; border-radius: 50%; background: #475569; align-items: center; justify-content: center; font-size: 9px; font-weight: 600; color: white; flex-shrink: 0;">SP</span>
+      Sofia Park
+    </a>
+    <a class="sidebar-item" href="#" style="color: var(--sidebar-ink-2);">
+      <span style="font-size: 13px; opacity: 0.5; padding-left: 4px;">+ 12 more</span>
+    </a>
+  </nav>
+
+  <!-- ── MAIN FRAME ── -->
+  <div class="main-frame">
+
+    <!-- Topbar -->
+    <header class="topbar">
+      <a href="../index.html" class="brand-link" aria-label="Back to demo index">
+        <div class="brand-mark" aria-label="Workspace">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="white" stroke-width="1.4">
+            <circle cx="7" cy="7" r="5.5"/>
+            <circle cx="7" cy="7" r="2.5"/>
+          </svg>
+        </div>
+      </a>
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <a href="#">Students</a>
+        <span class="breadcrumb-sep">›</span>
+        <a href="#">Maya Chen</a>
+        <span class="breadcrumb-sep">›</span>
+        <span class="breadcrumb-current">Tasks</span>
+      </nav>
+      <div class="topbar-end">
+        <button class="icon-btn" title="Search" aria-label="Search">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        </button>
+        <button class="icon-btn" title="Notifications" aria-label="Notifications">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+          <span class="notif-dot" aria-hidden="true"></span>
+        </button>
+        <div class="avatar" title="Xiao Jin — Consultant" aria-label="Xiao Jin">XJ</div>
+      </div>
+    </header>
+
+    <!-- Body row — main only, no rail on this surface -->
+    <div class="body-row">
+      <main class="main-content">
+        <div class="content-scroll">
+
+          <!-- ── PROFILE STRIP — top-of-page, collapsible (Pattern 1 reframed) ──
+               R2 layout: essentials (GPA / SAT / Major / Citizenship) inline in header row.
+               Only Hooks expand. Saves ~50px vertical space; eliminates header-row whitespace. -->
+          <section class="profile-strip" aria-label="Student profile">
+            <div class="profile-strip-header" id="profile-strip-header" role="button" tabindex="0" aria-expanded="true" aria-controls="profile-detail">
+              <div class="profile-avatar" aria-label="Maya Chen avatar">MC</div>
+              <div class="profile-name-block">
+                <h1 class="profile-name">Maya Chen</h1>
+                <div class="profile-meta">
+                  <span class="status-pill pill-active">Yale REA Deferred</span>
+                  <span class="status-pill pill-indigo">LOCI active</span>
+                  <span class="pill-cycle">Class of 2027 · Senior</span>
+                  <span class="pill-ws" title="Working style — internal">Perfectionist</span>
+                </div>
+              </div>
+              <div class="profile-inline-stats" aria-label="Student academic stats">
+                <div class="profile-inline-stat">
+                  <span class="profile-inline-stat-label">GPA</span>
+                  <span class="profile-inline-stat-value">3.96</span>
+                </div>
+                <div class="profile-inline-stat">
+                  <span class="profile-inline-stat-label">SAT</span>
+                  <span class="profile-inline-stat-value">1530</span>
+                </div>
+                <div class="profile-inline-stat">
+                  <span class="profile-inline-stat-label">Major</span>
+                  <span class="profile-inline-stat-value text" title="Studio Art / Art History">Studio Art / Art History</span>
+                </div>
+                <div class="profile-inline-stat">
+                  <span class="profile-inline-stat-label">Citizenship</span>
+                  <span class="profile-inline-stat-value text">US Citizen</span>
+                </div>
+              </div>
+              <div class="profile-actions">
+                <button class="btn btn-ghost fake-btn" data-tooltip="Logs a meeting for Maya — opens modal with date, duration, and notes fields" onclick="event.stopPropagation()">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                  Log meeting
+                </button>
+                <button class="profile-collapse-btn" aria-label="Collapse hooks" title="Collapse hooks">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
+                </button>
+              </div>
+            </div>
+
+            <div class="profile-detail" id="profile-detail">
+              <div class="profile-hooks-row">
+                <span class="profile-hooks-label">Hooks</span>
+                <span class="profile-hook">First-gen college</span>
+                <span class="profile-hook">Studio art portfolio</span>
+                <span class="profile-hook">NYC public school</span>
+              </div>
+            </div>
+          </section>
+
+          <!-- ── TAB NAV (under student name) ── -->
+          <nav class="tab-nav" aria-label="Student page sections">
+            <a href="#" class="tab-nav-item">Overview</a>
+            <a href="#" class="tab-nav-item">Schools <span class="tab-count">12</span></a>
+            <a href="#" class="tab-nav-item active" aria-current="page">Tasks <span class="tab-count">17</span></a>
+            <a href="#" class="tab-nav-item">Snapshots <span class="tab-count">18</span></a>
+            <a href="#" class="tab-nav-item">Documents <span class="tab-count">9</span></a>
+            <a href="#" class="tab-nav-item">Meetings <span class="tab-count">7</span></a>
+            <a href="#" class="tab-nav-item">Notes <span class="tab-count">11</span></a>
+          </nav>
+
+          <!-- Page-purpose subtitle moved to demo-note-box in topbar (Pattern 6) -->
+
+          <!-- ── TASKS HEADER (page sub-header) ── -->
+          <div class="tasks-header">
+            <div class="tasks-header-title-block">
+              <h2 class="tasks-header-title">Tasks</h2>
+              <div class="tasks-header-meta">17 total · 1 overdue · 5 in progress · 3 awaiting review</div>
+            </div>
+            <div class="tasks-header-actions">
+              <!-- View-mode toggle: Kanban (default per D50) / By time (time-bucket list) -->
+              <div class="view-toggle" role="radiogroup" aria-label="Task view mode">
+                <button data-view-mode="kanban" aria-pressed="true" data-tooltip="Kanban view — cards grouped by status (default)">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                  Kanban
+                </button>
+                <button data-view-mode="list" aria-pressed="false" data-tooltip="By time — list grouped by time bucket (This week / Next week / etc.)">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" x2="21" y1="6" y2="6"/><line x1="8" x2="21" y1="12" y2="12"/><line x1="8" x2="21" y1="18" y2="18"/><line x1="3" x2="3.01" y1="6" y2="6"/><line x1="3" x2="3.01" y1="12" y2="12"/><line x1="3" x2="3.01" y1="18" y2="18"/></svg>
+                  By time
+                </button>
+              </div>
+              <button class="btn btn-primary fake-btn" data-tooltip="Adds a task to Maya — title, school, due date, status">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></svg>
+                Add task
+              </button>
+            </div>
+          </div>
+
+          <!-- Filter row (T2 pattern: 3 prominent quick-action chips + school-scope dropdown + advanced sort/dropdowns).
+               Single-student translation of T2: Overdue + Awaiting review = consultant-action lens;
+               School-scope dropdown stays prominent; rest collapse into advanced + sort.
+               VISIBLE-AFFORDANCE-NOT-FUNCTIONAL. -->
+          <div class="filter-row" aria-label="Task filters">
+            <!-- 3 prominent quick-action chips (T2 pattern) — color-coded per D49 + status palette -->
+            <button class="filter-chip chip-overdue" aria-pressed="false">Overdue <span class="filter-chip-count">1</span></button>
+            <button class="filter-chip chip-awaiting" aria-pressed="false">Awaiting review <span class="filter-chip-count">3</span></button>
+            <button class="filter-chip" aria-pressed="false">Due this week <span class="filter-chip-count">5</span></button>
+
+            <span class="filter-divider"></span>
+
+            <!-- School-scope filter dropdown -->
+            <button class="filter-chip filter-chip-dropdown" aria-pressed="false">
+              School: All
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-left:2px;"><path d="M2 3.5l3 3 3-3"/></svg>
+            </button>
+
+            <span class="filter-divider"></span>
+
+            <!-- Advanced filters toggle -->
+            <button class="filter-chip filter-chip-advanced" aria-pressed="false" data-tooltip="Advanced filters — Stage, status, working style, sort">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:2px;"><line x1="4" x2="20" y1="6" y2="6"/><line x1="7" x2="20" y1="12" y2="12"/><line x1="10" x2="20" y1="18" y2="18"/></svg>
+              More filters
+            </button>
+
+            <span class="filter-spacer"></span>
+
+            <span class="filter-sort">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h13"/><path d="M3 12h9"/><path d="M3 18h5"/><path d="m18 9 3 3-3 3"/><path d="M21 12H12"/></svg>
+              Sort: Urgency
+            </span>
+          </div>
+
+          <!-- ════════════════════════════════════════
+               KANBAN VIEW (default per D50)
+               5 universal task statuses as columns: Not started / In progress / Awaiting review / Stuck / Done
+               Cards re-render the same 17 tasks as in time-bucket list (toggle below).
+               Single-student variant: card hierarchy is Title → Due → School (no Student row — every card is Maya).
+               ════════════════════════════════════════ -->
+          <div class="kanban-shell" aria-label="Tasks Kanban">
+            <div class="kanban-wrapper">
+              <div class="kanban-board">
+
+                <!-- COL 1 — NOT STARTED -->
+                <section class="kanban-col status-not-started">
+                  <div class="kanban-col-header">
+                    <div class="col-stage-row">
+                      <span class="stage-dot" aria-hidden="true"></span>
+                      <span class="col-stage-name">Not started</span>
+                      <span class="col-count">7</span>
+                      <button class="col-add-btn" data-tooltip="Add a task to Not started — opens task modal pre-filled with status">+ Add</button>
+                    </div>
+                    <div class="col-desc">No work yet</div>
+                  </div>
+                  <div class="kanban-col-body">
+
+                    <article class="task-card">
+                      <div class="card-core">
+                        <div class="card-title">RD application strategy snapshot</div>
+                        <div class="card-due due-soon">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                          <span class="due-label">Due</span>
+                          <span class="due-date">Dec 20 · in 5d</span>
+                        </div>
+                      </div>
+                      <div class="card-divider"></div>
+                      <div class="card-supplemental">
+                        <span class="card-school-chip"><span class="card-school-dot"></span>Cross-school</span>
+                      </div>
+                    </article>
+
+                    <article class="task-card">
+                      <div class="card-core">
+                        <div class="card-title">Pre-holiday async Loom for Maya</div>
+                        <div class="card-due due-soon">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                          <span class="due-label">Due</span>
+                          <span class="due-date">Dec 23 · in 8d</span>
+                        </div>
+                      </div>
+                      <div class="card-divider"></div>
+                      <div class="card-supplemental">
+                        <span class="card-school-chip"><span class="card-school-dot"></span>Cross-school</span>
+                      </div>
+                    </article>
+
+                    <article class="task-card">
+                      <div class="card-core">
+                        <div class="card-title">Yale interview prep — alumni research</div>
+                        <div class="card-due">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                          <span class="due-label">Due</span>
+                          <span class="due-date">Jan 8 · in 24d</span>
+                        </div>
+                      </div>
+                      <div class="card-divider"></div>
+                      <div class="card-supplemental">
+                        <span class="card-school-chip" data-school-color="#00356b" style="--school-color:#00356b;"><span class="card-school-dot"></span>Yale</span>
+                      </div>
+                    </article>
+
+                    <article class="task-card">
+                      <div class="card-core">
+                        <div class="card-title">Pratt RD — submit confirmation</div>
+                        <div class="card-due">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                          <span class="due-label">Due</span>
+                          <span class="due-date">Jan 5 · in 21d</span>
+                        </div>
+                      </div>
+                      <div class="card-divider"></div>
+                      <div class="card-supplemental">
+                        <span class="card-school-chip" data-school-color="#1d6363" style="--school-color:#1d6363;"><span class="card-school-dot"></span>Pratt</span>
+                      </div>
+                    </article>
+
+                    <article class="task-card">
+                      <div class="card-core">
+                        <div class="card-title">Yale alumni interview prep + mock</div>
+                        <div class="card-due">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                          <span class="due-label">Due</span>
+                          <span class="due-date">Jan 14 · in 30d</span>
+                        </div>
+                      </div>
+                      <div class="card-divider"></div>
+                      <div class="card-supplemental">
+                        <span class="card-school-chip" data-school-color="#00356b" style="--school-color:#00356b;"><span class="card-school-dot"></span>Yale</span>
+                      </div>
+                    </article>
+
+                    <article class="task-card">
+                      <div class="card-core">
+                        <div class="card-title">RD final supplement push review</div>
+                        <div class="card-due">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                          <span class="due-label">Due</span>
+                          <span class="due-date">Jan 28 · in 44d</span>
+                        </div>
+                      </div>
+                      <div class="card-divider"></div>
+                      <div class="card-supplemental">
+                        <span class="card-school-chip"><span class="card-school-dot"></span>Cross-school</span>
+                      </div>
+                    </article>
+
+                    <article class="task-card">
+                      <div class="card-core">
+                        <div class="card-title">RISD scholarship strategy session</div>
+                        <div class="card-due">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                          <span class="due-label">Due</span>
+                          <span class="due-date">Jan 20 · in 36d</span>
+                        </div>
+                      </div>
+                      <div class="card-divider"></div>
+                      <div class="card-supplemental">
+                        <span class="card-school-chip" data-school-color="#9b1c36" style="--school-color:#9b1c36;"><span class="card-school-dot"></span>RISD</span>
+                      </div>
+                    </article>
+
+                  </div>
+                </section>
+
+                <!-- COL 2 — IN PROGRESS -->
+                <section class="kanban-col status-in-progress">
+                  <div class="kanban-col-header">
+                    <div class="col-stage-row">
+                      <span class="stage-dot" aria-hidden="true"></span>
+                      <span class="col-stage-name">In progress</span>
+                      <span class="col-count">6</span>
+                    </div>
+                    <div class="col-desc">Actively being worked on</div>
+                  </div>
+                  <div class="kanban-col-body">
+
+                    <article class="task-card">
+                      <div class="card-core">
+                        <div class="card-title">Finalize Yale LOCI</div>
+                        <div class="card-due overdue">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                          <span class="due-label">Overdue</span>
+                          <span class="due-date">Due today · Dec 15</span>
+                        </div>
+                      </div>
+                      <div class="card-divider"></div>
+                      <div class="card-supplemental">
+                        <span class="card-school-chip" data-school-color="#00356b" style="--school-color:#00356b;"><span class="card-school-dot"></span>Yale</span>
+                      </div>
+                    </article>
+
+                    <article class="task-card">
+                      <div class="card-core">
+                        <div class="card-title">Penn "Why Penn" supplement</div>
+                        <div class="card-due due-soon">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                          <span class="due-label">Due</span>
+                          <span class="due-date">Dec 18 · in 3d</span>
+                        </div>
+                      </div>
+                      <div class="card-divider"></div>
+                      <div class="card-supplemental">
+                        <span class="card-school-chip" data-school-color="#01256e" style="--school-color:#01256e;"><span class="card-school-dot"></span>Penn</span>
+                      </div>
+                    </article>
+
+                    <article class="task-card">
+                      <div class="card-core">
+                        <div class="card-title">RISD scholarship — financial section</div>
+                        <div class="card-due due-soon">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                          <span class="due-label">Due</span>
+                          <span class="due-date">Dec 21 · in 6d</span>
+                        </div>
+                      </div>
+                      <div class="card-divider"></div>
+                      <div class="card-supplemental">
+                        <span class="card-school-chip" data-school-color="#9b1c36" style="--school-color:#9b1c36;"><span class="card-school-dot"></span>RISD</span>
+                      </div>
+                    </article>
+
+                    <article class="task-card">
+                      <div class="card-core">
+                        <div class="card-title">Northwestern "Why NU" supplement polish</div>
+                        <div class="card-due">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                          <span class="due-label">Due</span>
+                          <span class="due-date">Dec 26 · in 11d</span>
+                        </div>
+                      </div>
+                      <div class="card-divider"></div>
+                      <div class="card-supplemental">
+                        <span class="card-school-chip" data-school-color="#4e2a84" style="--school-color:#4e2a84;"><span class="card-school-dot"></span>Northwestern</span>
+                      </div>
+                    </article>
+
+                    <article class="task-card">
+                      <div class="card-core">
+                        <div class="card-title">Penn RD — final submit</div>
+                        <div class="card-due">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                          <span class="due-label">Due</span>
+                          <span class="due-date">Jan 5 · in 21d</span>
+                        </div>
+                      </div>
+                      <div class="card-divider"></div>
+                      <div class="card-supplemental">
+                        <span class="card-school-chip" data-school-color="#01256e" style="--school-color:#01256e;"><span class="card-school-dot"></span>Penn</span>
+                      </div>
+                    </article>
+
+                    <article class="task-card">
+                      <div class="card-core">
+                        <div class="card-title">USC Roski — supplement edit</div>
+                        <div class="card-due">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                          <span class="due-label">Due</span>
+                          <span class="due-date">Dec 30 · in 15d</span>
+                        </div>
+                      </div>
+                      <div class="card-divider"></div>
+                      <div class="card-supplemental">
+                        <span class="card-school-chip" data-school-color="#990000" style="--school-color:#990000;"><span class="card-school-dot"></span>USC</span>
+                      </div>
+                    </article>
+
+                  </div>
+                </section>
+
+                <!-- COL 3 — AWAITING REVIEW -->
+                <section class="kanban-col status-awaiting">
+                  <div class="kanban-col-header">
+                    <div class="col-stage-row">
+                      <span class="stage-dot" aria-hidden="true"></span>
+                      <span class="col-stage-name">Awaiting review</span>
+                      <span class="col-count">3</span>
+                    </div>
+                    <div class="col-desc">Needs my attention</div>
+                  </div>
+                  <div class="kanban-col-body">
+
+                    <article class="task-card">
+                      <div class="card-core">
+                        <div class="card-title">Yale recommendation request — Mr. Reyes</div>
+                        <div class="card-due due-soon">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                          <span class="due-label">Due</span>
+                          <span class="due-date">Dec 19 · in 4d</span>
+                        </div>
+                      </div>
+                      <div class="card-divider"></div>
+                      <div class="card-supplemental">
+                        <span class="card-school-chip" data-school-color="#00356b" style="--school-color:#00356b;"><span class="card-school-dot"></span>Yale</span>
+                      </div>
+                    </article>
+
+                    <article class="task-card">
+                      <div class="card-core">
+                        <div class="card-title">Cornell RD — final submission review</div>
+                        <div class="card-due">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                          <span class="due-label">Due</span>
+                          <span class="due-date">Dec 28 · in 13d</span>
+                        </div>
+                      </div>
+                      <div class="card-divider"></div>
+                      <div class="card-supplemental">
+                        <span class="card-school-chip" data-school-color="#b31b1b" style="--school-color:#b31b1b;"><span class="card-school-dot"></span>Cornell</span>
+                      </div>
+                    </article>
+
+                    <article class="task-card">
+                      <div class="card-core">
+                        <div class="card-title">Brown RD — final submit pass</div>
+                        <div class="card-due">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                          <span class="due-label">Due</span>
+                          <span class="due-date">Jan 1 · in 17d</span>
+                        </div>
+                      </div>
+                      <div class="card-divider"></div>
+                      <div class="card-supplemental">
+                        <span class="card-school-chip" data-school-color="#4e3629" style="--school-color:#4e3629;"><span class="card-school-dot"></span>Brown</span>
+                      </div>
+                    </article>
+
+                  </div>
+                </section>
+
+                <!-- COL 4 — STUCK -->
+                <section class="kanban-col status-stuck">
+                  <div class="kanban-col-header">
+                    <div class="col-stage-row">
+                      <span class="stage-dot" aria-hidden="true"></span>
+                      <span class="col-stage-name">Stuck</span>
+                      <span class="col-count">1</span>
+                    </div>
+                    <div class="col-desc">Blocked — needs intervention</div>
+                  </div>
+                  <div class="kanban-col-body">
+
+                    <article class="task-card">
+                      <div class="card-core">
+                        <div class="card-title">NYU Tisch — work sample selection</div>
+                        <div class="card-due due-soon">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                          <span class="due-label">Due</span>
+                          <span class="due-date">Dec 24 · in 9d</span>
+                        </div>
+                      </div>
+                      <div class="card-divider"></div>
+                      <div class="card-supplemental">
+                        <span class="card-school-chip" data-school-color="#57068c" style="--school-color:#57068c;"><span class="card-school-dot"></span>NYU</span>
+                      </div>
+                    </article>
+
+                  </div>
+                </section>
+
+                <!-- COL 5 — DONE -->
+                <section class="kanban-col status-done">
+                  <div class="kanban-col-header">
+                    <div class="col-stage-row">
+                      <span class="stage-dot" aria-hidden="true"></span>
+                      <span class="col-stage-name">Done</span>
+                      <span class="col-count">0</span>
+                    </div>
+                    <div class="col-desc">Complete</div>
+                  </div>
+                  <div class="kanban-col-body">
+                    <div class="add-task-card" style="font-style: italic;">No tasks completed yet this week</div>
+                  </div>
+                </section>
+
+              </div>
+            </div>
+          </div>
+
+          <!-- ── TIME-BUCKET TASK GROUPS (list view — toggle target) ──
+               Each bucket is a <details> element with native disclosure.
+               Open by default: This Week + Next Week. Closed by default: Within 2 Weeks + This Month. (bm-g03w.1.31) -->
+          <div class="bucket-section" aria-label="Tasks grouped by time bucket">
+
+            <!-- THIS WEEK -->
+            <details class="bucket" open>
+              <summary class="bucket-header">
+                <svg class="bucket-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                <h3 class="bucket-title">This week</h3>
+                <span class="bucket-date-range">Dec 15-21</span>
+                <span class="bucket-count">5 tasks</span>
+              </summary>
+              <div class="bucket-items">
+
+                <div class="bucket-item" data-status="overdue">
+                  <span class="item-status-pip" aria-hidden="true"></span>
+                  <div class="item-body">
+                    <div class="item-title">Finalize Yale LOCI</div>
+                    <div class="item-due overdue">Due today · Dec 15</div>
+                    <div class="item-supplemental">Add art history detail, tighten Haas studio reference</div>
+                  </div>
+                  <div class="item-end">
+                    <span class="school-tag" data-school-color="#00356b" style="--school-color:#00356b;"><span class="school-tag-dot"></span>Yale</span>
+                    <span class="status-badge" data-status="overdue">Overdue</span>
+                  </div>
+                </div>
+
+                <div class="bucket-item" data-status="in-progress">
+                  <span class="item-status-pip" aria-hidden="true"></span>
+                  <div class="item-body">
+                    <div class="item-title">Penn "Why Penn" supplement</div>
+                    <div class="item-due">Due Dec 18 · in 3 days</div>
+                    <div class="item-supplemental">Add specific professor reference; current draft too generic</div>
+                  </div>
+                  <div class="item-end">
+                    <span class="school-tag" data-school-color="#01256e" style="--school-color:#01256e;"><span class="school-tag-dot"></span>Penn</span>
+                    <span class="status-badge" data-status="in-progress">In progress</span>
+                  </div>
+                </div>
+
+                <div class="bucket-item" data-status="in-progress">
+                  <span class="item-status-pip" aria-hidden="true"></span>
+                  <div class="item-body">
+                    <div class="item-title">RISD scholarship — financial section</div>
+                    <div class="item-due">Due Dec 21 · in 6 days</div>
+                    <div class="item-supplemental">$10K merit · personal statement + 3 work samples</div>
+                  </div>
+                  <div class="item-end">
+                    <span class="school-tag" data-school-color="#9b1c36" style="--school-color:#9b1c36;"><span class="school-tag-dot"></span>RISD</span>
+                    <span class="status-badge" data-status="in-progress">In progress</span>
+                  </div>
+                </div>
+
+                <div class="bucket-item" data-status="awaiting-review">
+                  <span class="item-status-pip" aria-hidden="true"></span>
+                  <div class="item-body">
+                    <div class="item-title">Yale recommendation request — Mr. Reyes</div>
+                    <div class="item-due">Due Dec 19 · in 4 days</div>
+                    <div class="item-supplemental">Maya sent draft request Dec 13 · waiting on her edits</div>
+                  </div>
+                  <div class="item-end">
+                    <span class="school-tag" data-school-color="#00356b" style="--school-color:#00356b;"><span class="school-tag-dot"></span>Yale</span>
+                    <span class="status-badge" data-status="awaiting-review">Awaiting review</span>
+                  </div>
+                </div>
+
+                <div class="bucket-item" data-status="not-started">
+                  <span class="item-status-pip" aria-hidden="true"></span>
+                  <div class="item-body">
+                    <div class="item-title">RD application strategy snapshot</div>
+                    <div class="item-due">Due Dec 20 · in 5 days</div>
+                    <div class="item-supplemental">Lock approach before holiday break · share with parents</div>
+                  </div>
+                  <div class="item-end">
+                    <span class="school-tag"><span class="school-tag-dot"></span>Cross-school</span>
+                    <span class="status-badge" data-status="not-started">Not started</span>
+                  </div>
+                </div>
+
+              </div>
+            </details>
+
+            <!-- NEXT WEEK -->
+            <details class="bucket" open>
+              <summary class="bucket-header">
+                <svg class="bucket-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                <h3 class="bucket-title">Next week</h3>
+                <span class="bucket-date-range">Dec 22-28</span>
+                <span class="bucket-count">4 tasks</span>
+              </summary>
+              <div class="bucket-items">
+
+                <div class="bucket-item" data-status="awaiting-review">
+                  <span class="item-status-pip" aria-hidden="true"></span>
+                  <div class="item-body">
+                    <div class="item-title">Cornell RD — final submission review</div>
+                    <div class="item-due">Due Dec 28 · in 13 days</div>
+                    <div class="item-supplemental">Last check before Jan 2 deadline · AAD + supplements</div>
+                  </div>
+                  <div class="item-end">
+                    <span class="school-tag" data-school-color="#b31b1b" style="--school-color:#b31b1b;"><span class="school-tag-dot"></span>Cornell</span>
+                    <span class="status-badge" data-status="awaiting-review">Awaiting review</span>
+                  </div>
+                </div>
+
+                <div class="bucket-item" data-status="in-progress">
+                  <span class="item-status-pip" aria-hidden="true"></span>
+                  <div class="item-body">
+                    <div class="item-title">Northwestern "Why NU" supplement polish</div>
+                    <div class="item-due">Due Dec 26 · in 11 days</div>
+                    <div class="item-supplemental">Address Weinberg arts integration · currently vague</div>
+                  </div>
+                  <div class="item-end">
+                    <span class="school-tag" data-school-color="#4e2a84" style="--school-color:#4e2a84;"><span class="school-tag-dot"></span>Northwestern</span>
+                    <span class="status-badge" data-status="in-progress">In progress</span>
+                  </div>
+                </div>
+
+                <div class="bucket-item" data-status="stuck">
+                  <span class="item-status-pip" aria-hidden="true"></span>
+                  <div class="item-body">
+                    <div class="item-title">NYU Tisch — work sample selection</div>
+                    <div class="item-due">Due Dec 24 · in 9 days</div>
+                    <div class="item-supplemental">Stuck: 3 of 5 portfolio pieces confirmed · Maya can't decide on last 2</div>
+                  </div>
+                  <div class="item-end">
+                    <span class="school-tag" data-school-color="#57068c" style="--school-color:#57068c;"><span class="school-tag-dot"></span>NYU</span>
+                    <span class="status-badge" data-status="stuck">Stuck</span>
+                  </div>
+                </div>
+
+                <div class="bucket-item" data-status="not-started">
+                  <span class="item-status-pip" aria-hidden="true"></span>
+                  <div class="item-body">
+                    <div class="item-title">Pre-holiday async Loom for Maya</div>
+                    <div class="item-due">Due Dec 23 · in 8 days</div>
+                    <div class="item-supplemental">5-min video: holiday checklist + what Maya can finalize solo</div>
+                  </div>
+                  <div class="item-end">
+                    <span class="school-tag"><span class="school-tag-dot"></span>Cross-school</span>
+                    <span class="status-badge" data-status="not-started">Not started</span>
+                  </div>
+                </div>
+
+              </div>
+            </details>
+
+            <!-- WITHIN 2 WEEKS — closed by default per bm-g03w.1.31 -->
+            <details class="bucket">
+              <summary class="bucket-header">
+                <svg class="bucket-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                <h3 class="bucket-title">Within 2 weeks</h3>
+                <span class="bucket-date-range">Dec 29 – Jan 11</span>
+                <span class="bucket-count">5 tasks</span>
+              </summary>
+              <div class="bucket-items">
+
+                <div class="bucket-item" data-status="awaiting-review">
+                  <span class="item-status-pip" aria-hidden="true"></span>
+                  <div class="item-body">
+                    <div class="item-title">Brown RD — final submit pass</div>
+                    <div class="item-due">Due Jan 1 · in 17 days</div>
+                    <div class="item-supplemental">All materials ready · confirm final essay version</div>
+                  </div>
+                  <div class="item-end">
+                    <span class="school-tag" data-school-color="#4e3629" style="--school-color:#4e3629;"><span class="school-tag-dot"></span>Brown</span>
+                    <span class="status-badge" data-status="awaiting-review">Awaiting review</span>
+                  </div>
+                </div>
+
+                <div class="bucket-item" data-status="in-progress">
+                  <span class="item-status-pip" aria-hidden="true"></span>
+                  <div class="item-body">
+                    <div class="item-title">Penn RD — final submit</div>
+                    <div class="item-due">Due Jan 5 · in 21 days</div>
+                    <div class="item-supplemental">Wharton aside, this is the last revision pass</div>
+                  </div>
+                  <div class="item-end">
+                    <span class="school-tag" data-school-color="#01256e" style="--school-color:#01256e;"><span class="school-tag-dot"></span>Penn</span>
+                    <span class="status-badge" data-status="in-progress">In progress</span>
+                  </div>
+                </div>
+
+                <div class="bucket-item" data-status="not-started">
+                  <span class="item-status-pip" aria-hidden="true"></span>
+                  <div class="item-body">
+                    <div class="item-title">Yale interview prep — alumni research</div>
+                    <div class="item-due">Due Jan 8 · in 24 days</div>
+                    <div class="item-supplemental">Window opens Jan 12 · identify regional coordinator</div>
+                  </div>
+                  <div class="item-end">
+                    <span class="school-tag" data-school-color="#00356b" style="--school-color:#00356b;"><span class="school-tag-dot"></span>Yale</span>
+                    <span class="status-badge" data-status="not-started">Not started</span>
+                  </div>
+                </div>
+
+                <div class="bucket-item" data-status="in-progress">
+                  <span class="item-status-pip" aria-hidden="true"></span>
+                  <div class="item-body">
+                    <div class="item-title">USC Roski — supplement edit</div>
+                    <div class="item-due">Due Dec 30 · in 15 days</div>
+                    <div class="item-supplemental">Strengthen "creative process" — add Moriyama reference</div>
+                  </div>
+                  <div class="item-end">
+                    <span class="school-tag" data-school-color="#990000" style="--school-color:#990000;"><span class="school-tag-dot"></span>USC</span>
+                    <span class="status-badge" data-status="in-progress">In progress</span>
+                  </div>
+                </div>
+
+                <div class="bucket-item" data-status="not-started">
+                  <span class="item-status-pip" aria-hidden="true"></span>
+                  <div class="item-body">
+                    <div class="item-title">Pratt RD — submit confirmation</div>
+                    <div class="item-due">Due Jan 5 · in 21 days</div>
+                    <div class="item-supplemental">All materials in · awaiting Maya's final upload</div>
+                  </div>
+                  <div class="item-end">
+                    <span class="school-tag" data-school-color="#1d6363" style="--school-color:#1d6363;"><span class="school-tag-dot"></span>Pratt</span>
+                    <span class="status-badge" data-status="not-started">Not started</span>
+                  </div>
+                </div>
+
+              </div>
+            </details>
+
+            <!-- THIS MONTH — closed by default per bm-g03w.1.31 -->
+            <details class="bucket">
+              <summary class="bucket-header">
+                <svg class="bucket-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                <h3 class="bucket-title">This month</h3>
+                <span class="bucket-date-range">Jan 12 – 31 · strategic</span>
+                <span class="bucket-count">3 tasks</span>
+              </summary>
+              <div class="bucket-items">
+
+                <div class="bucket-item" data-status="not-started">
+                  <span class="item-status-pip" aria-hidden="true"></span>
+                  <div class="item-body">
+                    <div class="item-title">Yale alumni interview prep + mock</div>
+                    <div class="item-due">Due Jan 14 · in 30 days</div>
+                    <div class="item-supplemental">Mock-prep beforehand · interview window Jan 12-21</div>
+                  </div>
+                  <div class="item-end">
+                    <span class="school-tag" data-school-color="#00356b" style="--school-color:#00356b;"><span class="school-tag-dot"></span>Yale</span>
+                    <span class="status-badge" data-status="not-started">Not started</span>
+                  </div>
+                </div>
+
+                <div class="bucket-item" data-status="not-started">
+                  <span class="item-status-pip" aria-hidden="true"></span>
+                  <div class="item-body">
+                    <div class="item-title">RD final supplement push review</div>
+                    <div class="item-due">Due Jan 28 · in 44 days</div>
+                    <div class="item-supplemental">All remaining RD schools · quality pass before Jan 31 stragglers</div>
+                  </div>
+                  <div class="item-end">
+                    <span class="school-tag"><span class="school-tag-dot"></span>Cross-school</span>
+                    <span class="status-badge" data-status="not-started">Not started</span>
+                  </div>
+                </div>
+
+                <div class="bucket-item" data-status="not-started">
+                  <span class="item-status-pip" aria-hidden="true"></span>
+                  <div class="item-body">
+                    <div class="item-title">RISD scholarship strategy session</div>
+                    <div class="item-due">Due Jan 20 · in 36 days</div>
+                    <div class="item-supplemental">Portfolio narrative for committee · Feb 1 deadline</div>
+                  </div>
+                  <div class="item-end">
+                    <span class="school-tag" data-school-color="#9b1c36" style="--school-color:#9b1c36;"><span class="school-tag-dot"></span>RISD</span>
+                    <span class="status-badge" data-status="not-started">Not started</span>
+                  </div>
+                </div>
+
+              </div>
+            </details>
+
+          </div>
+
+        </div><!-- /content-scroll -->
+      </main>
+    </div><!-- /body-row -->
+  </div><!-- /main-frame -->
+</div><!-- /shell -->
+
+<script>
+  // Pattern 1 (reframed) — profile-strip collapse
+  const profileHeader = document.getElementById('profile-strip-header');
+  const collapseBtn = profileHeader.querySelector('.profile-collapse-btn');
+
+  function toggleProfile() {
+    const collapsed = document.body.classList.toggle('profile-collapsed');
+    profileHeader.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+    collapseBtn.setAttribute('aria-label', collapsed ? 'Expand hooks' : 'Collapse hooks');
+    collapseBtn.setAttribute('title', collapsed ? 'Expand hooks' : 'Collapse hooks');
+  }
+
+  profileHeader.addEventListener('click', (e) => {
+    if (e.target.closest('button') && !e.target.closest('.profile-collapse-btn')) return;
+    toggleProfile();
+  });
+  profileHeader.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      toggleProfile();
+    }
+  });
+
+  // Filter chips visual toggle (mock affordance, no real filtering)
+  document.querySelectorAll('.filter-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      const pressed = chip.getAttribute('aria-pressed') === 'true';
+      chip.setAttribute('aria-pressed', pressed ? 'false' : 'true');
+    });
+  });
+
+  // View-mode toggle (D50) — Kanban / By time. Body class swap pattern (matches Pattern 4 idiom).
+  const VIEW_MODES = ['kanban', 'list'];
+  document.querySelectorAll('[data-view-mode]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      VIEW_MODES.forEach(m => document.body.classList.remove(`view-${m}`));
+      document.body.classList.add(`view-${btn.dataset.viewMode}`);
+      document.querySelectorAll('[data-view-mode]').forEach(b => {
+        b.setAttribute('aria-pressed', b === btn ? 'true' : 'false');
+      });
+    });
+  });
+
+  // Tab nav — mock affordance (this IS the tasks page)
+  document.querySelectorAll('.tab-nav-item').forEach(tab => {
+    tab.addEventListener('click', (e) => { e.preventDefault(); });
+  });
+
+</script>
+
+</body>
+</html>

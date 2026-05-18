@@ -1,0 +1,2230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Cross-Tasks — Kanban by Status</title>
+<meta name="page-purpose" content="This page is for: a consultant triaging the work pipeline — what's stuck where across (some or all) students, what needs my review." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  /* ════════════════════════════════════════════════
+     TOKENS — locked v2 palette
+     ════════════════════════════════════════════════ */
+  :root {
+    --bg:        #f7f8fa;
+    --surface:   #ffffff;
+    --surface-2: #fbfcfd;
+    --ink:       #0f1419;
+    --ink-2:     #475569;
+    --ink-3:     #94a3b8;
+    --line:      #e4e6eb;
+    --line-2:    #cbd5e1;
+
+    --sidebar:        #0f172a;
+    --sidebar-ink:    #cbd5e1;
+    --sidebar-ink-2:  #64748b;
+    --sidebar-line:   rgba(255,255,255,0.08);
+
+    --primary:        #5b5fcf;
+    --primary-bg:     #eef0fb;
+    --primary-line:   #c7cbe8;
+
+    /* Status palette — locked 3 colors + neutral */
+    --status-done:       #047857;
+    --status-done-bg:    #d1fae5;
+    --status-active:     #b45309;
+    --status-active-bg:  #fef3c7;
+    --status-overdue:    #be123c;
+    --status-overdue-bg: #ffe4e6;
+    --status-neutral:    var(--ink-3);
+    --status-neutral-bg: #f1f5f9;
+
+    /* Working-style chips — distinct family from status; saturated per SHARED-SPEC */
+    --ws-perfectionist:    #8b5cf6;
+    --ws-perfectionist-bg: #f5f3ff;
+    --ws-anxious:          #e11d48;
+    --ws-anxious-bg:       #fff1f2;
+    --ws-self-directed:    #16a34a;
+    --ws-self-directed-bg: #f0fdf4;
+  }
+
+  /* ─── Color mode: OFF — no semantic color anywhere, all neutrals ─── */
+  body.color-off {
+    --status-done:        var(--ink-3);
+    --status-done-bg:     transparent;
+    --status-active:      var(--ink-3);
+    --status-active-bg:   transparent;
+    --status-overdue:     var(--ink-3);
+    --status-overdue-bg:  transparent;
+    --status-neutral:     var(--ink-3);
+    --status-neutral-bg:  #f1f5f9;
+    --ws-perfectionist:    var(--ink-3);
+    --ws-perfectionist-bg: transparent;
+    --ws-anxious:          var(--ink-3);
+    --ws-anxious-bg:       transparent;
+    --ws-self-directed:    var(--ink-3);
+    --ws-self-directed-bg: transparent;
+    /* Neutralize brand indigo too — Off means OFF (symmetric with status colors → ink-3) */
+    --primary:      var(--ink-3);
+    --primary-bg:   transparent;
+    --primary-line: var(--line-2);
+  }
+  /* (Mode C also drops the awaiting / stuck gradient washes — see below;
+     these now live only in D/E. Review/Blocked flags also hidden by default
+     and shown only in D/E. D6 items 2/5, 2026-05-12) */
+
+  /* ─── Color mode: MINIMAL — overdue (rose) + brand indigo + status-done (emerald) retain saturation;
+       status-active (amber) + WS chips neutralize (D1=A, 2026-05-12) ─── */
+  body.color-minimal {
+    --status-active:     var(--ink-3);
+    --status-active-bg:  transparent;
+    --status-neutral:    var(--ink-3);
+    --status-neutral-bg: #f1f5f9;
+    --ws-perfectionist:    var(--ink-3);
+    --ws-perfectionist-bg: transparent;
+    --ws-anxious:          var(--ink-3);
+    --ws-anxious-bg:       transparent;
+    --ws-self-directed:    var(--ink-3);
+    --ws-self-directed-bg: transparent;
+  }
+
+  /* ─── Color mode: STATUS+ — saturated working-style chips ─── */
+  body.color-status-plus {
+    --ws-perfectionist:    #6d28d9;
+    --ws-perfectionist-bg: #ede9fe;
+    --ws-anxious:          #be123c;
+    --ws-anxious-bg:       #fce7f3;
+    --ws-self-directed:    #15803d;
+    --ws-self-directed-bg: #dcfce7;
+  }
+
+  /* ─── Color mode: FULL — restore decorative tints + saturated WS ─── */
+  body.color-full {
+    --ws-perfectionist:    #6d28d9;
+    --ws-perfectionist-bg: #ede9fe;
+    --ws-anxious:          #be123c;
+    --ws-anxious-bg:       #fce7f3;
+    --ws-self-directed:    #15803d;
+    --ws-self-directed-bg: #dcfce7;
+  }
+  body.color-full .kanban-col.status-not-started { background: rgba(241, 245, 249, 0.55); }
+  body.color-full .kanban-col.status-in-progress { background: rgba(199, 203, 232, 0.32); }
+  body.color-full .kanban-col.status-awaiting    { background: rgba(254, 243, 199, 0.32); }
+  /* Stuck column wash = neutral (matches neutral-dashed treatment). Rose reserved for overdue. */
+  body.color-full .kanban-col.status-stuck       { background: rgba(241, 245, 249, 0.55); }
+  body.color-full .kanban-col.status-done        { background: rgba(209, 250, 229, 0.28); }
+  body.color-full .school-chip {
+    background: #eef0fb;
+    color: var(--primary);
+  }
+
+  /* ════════════════════════════════════════════════
+     RESET + BASE
+     ════════════════════════════════════════════════ */
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; }
+  button { font: inherit; background: none; border: none; padding: 0; cursor: pointer; color: inherit; }
+
+  body {
+    font-family: 'Geist', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  .font-mono { font-family: 'Geist Mono', 'Fira Mono', monospace; font-variant-numeric: tabular-nums; }
+
+  /* ════════════════════════════════════════════════
+     SHELL
+     ════════════════════════════════════════════════ */
+  .app-shell { display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+
+  .app-header {
+    position: sticky; top: 0; z-index: 50;
+    height: 48px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--line);
+    display: flex; align-items: center;
+    padding: 0 20px; gap: 12px; flex-shrink: 0;
+  }
+
+  .brand-link {
+    text-decoration: none;
+    display: inline-flex;
+    cursor: pointer;
+    transition: opacity 180ms ease;
+  }
+  .brand-link:hover { opacity: 0.85; }
+  .brand-link:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+    border-radius: 8px;
+  }
+  .brand-mark {
+    width: 24px; height: 24px;
+    border-radius: 7px;
+    background: var(--primary);
+    display: inline-flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .brand-mark svg { display: block; }
+
+  .breadcrumb {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 13px; color: var(--ink-2);
+    margin-left: 6px;
+  }
+  .breadcrumb-sep { color: var(--line-2); font-size: 14px; }
+  .breadcrumb-current { color: var(--ink); font-weight: 500; }
+
+  .header-spacer { flex: 1; }
+  .header-actions { display: flex; align-items: center; gap: 8px; }
+
+  .icon-btn {
+    width: 32px; height: 32px;
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--ink-2);
+    cursor: default;
+    position: relative;
+  }
+  .icon-btn:hover { background: #f1f5f9; }
+  .icon-btn svg { width: 16px; height: 16px; }
+
+  .notif-badge {
+    position: absolute; top: 4px; right: 4px;
+    width: 7px; height: 7px;
+    background: var(--status-overdue);
+    border-radius: 50%;
+    border: 1.5px solid white;
+  }
+
+  .user-avatar {
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    background: var(--primary);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 600;
+    color: white; letter-spacing: 0.02em;
+    cursor: default;
+  }
+
+  /* ════════════════════════════════════════════════
+     COLOR-INTENSITY SLIDER (Pattern 4 — 5 states)
+     ════════════════════════════════════════════════ */
+  .color-slider {
+    display: inline-flex;
+    align-items: center;
+    height: 28px;
+    padding: 2px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: var(--surface);
+  }
+  .color-slider button {
+    height: 22px;
+    padding: 0 8px;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--ink-2);
+    border-radius: 4px;
+    cursor: pointer;
+    line-height: 1;
+    position: relative;
+    white-space: nowrap;
+  }
+  .color-slider button[aria-pressed="true"] {
+    background: var(--primary);
+    color: white;
+  }
+  .color-slider button:hover:not([aria-pressed="true"]) {
+    color: var(--ink);
+    background: #f1f5f9;
+  }
+  /* Pattern 2 — tooltips on each slider button */
+  .color-slider button[data-tooltip]::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--ink);
+    color: white;
+    padding: 6px 10px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 400;
+    white-space: normal;
+    width: max-content;
+    max-width: 220px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s ease;
+    z-index: 100;
+  }
+  .color-slider button:hover::after { opacity: 1; }
+
+  /* ════════════════════════════════════════════════
+     DESIGN-NOTES OVERLAY (Pattern 3)
+     ════════════════════════════════════════════════ */
+  .design-toggle {
+    display: inline-flex; align-items: center; gap: 6px;
+    height: 28px; padding: 0 10px;
+    font-size: 11.5px; font-weight: 500;
+    color: var(--ink-2);
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    cursor: pointer;
+    line-height: 1;
+  }
+  .design-toggle:hover { border-color: var(--primary-line); color: var(--primary); }
+  .design-toggle svg { width: 12px; height: 12px; }
+  body.design-notes-on .design-toggle {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+  }
+
+  [data-design-note] { position: relative; }
+  body.design-notes-on [data-design-note] {
+    outline: 2px dashed var(--primary);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+  body.design-notes-on [data-design-note]::after {
+    content: attr(data-note-num);
+    position: absolute;
+    top: -10px; left: -10px;
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: var(--primary);
+    color: white;
+    font-family: 'Geist Mono', monospace;
+    font-size: 10px; font-weight: 600;
+    display: flex; align-items: center; justify-content: center;
+    z-index: 60;
+    box-shadow: 0 1px 3px rgba(15,20,25,0.18);
+  }
+
+  .design-notes-panel {
+    position: fixed;
+    top: 64px; right: 16px;
+    width: 320px;
+    max-height: calc(100vh - 80px);
+    overflow-y: auto;
+    background: var(--surface);
+    border: 1px solid var(--primary-line);
+    border-radius: 8px;
+    box-shadow: 0 10px 32px rgba(15,20,25,0.12);
+    z-index: 70;
+    padding: 14px 16px 18px;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(8px);
+    transition: opacity 0.18s ease, transform 0.18s ease;
+  }
+  body.design-notes-on .design-notes-panel {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(0);
+  }
+  .design-notes-panel::-webkit-scrollbar { width: 4px; }
+  .design-notes-panel::-webkit-scrollbar-thumb { background: var(--line-2); border-radius: 4px; }
+
+  .design-panel-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink);
+    letter-spacing: -0.012em;
+    margin-bottom: 2px;
+  }
+  .design-panel-sub {
+    font-size: 11.5px;
+    color: var(--ink-3);
+    margin-bottom: 14px;
+    font-style: italic;
+  }
+  .design-note-item {
+    display: flex;
+    gap: 9px;
+    padding: 8px 0;
+    border-top: 1px solid var(--line);
+  }
+  .design-note-item:first-of-type { border-top: none; padding-top: 4px; }
+  .design-note-num {
+    flex-shrink: 0;
+    width: 19px; height: 19px;
+    border-radius: 50%;
+    background: var(--primary);
+    color: white;
+    font-family: 'Geist Mono', monospace;
+    font-size: 10px; font-weight: 600;
+    display: flex; align-items: center; justify-content: center;
+    margin-top: 1px;
+  }
+  .design-note-body { flex: 1; }
+  .design-note-head {
+    font-size: 11.5px; font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 2px;
+    letter-spacing: -0.005em;
+  }
+  .design-note-text {
+    font-size: 11.5px;
+    color: var(--ink-2);
+    line-height: 1.42;
+  }
+
+  /* ════════════════════════════════════════════════
+     BODY + SIDEBAR
+     ════════════════════════════════════════════════ */
+  .app-body { display: flex; flex: 1; overflow: hidden; }
+
+  .sidebar {
+    width: 220px;
+    flex-shrink: 0;
+    background: var(--sidebar);
+    display: flex; flex-direction: column;
+    overflow-y: auto;
+    padding: 16px 0;
+    border-right: 1px solid #1e293b;
+  }
+  .sidebar::-webkit-scrollbar { width: 4px; }
+  .sidebar::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+
+  .sidebar-section { padding: 0 12px; margin-bottom: 24px; }
+  .sidebar-label {
+    font-size: 10px; font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #475569;
+    padding: 0 8px;
+    margin-bottom: 6px;
+  }
+  .nav-item {
+    display: flex; align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    border-radius: 6px;
+    font-size: 13px;
+    color: var(--ink-3);
+    cursor: default;
+    text-decoration: none;
+    margin-bottom: 1px;
+    position: relative;
+  }
+  .nav-item:hover { background: #1e293b; color: #e2e8f0; }
+  .nav-item.active {
+    background: #1e293b;
+    color: #c7cbe8;
+    font-weight: 500;
+  }
+  .nav-item.active::before {
+    content: ""; position: absolute;
+    left: -12px; top: 6px; bottom: 6px;
+    width: 3px;
+    background: var(--primary);
+    border-radius: 0 2px 2px 0;
+  }
+  .nav-item svg { width: 15px; height: 15px; flex-shrink: 0; }
+  .nav-count {
+    margin-left: auto;
+    font-family: 'Geist Mono', monospace;
+    font-size: 11px;
+    color: var(--sidebar-ink-2);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ════════════════════════════════════════════════
+     MAIN
+     ════════════════════════════════════════════════ */
+  .main-content {
+    flex: 1;
+    display: flex; flex-direction: column;
+    overflow: hidden;
+    min-width: 0;
+  }
+
+  .page-header {
+    padding: 22px 28px 8px;
+    background: var(--bg);
+    flex-shrink: 0;
+  }
+  .page-title-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 24px;
+  }
+  .page-title {
+    font-size: 26px;
+    font-weight: 600;
+    color: var(--ink);
+    letter-spacing: -0.022em;
+    line-height: 1.1;
+    margin: 0;
+  }
+  .page-purpose {
+    font-size: 13px;
+    color: var(--ink-2);
+    font-weight: 400;
+    font-style: italic;
+    margin-top: 4px;
+    letter-spacing: -0.005em;
+  }
+  .page-summary {
+    font-size: 12px;
+    color: var(--ink-3);
+    font-family: 'Geist Mono', monospace;
+    display: flex;
+    gap: 14px;
+    align-items: center;
+  }
+  .page-summary .pct { color: var(--ink-2); font-weight: 500; }
+  .page-summary .sep { color: var(--line-2); }
+  .page-summary .overdue { color: var(--status-overdue); font-weight: 500; }
+  .page-summary .active  { color: var(--status-active); font-weight: 500; }
+  .page-summary .review  { color: var(--primary); font-weight: 500; }
+
+  /* ════════════════════════════════════════════════
+     TOOLBAR — multi-student selector + filters
+     ════════════════════════════════════════════════ */
+  .toolbar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 28px 6px;
+    flex-shrink: 0;
+    flex-wrap: wrap;
+  }
+
+  .scope-selector {
+    display: inline-flex;
+    align-items: stretch;
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    background: var(--surface);
+    padding: 2px;
+  }
+  .scope-chip {
+    padding: 5px 12px;
+    font-size: 12px;
+    color: var(--ink-2);
+    border-radius: 5px;
+    cursor: default;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    line-height: 1.3;
+    font-weight: 400;
+    white-space: nowrap;
+  }
+  .scope-chip .scope-count {
+    font-family: 'Geist Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-3);
+  }
+  .scope-chip[aria-pressed="true"] {
+    background: var(--primary);
+    color: white;
+    font-weight: 500;
+  }
+  .scope-chip[aria-pressed="true"] .scope-count { color: rgba(255,255,255,0.78); }
+  .scope-chip:hover:not([aria-pressed="true"]) {
+    background: #f1f5f9;
+    color: var(--ink);
+  }
+
+  .toolbar-divider {
+    width: 1px; height: 22px;
+    background: var(--line);
+    margin: 0 4px;
+  }
+
+  .filter-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 10px;
+    border-radius: 6px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    font-size: 12px;
+    color: var(--ink-2);
+    cursor: default;
+  }
+  .filter-chip svg { width: 12px; height: 12px; color: var(--ink-3); }
+  .filter-chip:hover { border-color: var(--line-2); background: #f8fafc; }
+
+  .toolbar-spacer { flex: 1; }
+
+  .sort-label {
+    font-size: 11.5px;
+    color: var(--ink-3);
+    font-family: 'Geist Mono', monospace;
+  }
+
+  /* ════════════════════════════════════════════════
+     QUICK-VIEW FILTER CHIPS — above the board
+     ════════════════════════════════════════════════ */
+  .quickview-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 28px 14px;
+    flex-shrink: 0;
+  }
+  .quickview-label {
+    font-size: 11px;
+    color: var(--ink-3);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 500;
+    margin-right: 4px;
+  }
+  .qv-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    height: 24px;
+    padding: 0 10px;
+    font-size: 11.5px;
+    font-weight: 500;
+    color: var(--ink-2);
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    cursor: pointer;
+    line-height: 1;
+  }
+  .qv-chip svg { width: 11px; height: 11px; }
+  .qv-chip .qv-count {
+    font-family: 'Geist Mono', monospace;
+    font-size: 10.5px;
+    color: var(--ink-3);
+    font-weight: 500;
+  }
+  .qv-chip:hover { border-color: var(--line-2); background: #f8fafc; }
+
+  .qv-chip[data-qv="overdue"][aria-pressed="true"] {
+    background: var(--status-overdue-bg);
+    color: var(--status-overdue);
+    border-color: var(--status-overdue);
+  }
+  .qv-chip[data-qv="overdue"][aria-pressed="true"] .qv-count { color: var(--status-overdue); }
+
+  .qv-chip[data-qv="due-week"][aria-pressed="true"] {
+    background: var(--status-active-bg);
+    color: var(--status-active);
+    border-color: var(--status-active);
+  }
+  .qv-chip[data-qv="due-week"][aria-pressed="true"] .qv-count { color: var(--status-active); }
+
+  .qv-chip[data-qv="awaiting-me"][aria-pressed="true"] {
+    background: var(--primary-bg);
+    color: var(--primary);
+    border-color: var(--primary);
+  }
+  .qv-chip[data-qv="awaiting-me"][aria-pressed="true"] .qv-count { color: var(--primary); }
+
+  /* When a QV filter is active, hide non-matching cards */
+  body.qv-overdue     .task-card:not([data-overdue]) { display: none; }
+  body.qv-due-week    .task-card:not([data-due-week]):not([data-overdue]) { display: none; }
+  body.qv-awaiting-me .task-card:not([data-awaiting-me]) { display: none; }
+
+  /* When QV-overdue active, fade columns that aren't holding overdue cards meaningfully */
+  body.qv-overdue .kanban-col.status-done { opacity: 0.45; }
+  body.qv-overdue .kanban-col.status-not-started { opacity: 0.65; }
+
+  /* ════════════════════════════════════════════════
+     KANBAN BOARD
+     ════════════════════════════════════════════════ */
+  .kanban-wrapper {
+    flex: 1;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 0 20px 20px;
+  }
+  .kanban-wrapper::-webkit-scrollbar { height: 6px; }
+  .kanban-wrapper::-webkit-scrollbar-track { background: #f0f4f8; border-radius: 3px; }
+  .kanban-wrapper::-webkit-scrollbar-thumb { background: var(--line-2); border-radius: 3px; }
+
+  .kanban-board {
+    display: flex;
+    gap: 12px;
+    height: 100%;
+    min-width: max-content;
+    padding-bottom: 4px;
+  }
+
+  /* Column shell */
+  .kanban-col {
+    width: 268px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    background: var(--surface);
+  }
+
+  .kanban-col-header {
+    padding: 12px 13px 10px;
+    flex-shrink: 0;
+    border-bottom: 1px solid var(--line);
+    background: var(--surface);
+    position: relative;
+  }
+  /* 2px stage rule across the top of the header — uses status color */
+  .kanban-col-header::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+  }
+  .status-not-started .kanban-col-header::before { background: var(--status-neutral); }
+  .status-in-progress .kanban-col-header::before { background: var(--primary); }
+  .status-awaiting    .kanban-col-header::before { background: var(--status-active); }
+  /* Stuck = neutral top-rule. Rose reserved for overdue only. */
+  .status-stuck       .kanban-col-header::before { background: var(--line-2); }
+  .status-done        .kanban-col-header::before { background: var(--status-done); }
+
+  .col-stage-row {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin-bottom: 2px;
+  }
+  .stage-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .status-not-started .stage-dot { background: var(--status-neutral); }
+  .status-in-progress .stage-dot { background: var(--primary); }
+  .status-awaiting    .stage-dot { background: var(--status-active); }
+  /* Stuck = ink-2 dot with ring (neutral-dashed canonical). Rose reserved for overdue. */
+  .status-stuck       .stage-dot { background: var(--ink-2); box-shadow: 0 0 0 1.5px var(--surface), 0 0 0 2.5px var(--ink-2); width: 4px; height: 4px; }
+  .status-done        .stage-dot { background: var(--status-done); }
+
+  /* Awaiting Review = SOLID AMBER column header. Canonical per 5/17 demo-feedback
+     verbal confirmation + 5/16 prep-doc lock. Parity with list-view status pill.
+     Amber background + dark amber text = "needs attention" badge for the column. */
+  .status-awaiting .kanban-col-header {
+    background: var(--status-active-bg);
+  }
+  .status-awaiting .col-stage-name { color: var(--status-active); }
+  .status-awaiting .col-desc { color: var(--status-active); opacity: 0.85; }
+  .status-awaiting .col-count {
+    background: var(--status-active);
+    color: #fff;
+  }
+
+  .col-stage-name {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--ink);
+    letter-spacing: -0.008em;
+  }
+  .col-count {
+    font-family: 'Geist Mono', monospace;
+    font-size: 11.5px;
+    font-weight: 500;
+    color: var(--ink-2);
+    background: var(--status-neutral-bg);
+    padding: 1px 7px;
+    border-radius: 10px;
+    font-variant-numeric: tabular-nums;
+  }
+  .col-add-btn {
+    margin-left: auto;
+    font-size: 11px;
+    color: var(--ink-3);
+    padding: 2px 8px;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    background: var(--surface);
+    cursor: default;
+    position: relative;
+    line-height: 1.2;
+  }
+  .col-add-btn:hover { color: var(--ink-2); border-color: var(--line-2); }
+
+  /* Pattern 2 — hover tooltip */
+  .col-add-btn::after,
+  .add-task-card::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    background: var(--ink);
+    color: white;
+    padding: 6px 10px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 400;
+    white-space: normal;
+    width: max-content;
+    max-width: 240px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s ease;
+    z-index: 100;
+  }
+  .col-add-btn:hover::after,
+  .add-task-card:hover::after { opacity: 1; }
+  .add-task-card::after { right: 50%; transform: translateX(50%); }
+
+  .col-desc {
+    font-size: 11px;
+    color: var(--ink-3);
+    line-height: 1.3;
+    font-weight: 400;
+  }
+
+  .kanban-col-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px 9px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .kanban-col-body::-webkit-scrollbar { width: 3px; }
+  .kanban-col-body::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 3px; }
+
+  /* ════════════════════════════════════════════════
+     TASK CARD — Student → Title → Due → supplemental
+     Status communicated by column header + stage-dot + column membership
+     (D3 = L7, 2026-05-12 — left-bar accents dropped as redundant)
+     ════════════════════════════════════════════════ */
+  .task-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    padding: 10px 11px 9px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    cursor: default;
+    transition: box-shadow 0.12s, border-color 0.12s, transform 0.12s;
+  }
+  .task-card:hover {
+    box-shadow: 0 2px 8px rgba(15,20,25,0.07);
+    border-color: var(--line-2);
+  }
+
+  /* CORE block — Student + Title + Due */
+  .card-core {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  /* Student row — most prominent on the card */
+  .card-student {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 1px;
+  }
+  .student-avatar {
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    display: inline-flex;
+    align-items: center; justify-content: center;
+    font-family: 'Geist Mono', monospace;
+    font-size: 9px;
+    font-weight: 600;
+    color: var(--ink-2);
+    flex-shrink: 0;
+    letter-spacing: 0.02em;
+  }
+  .student-name {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--ink);
+    letter-spacing: -0.005em;
+    line-height: 1.2;
+  }
+
+  .card-title {
+    font-size: 12.5px;
+    font-weight: 400;
+    color: var(--ink-2);
+    line-height: 1.35;
+    letter-spacing: -0.003em;
+    margin-top: 1px;
+  }
+
+  .card-due {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 5px;
+    font-family: 'Geist Mono', monospace;
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
+    color: var(--ink-3);
+  }
+  .card-due svg { width: 11px; height: 11px; }
+  .card-due .due-label { color: var(--ink-3); font-weight: 400; }
+  .card-due .due-date { color: var(--ink-2); font-weight: 500; }
+  .card-due.overdue { color: var(--status-overdue); }
+  .card-due.overdue .due-date { color: var(--status-overdue); font-weight: 600; }
+  .card-due.overdue .due-label { color: var(--status-overdue); }
+  /* Due-soon amber lives only in D/E (Mode C drops amber to reduce decorative load;
+     rose overdue stays. D6 item 4, 2026-05-12) */
+  .card-due.due-soon { color: var(--ink-2); }
+  .card-due.due-soon .due-date { color: var(--ink-2); font-weight: 500; }
+  .card-due.due-soon .due-label { color: var(--ink-3); font-weight: 400; }
+  body.color-status-plus .card-due.due-soon,
+  body.color-full       .card-due.due-soon { color: var(--status-active); }
+  body.color-status-plus .card-due.due-soon .due-date,
+  body.color-full       .card-due.due-soon .due-date { color: var(--status-active); font-weight: 600; }
+  body.color-status-plus .card-due.due-soon .due-label,
+  body.color-full       .card-due.due-soon .due-label { color: var(--status-active); }
+  .card-due.past .due-date { color: var(--ink-3); font-weight: 400; font-style: italic; }
+
+  /* DIVIDER between core and supplemental */
+  .card-divider {
+    height: 1px;
+    background: var(--line);
+    margin: 9px -11px 8px -12px;
+  }
+
+  /* SUPPLEMENTAL — school chip + working-style chip */
+  .card-supplemental {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .school-chip {
+    font-size: 10.5px;
+    font-weight: 500;
+    color: var(--ink-2);
+    background: var(--status-neutral-bg);
+    padding: 2px 7px;
+    border-radius: 4px;
+    line-height: 1.3;
+    letter-spacing: -0.005em;
+    white-space: nowrap;
+  }
+
+  .ws-chip {
+    font-size: 9.5px;
+    font-weight: 500;
+    padding: 1px 6px;
+    border-radius: 4px;
+    line-height: 1.3;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+  }
+  .ws-chip.perfectionist  { background: var(--ws-perfectionist-bg); color: var(--ws-perfectionist); }
+  .ws-chip.anxious        { background: var(--ws-anxious-bg);       color: var(--ws-anxious); }
+  .ws-chip.self-directed  { background: var(--ws-self-directed-bg); color: var(--ws-self-directed); }
+
+  /* Right-side card flags (Review / Blocked) are redundant in Mode C
+     because every card in a column shares the same flag — column header carries
+     the same signal. Shown only in Modes D/E.
+     D6 item 5, 2026-05-12 */
+  .review-flag,
+  .stuck-flag { display: none; }
+  body.color-status-plus .review-flag,
+  body.color-full        .review-flag,
+  body.color-status-plus .stuck-flag,
+  body.color-full        .stuck-flag {
+    margin-left: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 9.5px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  body.color-status-plus .review-flag,
+  body.color-full        .review-flag { color: var(--primary); }
+  body.color-status-plus .stuck-flag,
+  body.color-full        .stuck-flag { color: var(--status-overdue); }
+  .review-flag svg,
+  .stuck-flag  svg { width: 10px; height: 10px; }
+
+  /* "+ Add task" trailing slot */
+  .add-task-card {
+    border: 1px dashed var(--line-2);
+    border-radius: 7px;
+    padding: 8px 10px;
+    font-size: 11.5px;
+    color: var(--ink-3);
+    text-align: center;
+    background: transparent;
+    cursor: default;
+    margin-top: 2px;
+    position: relative;
+  }
+  .add-task-card:hover { color: var(--ink-2); border-color: var(--ink-3); }
+
+  /* Done-stage subtle fade (subordinate visual weight)
+     Mode E (Full) only — Mode C keeps Done cards at full readability so the
+     Done column reads as 4th-distinct column rather than a faded afterthought.
+     D6 item 3, 2026-05-12 */
+  body.color-full .status-done .task-card { opacity: 0.85; }
+  body.color-full .status-done .student-name { color: var(--ink-2); }
+  body.color-full .status-done .card-title { color: var(--ink-3); }
+
+  /* Stuck — neutral gradient tint (rose removed per 2026-05-14 decision; rose reserved for overdue only).
+     Dashed-border column top-rule + stage-dot carry the intervention semantic. */
+  body.color-status-plus .status-stuck .task-card,
+  body.color-full        .status-stuck .task-card {
+    background: linear-gradient(to right, rgba(203, 213, 225, 0.25) 0%, var(--surface) 30%);
+  }
+
+  /* Awaiting — subtle amber tint (Mode D/E only — same rationale)
+     R2.5 (2026-05-13): Awaiting Review canonical = amber. In-Progress = indigo.
+     Indigo reads as "actively in flight"; amber reads as "needs attention". */
+  body.color-status-plus .status-awaiting .task-card,
+  body.color-full        .status-awaiting .task-card {
+    background: linear-gradient(to right, rgba(254, 243, 199, 0.32) 0%, var(--surface) 30%);
+  }
+  /* In-Progress — subtle indigo tint (Mode D/E only) */
+  body.color-status-plus .status-in-progress .task-card,
+  body.color-full        .status-in-progress .task-card {
+    background: linear-gradient(to right, rgba(199, 203, 232, 0.32) 0%, var(--surface) 30%);
+  }
+
+</style>
+</head>
+<body class="color-status">
+
+<div class="app-shell">
+
+  <!-- ═══ HEADER ═══ -->
+  <header class="app-header">
+    <a href="../index.html" class="brand-link" aria-label="Back to demo index">
+      <div class="brand-mark" aria-hidden="true">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="white" stroke-width="1.4">
+          <circle cx="7" cy="7" r="5.5"/>
+          <circle cx="7" cy="7" r="2.5"/>
+        </svg>
+      </div>
+    </a>
+
+    <nav class="breadcrumb">
+      <span>Cross-Tasks</span>
+      <span class="breadcrumb-sep">›</span>
+      <span class="breadcrumb-current">Board</span>
+    </nav>
+
+    <div class="header-spacer"></div>
+
+    <div class="header-actions">
+      <div class="icon-btn" title="Search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+          <circle cx="11" cy="11" r="8"/>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+      </div>
+      <div class="icon-btn" title="Notifications">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+          <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+        </svg>
+        <div class="notif-badge"></div>
+      </div>
+      <div class="user-avatar" title="Xiao Jin">XJ</div>
+    </div>
+  </header>
+
+  <!-- ═══ BODY ═══ -->
+  <div class="app-body">
+
+    <!-- ═══ SIDEBAR ═══ -->
+    <aside class="sidebar">
+      <div class="sidebar-section">
+        <div class="sidebar-label">Workspace</div>
+
+        <a class="nav-item" href="#">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+          Students
+          <span class="nav-count">15</span>
+        </a>
+
+        <a class="nav-item active" href="#">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="5" width="6" height="6" rx="1"/>
+            <path d="m3 17 2 2 4-4"/>
+            <path d="M13 6h8"/>
+            <path d="M13 12h8"/>
+            <path d="M13 18h8"/>
+          </svg>
+          Cross-Tasks
+          <span class="nav-count">74</span>
+        </a>
+
+        <a class="nav-item" href="#">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+            <line x1="16" y1="2" x2="16" y2="6"/>
+            <line x1="8" y1="2" x2="8" y2="6"/>
+            <line x1="3" y1="10" x2="21" y2="10"/>
+          </svg>
+          Calendar
+        </a>
+
+        <a class="nav-item" href="#">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+            <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+          </svg>
+          Modules
+        </a>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-label">Group by</div>
+
+        <a class="nav-item" href="#" style="color:#c7cbe8; background:#1e293b; font-weight:500;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+            <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+          </svg>
+          Status
+        </a>
+        <a class="nav-item" href="#">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+          </svg>
+          Student
+        </a>
+        <a class="nav-item" href="#">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+          </svg>
+          School
+        </a>
+        <a class="nav-item" href="#">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <polyline points="12 6 12 12 16 14"/>
+          </svg>
+          Due date
+        </a>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-label">Saved views</div>
+
+        <a class="nav-item" href="#">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="12 2 15 8.5 22 9.3 17 14 18.5 21 12 17.5 5.5 21 7 14 2 9.3 9 8.5 12 2"/>
+          </svg>
+          My Maya focus
+        </a>
+        <a class="nav-item" href="#">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="12 2 15 8.5 22 9.3 17 14 18.5 21 12 17.5 5.5 21 7 14 2 9.3 9 8.5 12 2"/>
+          </svg>
+          ED1 cohort
+        </a>
+        <a class="nav-item" href="#">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="12 2 15 8.5 22 9.3 17 14 18.5 21 12 17.5 5.5 21 7 14 2 9.3 9 8.5 12 2"/>
+          </svg>
+          Junior intake
+        </a>
+      </div>
+    </aside>
+
+    <!-- ═══ MAIN ═══ -->
+    <main class="main-content">
+
+      <!-- Page header -->
+      <div class="page-header">
+        <div class="page-title-row">
+          <div>
+            <h1 class="page-title" data-design-note data-note-num="1">Cross-Tasks</h1>
+            <p class="page-purpose">For triaging the pipeline — what's stuck where, what needs my review.</p>
+          </div>
+          <div class="page-summary">
+            <span><span class="pct">74</span> total</span>
+            <span class="sep">·</span>
+            <span class="overdue">11 overdue</span>
+            <span class="sep">·</span>
+            <span class="active">19 due this week</span>
+            <span class="sep">·</span>
+            <span class="review">8 awaiting review</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Toolbar — multi-student selector + filters -->
+      <div class="toolbar">
+        <div class="scope-selector" role="radiogroup" aria-label="Student scope"
+             data-design-note data-note-num="2">
+          <button class="scope-chip" aria-pressed="true" data-scope="all">All <span class="scope-count">15</span></button>
+          <button class="scope-chip" aria-pressed="false" data-scope="selected">Selected <span class="scope-count">3</span></button>
+          <button class="scope-chip" aria-pressed="false" data-scope="just">Just Maya</button>
+        </div>
+
+        <div class="toolbar-divider"></div>
+
+        <span class="filter-chip">
+          School
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
+        </span>
+        <span class="filter-chip">
+          Round
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
+        </span>
+        <span class="filter-chip">
+          Working style
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
+        </span>
+
+        <div class="toolbar-spacer"></div>
+
+        <span class="sort-label">Sort: due date ↑</span>
+      </div>
+
+      <!-- Quick-view chips (above the board) -->
+      <div class="quickview-row" data-design-note data-note-num="3">
+        <span class="quickview-label">Quick view</span>
+        <button class="qv-chip" data-qv="overdue" aria-pressed="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <polyline points="12 6 12 12 16 14"/>
+          </svg>
+          Overdue
+          <span class="qv-count">11</span>
+        </button>
+        <button class="qv-chip" data-qv="due-week" aria-pressed="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4" width="18" height="18" rx="2"/>
+            <line x1="16" y1="2" x2="16" y2="6"/>
+            <line x1="8" y1="2" x2="8" y2="6"/>
+            <line x1="3" y1="10" x2="21" y2="10"/>
+          </svg>
+          Due this week
+          <span class="qv-count">19</span>
+        </button>
+      </div>
+
+      <!-- ═══ KANBAN BOARD ═══ -->
+      <div class="kanban-wrapper">
+        <div class="kanban-board">
+
+          <!-- ═══ COL 1 — NOT STARTED ═══ -->
+          <section class="kanban-col status-not-started">
+            <div class="kanban-col-header">
+              <div class="col-stage-row">
+                <div class="stage-dot"></div>
+                <span class="col-stage-name">Not started</span>
+                <span class="col-count">14</span>
+                <button class="col-add-btn" data-tooltip="Add a task to Not started — opens task modal pre-filled with status">+ Add</button>
+              </div>
+              <div class="col-desc">No work yet</div>
+            </div>
+            <div class="kanban-col-body">
+
+              <article class="task-card">
+                <div class="card-core">
+                  <div class="card-student">
+                    <span class="student-avatar">LA</span>
+                    <span class="student-name">Layla Ahmed</span>
+                  </div>
+                  <div class="card-title">College list — first-pass academic-fit shortlist</div>
+                  <div class="card-due due-soon" data-due-week>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg>
+                    <span class="due-label">Due</span>
+                    <span class="due-date">Dec 12</span>
+                  </div>
+                </div>
+                <div class="card-divider"></div>
+                <div class="card-supplemental">
+                  <span class="school-chip">Intake</span>
+                </div>
+              </article>
+
+              <article class="task-card">
+                <div class="card-core">
+                  <div class="card-student">
+                    <span class="student-avatar">HA</span>
+                    <span class="student-name">Hassan Ali</span>
+                  </div>
+                  <div class="card-title">QB-replacement RD list framing</div>
+                  <div class="card-due due-soon" data-due-week>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg>
+                    <span class="due-label">Due</span>
+                    <span class="due-date">Dec 14</span>
+                  </div>
+                </div>
+                <div class="card-divider"></div>
+                <div class="card-supplemental">
+                  <span class="school-chip">RD list</span>
+                </div>
+              </article>
+
+              <article class="task-card">
+                <div class="card-core">
+                  <div class="card-student">
+                    <span class="student-avatar">HW</span>
+                    <span class="student-name">Henry Wells</span>
+                  </div>
+                  <div class="card-title">Pivot list — target schools to add</div>
+                  <div class="card-due due-soon" data-due-week>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg>
+                    <span class="due-label">Due</span>
+                    <span class="due-date">Dec 12</span>
+                  </div>
+                </div>
+                <div class="card-divider"></div>
+                <div class="card-supplemental">
+                  <span class="school-chip">RD list</span>
+                </div>
+              </article>
+
+              <article class="task-card">
+                <div class="card-core">
+                  <div class="card-student">
+                    <span class="student-avatar">MC</span>
+                    <span class="student-name">Maya Chen</span>
+                  </div>
+                  <div class="card-title">RISD scholarship app — financial aid section</div>
+                  <div class="card-due">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg>
+                    <span class="due-label">Due</span>
+                    <span class="due-date">Dec 21</span>
+                  </div>
+                </div>
+                <div class="card-divider"></div>
+                <div class="card-supplemental">
+                  <span class="school-chip">RISD</span>
+                  <span class="ws-chip perfectionist">Perfectionist</span>
+                </div>
+              </article>
+
+              <article class="task-card">
+                <div class="card-core">
+                  <div class="card-student">
+                    <span class="student-avatar">MC</span>
+                    <span class="student-name">Maya Chen</span>
+                  </div>
+                  <div class="card-title">Northwestern "why us" — angle exploration</div>
+                  <div class="card-due">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg>
+                    <span class="due-label">Due</span>
+                    <span class="due-date">Dec 22</span>
+                  </div>
+                </div>
+                <div class="card-divider"></div>
+                <div class="card-supplemental">
+                  <span class="school-chip">Northwestern</span>
+                  <span class="ws-chip perfectionist">Perfectionist</span>
+                </div>
+              </article>
+
+              <article class="task-card">
+                <div class="card-core">
+                  <div class="card-student">
+                    <span class="student-avatar">LA</span>
+                    <span class="student-name">Layla Ahmed</span>
+                  </div>
+                  <div class="card-title">Extracurricular inventory + theme map</div>
+                  <div class="card-due">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg>
+                    <span class="due-label">Due</span>
+                    <span class="due-date">Dec 17</span>
+                  </div>
+                </div>
+                <div class="card-divider"></div>
+                <div class="card-supplemental">
+                  <span class="school-chip">Intake</span>
+                </div>
+              </article>
+
+              <article class="task-card">
+                <div class="card-core">
+                  <div class="card-student">
+                    <span class="student-avatar">MC</span>
+                    <span class="student-name">Maya Chen</span>
+                  </div>
+                  <div class="card-title">Dartmouth supplements — prompt selection</div>
+                  <div class="card-due">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg>
+                    <span class="due-label">Due</span>
+                    <span class="due-date">Dec 23</span>
+                  </div>
+                </div>
+                <div class="card-divider"></div>
+                <div class="card-supplemental">
+                  <span class="school-chip">Dartmouth</span>
+                </div>
+              </article>
+
+              <article class="task-card">
+                <div class="card-core">
+                  <div class="card-student">
+                    <span class="student-avatar">LA</span>
+                    <span class="student-name">Layla Ahmed</span>
+                  </div>
+                  <div class="card-title">Testing plan (SAT vs ACT)</div>
+                  <div class="card-due">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg>
+                    <span class="due-label">Due</span>
+                    <span class="due-date">Jan 5</span>
+                  </div>
+                </div>
+                <div class="card-divider"></div>
+                <div class="card-supplemental">
+                  <span class="school-chip">Planning</span>
+                </div>
+              </article>
+
+              <article class="task-card">
+                <div class="card-core">
+                  <div class="card-student">
+                    <span class="student-avatar">LA</span>
+                    <span class="student-name">Layla Ahmed</span>
+                  </div>
+                  <div class="card-title">Junior summer programs research</div>
+                  <div class="card-due">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg>
+                    <span class="due-label">Due</span>
+                    <span class="due-date">Jan 10</span>
+                  </div>
+                </div>
+                <div class="card-divider"></div>
+                <div class="card-supplemental">
+                  <span class="school-chip">Summer</span>
+                </div>
+              </article>
+
+              <button class="add-task-card" data-tooltip="Add a task to Not started">+ Add task</button>
+            </div>
+          </section>
+
+          <!-- ═══ COL 2 — IN PROGRESS ═══ -->
+          <section class="kanban-col status-in-progress">
+            <div class="kanban-col-header">
+              <div class="col-stage-row">
+                <div class="stage-dot"></div>
+                <span class="col-stage-name">In progress</span>
+                <span class="col-count">28</span>
+              </div>
+              <div class="col-desc">Actively being worked on</div>
+            </div>
+            <div class="kanban-col-body">
+
+              <article class="task-card" data-overdue>
+                <div class="card-core">
+                  <div class="card-student">
+                    <span class="student-avatar">RN</span>
+                    <span class="student-name">Roya Nazari</span>
+                  </div>
+                  <div class="card-title">Princeton SPIA restart — Common App revisions</div>
+                  <div class="card-due overdue">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    <span class="due-label">Overdue</span>
+                    <span class="due-date">Dec 8 · 2d</span>
+                  </div>
+                </div>
+                <div class="card-divider"></div>
+                <div class="card-supplemental">
+                  <span class="school-chip">Princeton</span>
+                  <span class="ws-chip self-directed">Self-directed</span>
+                </div>
+              </article>
+
+              <article class="task-card" data-overdue>
+                <div class="card-core">
+                  <div class="card-student">
+                    <span class="student-avatar">MJ</span>
+                    <span class="student-name">Marcus Johnson</span>
+                  </div>
+                  <div class="card-title">UMich "why us" — first draft</div>
+                  <div class="card-due overdue">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    <span class="due-label">Overdue</span>
+                    <span class="due-date">Dec 9 · 1d</span>
+                  </div>
+                </div>
+                <div class="card-divider"></div>
+                <div class="card-supplemental">
+                  <span class="school-chip">UMich</span>
+                  <span class="ws-chip anxious">Anxious</span>
+                </div>
+              </article>
+
+              <article class="task-card" data-due-week>
+                <div class="card-core">
+                  <div class="card-student">
+                    <span class="student-avatar">HA</span>
+                    <span class="student-name">Hassan Ali</span>
+                  </div>
+                  <div class="card-title">UVA "why us" — first draft</div>
+                  <div class="card-due due-soon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg>
+                    <span class="due-label">Due</span>
+                    <span class="due-date">Dec 11</span>
+                  </div>
+                </div>
+                <div class="card-divider"></div>
+                <div class="card-supplemental">
+                  <span class="school-chip">UVA</span>
+                </div>
+              </article>
+
+              <article class="task-card" data-due-week>
+                <div class="card-core">
+                  <div class="card-student">
+                    <span class="student-avatar">MC</span>
+                    <span class="student-name">Maya Chen</span>
+                  </div>
+                  <div class="card-title">Penn "why Penn" supplement — first pass</div>
+                  <div class="card-due due-soon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg>
+                    <span class="due-label">Due</span>
+                    <span class="due-date">Dec 12</span>
+                  </div>
+                </div>
+                <div class="card-divider"></div>
+                <div class="card-supplemental">
+                  <span class="school-chip">Penn</span>
+                  <span class="ws-chip perfectionist">Perfectionist</span>
+                </div>
+              </article>
+
+              <article class="task-card" data-due-week>
+                <div class="card-core">
+                  <div class="card-student">
+                    <span class="student-avatar">MC</span>
+                    <span class="student-name">Maya Chen</span>
+                  </div>
+                  <div class="card-title">Cornell ILR community essay — opening</div>
+                  <div class="card-due due-soon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg>
+                    <span class="due-label">Due</span>
+                    <span class="due-date">Dec 12</span>
+                  </div>
+                </div>
+                <div class="card-divider"></div>
+                <div class="card-supplemental">
+                  <span class="school-chip">Cornell</span>
+                  <span class="ws-chip perfectionist">Perfectionist</span>
+                </div>
+              </article>
+
+              <article class="task-card" data-due-week>
+                <div class="card-core">
+                  <div class="card-student">
+                    <span class="student-avatar">MJ</span>
+                    <span class="student-name">Marcus Johnson</span>
+                  </div>
+                  <div class="card-title">Northwestern "why us" — first draft</div>
+                  <div class="card-due due-soon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg>
+                    <span class="due-label">Due</span>
+                    <span class="due-date">Dec 13</span>
+                  </div>
+                </div>
+                <div class="card-divider"></div>
+                <div class="card-supplemental">
+                  <span class="school-chip">Northwestern</span>
+                  <span class="ws-chip anxious">Anxious</span>
+                </div>
+              </article>
+
+              <article class="task-card" data-due-week>
+                <div class="card-core">
+                  <div class="card-student">
+                    <span class="student-avatar">HW</span>
+                    <span class="student-name">Henry Wells</span>
+                  </div>
+                  <div class="card-title">Williams "why us" — first draft</div>
+                  <div class="card-due due-soon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg>
+                    <span class="due-label">Due</span>
+                    <span class="due-date">Dec 13</span>
+                  </div>
+                </div>
+                <div class="card-divider"></div>
+                <div class="card-supplemental">
+                  <span class="school-chip">Williams</span>
+                </div>
+              </article>
+
+              <article class="task-card" data-due-week>
+                <div class="card-core">
+                  <div class="card-student">
+                    <span class="student-avatar">PM</span>
+                    <span class="student-name">Priya Mehta</span>
+                  </div>
+                  <div class="card-title">Cornell "why ILR" — first draft</div>
+                  <div class="card-due due-soon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg>
+                    <span class="due-label">Due</span>
+                    <span class="due-date">Dec 14</span>
+                  </div>
+                </div>
+                <div class="card-divider"></div>
+                <div class="card-supplemental">
+                  <span class="school-chip">Cornell</span>
+                  <span class="ws-chip perfectionist">Perfectionist</span>
+                </div>
+              </article>
+
+              <article class="task-card" data-due-week>
+                <div class="card-core">
+                  <div class="card-student">
+                    <span class="student-avatar">MC</span>
+                    <span class="student-name">Maya Chen</span>
+                  </div>
+                  <div class="card-title">NYU Tisch portfolio statement — first draft</div>
+                  <div class="card-due due-soon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg>
+                    <span class="due-label">Due</span>
+                    <span class="due-date">Dec 14</span>
+                  </div>
+                </div>
+                <div class="card-divider"></div>
+                <div class="card-supplemental">
+                  <span class="school-chip">NYU Tisch</span>
+                </div>
+              </article>
+
+              <article class="task-card" data-due-week>
+                <div class="card-core">
+                  <div class="card-student">
+                    <span class="student-avatar">MJ</span>
+                    <span class="student-name">Marcus Johnson</span>
+                  </div>
+                  <div class="card-title">Common App opening — rewrite</div>
+                  <div class="card-due due-soon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg>
+                    <span class="due-label">Due</span>
+                    <span class="due-date">Dec 12</span>
+                  </div>
+                </div>
+                <div class="card-divider"></div>
+                <div class="card-supplemental">
+                  <span class="school-chip">Common App</span>
+                  <span class="ws-chip anxious">Anxious</span>
+                </div>
+              </article>
+
+              <article class="task-card" data-due-week>
+                <div class="card-core">
+                  <div class="card-student">
+                    <span class="student-avatar">PM</span>
+                    <span class="student-name">Priya Mehta</span>
+                  </div>
+                  <div class="card-title">Penn supplement #2 — leadership story tightening</div>
+                  <div class="card-due due-soon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg>
+                    <span class="due-label">Due</span>
+                    <span class="due-date">Dec 12</span>
+                  </div>
+                </div>
+                <div class="card-divider"></div>
+                <div class="card-supplemental">
+                  <span class="school-chip">Penn</span>
+                  <span class="ws-chip perfectionist">Perfectionist</span>
+                </div>
+              </article>
+
+              <article class="task-card" data-due-week>
+                <div class="card-core">
+                  <div class="card-student">
+                    <span class="student-avatar">MC</span>
+                    <span class="student-name">Maya Chen</span>
+                  </div>
+                  <div class="card-title">Brown supplement — community essay revision</div>
+                  <div class="card-due due-soon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg>
+                    <span class="due-label">Due</span>
+                    <span class="due-date">Dec 13</span>
+                  </div>
+                </div>
+                <div class="card-divider"></div>
+                <div class="card-supplemental">
+                  <span class="school-chip">Brown</span>
+                </div>
+              </article>
+
+              <article class="task-card">
+                <div class="card-core">
+                  <div class="card-student">
+                    <span class="student-avatar">RN</span>
+                    <span class="student-name">Roya Nazari</span>
+                  </div>
+                  <div class="card-title">Georgetown SFS supplement</div>
+                  <div class="card-due">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg>
+                    <span class="due-label">Due</span>
+                    <span class="due-date">Dec 16</span>
+                  </div>
+                </div>
+                <div class="card-divider"></div>
+                <div class="card-supplemental">
+                  <span class="school-chip">Georgetown</span>
+                  <span class="ws-chip self-directed">Self-directed</span>
+                </div>
+              </article>
+
+              <article class="task-card">
+                <div class="card-core">
+                  <div class="card-student">
+                    <span class="student-avatar">PM</span>
+                    <span class="student-name">Priya Mehta</span>
+                  </div>
+                  <div class="card-title">Duke supplement — first draft</div>
+                  <div class="card-due">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg>
+                    <span class="due-label">Due</span>
+                    <span class="due-date">Dec 17</span>
+                  </div>
+                </div>
+                <div class="card-divider"></div>
+                <div class="card-supplemental">
+                  <span class="school-chip">Duke</span>
+                  <span class="ws-chip perfectionist">Perfectionist</span>
+                </div>
+              </article>
+
+              <article class="task-card">
+                <div class="card-core">
+                  <div class="card-student">
+                    <span class="student-avatar">SN</span>
+                    <span class="student-name">Sophia Nguyen</span>
+                  </div>
+                  <div class="card-title">Northeastern supplement</div>
+                  <div class="card-due">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg>
+                    <span class="due-label">Due</span>
+                    <span class="due-date">Dec 19</span>
+                  </div>
+                </div>
+                <div class="card-divider"></div>
+                <div class="card-supplemental">
+                  <span class="school-chip">Northeastern</span>
+                </div>
+              </article>
+
+              <article class="task-card">
+                <div class="card-core">
+                  <div class="card-student">
+                    <span class="student-avatar">EC</span>
+                    <span class="student-name">Eliana Cohen</span>
+                  </div>
+                  <div class="card-title">RD supplements — batch 2</div>
+                  <div class="card-due">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg>
+                    <span class="due-label">Due</span>
+                    <span class="due-date">Dec 20</span>
+                  </div>
+                </div>
+                <div class="card-divider"></div>
+                <div class="card-supplemental">
+                  <span class="school-chip">RD batch</span>
+                </div>
+              </article>
+
+            </div>
+          </section>
+
+          <!-- ═══ COL 3 — AWAITING REVIEW ═══ -->
+          <section class="kanban-col status-awaiting" data-design-note data-note-num="4">
+            <div class="kanban-col-header">
+              <div class="col-stage-row">
+                <div class="stage-dot"></div>
+                <span class="col-stage-name">Awaiting review</span>
+                <span class="col-count">8</span>
+              </div>
+              <div class="col-desc">Needs my attention</div>
+            </div>
+            <div class="kanban-col-body">
+
+              <article class="task-card" data-overdue data-awaiting-me>
+                <div class="card-core">
+                  <div class="card-student">
+                    <span class="student-avatar">MJ</span>
+                    <span class="student-name">Marcus Johnson</span>
+                  </div>
+                  <div class="card-title">Stanford LOCI — final pass before send</div>
+                  <div class="card-due overdue">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    <span class="due-label">Overdue</span>
+                    <span class="due-date">Dec 5 · 5d</span>
+                  </div>
+                </div>
+                <div class="card-divider"></div>
+                <div class="card-supplemental">
+                  <span class="school-chip">Stanford</span>
+                  <span class="ws-chip anxious">Anxious</span>
+                  <span class="review-flag">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    Review
+                  </span>
+                </div>
+              </article>
+
+              <article class="task-card" data-overdue data-awaiting-me>
+                <div class="card-core">
+                  <div class="card-student">
+                    <span class="student-avatar">MC</span>
+                    <span class="student-name">Maya Chen</span>
+                  </div>
+                  <div class="card-title">Yale LOCI — second draft, tone tightening</div>
+                  <div class="card-due overdue">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    <span class="due-label">Overdue</span>
+                    <span class="due-date">Dec 7 · 3d</span>
+                  </div>
+                </div>
+                <div class="card-divider"></div>
+                <div class="card-supplemental">
+                  <span class="school-chip">Yale</span>
+                  <span class="ws-chip perfectionist">Perfectionist</span>
+                  <span class="review-flag">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    Review
+                  </span>
+                </div>
+              </article>
+
+              <article class="task-card" data-overdue data-awaiting-me>
+                <div class="card-core">
+                  <div class="card-student">
+                    <span class="student-avatar">PM</span>
+                    <span class="student-name">Priya Mehta</span>
+                  </div>
+                  <div class="card-title">Penn LOCI — research alignment edits</div>
+                  <div class="card-due overdue">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    <span class="due-label">Overdue</span>
+                    <span class="due-date">Dec 9 · 1d</span>
+                  </div>
+                </div>
+                <div class="card-divider"></div>
+                <div class="card-supplemental">
+                  <span class="school-chip">Penn</span>
+                  <span class="ws-chip perfectionist">Perfectionist</span>
+                  <span class="review-flag">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    Review
+                  </span>
+                </div>
+              </article>
+
+              <article class="task-card" data-due-week data-awaiting-me>
+                <div class="card-core">
+                  <div class="card-student">
+                    <span class="student-avatar">SN</span>
+                    <span class="student-name">Sophia Nguyen</span>
+                  </div>
+                  <div class="card-title">UMiami LOCI — local-context paragraph</div>
+                  <div class="card-due due-soon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg>
+                    <span class="due-label">Due</span>
+                    <span class="due-date">Dec 11</span>
+                  </div>
+                </div>
+                <div class="card-divider"></div>
+                <div class="card-supplemental">
+                  <span class="school-chip">UMiami</span>
+                  <span class="review-flag">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    Review
+                  </span>
+                </div>
+              </article>
+
+              <article class="task-card" data-due-week data-awaiting-me>
+                <div class="card-core">
+                  <div class="card-student">
+                    <span class="student-avatar">CP</span>
+                    <span class="student-name">Caroline Park</span>
+                  </div>
+                  <div class="card-title">Brown RD supplement — second pass</div>
+                  <div class="card-due due-soon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg>
+                    <span class="due-label">Due</span>
+                    <span class="due-date">Dec 13</span>
+                  </div>
+                </div>
+                <div class="card-divider"></div>
+                <div class="card-supplemental">
+                  <span class="school-chip">Brown</span>
+                  <span class="ws-chip anxious">Anxious</span>
+                  <span class="review-flag">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    Review
+                  </span>
+                </div>
+              </article>
+
+              <article class="task-card" data-due-week data-awaiting-me>
+                <div class="card-core">
+                  <div class="card-student">
+                    <span class="student-avatar">MC</span>
+                    <span class="student-name">Maya Chen</span>
+                  </div>
+                  <div class="card-title">UC Berkeley PIQ #2 — voice consistency edits</div>
+                  <div class="card-due due-soon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg>
+                    <span class="due-label">Due</span>
+                    <span class="due-date">Dec 14</span>
+                  </div>
+                </div>
+                <div class="card-divider"></div>
+                <div class="card-supplemental">
+                  <span class="school-chip">UC Berkeley</span>
+                  <span class="review-flag">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    Review
+                  </span>
+                </div>
+              </article>
+
+              <article class="task-card" data-due-week data-awaiting-me>
+                <div class="card-core">
+                  <div class="card-student">
+                    <span class="student-avatar">HW</span>
+                    <span class="student-name">Henry Wells</span>
+                  </div>
+                  <div class="card-title">Common App personal statement — revision</div>
+                  <div class="card-due due-soon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg>
+                    <span class="due-label">Due</span>
+                    <span class="due-date">Dec 11</span>
+                  </div>
+                </div>
+                <div class="card-divider"></div>
+                <div class="card-supplemental">
+                  <span class="school-chip">Common App</span>
+                  <span class="review-flag">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    Review
+                  </span>
+                </div>
+              </article>
+
+              <article class="task-card" data-awaiting-me>
+                <div class="card-core">
+                  <div class="card-student">
+                    <span class="student-avatar">EC</span>
+                    <span class="student-name">Eliana Cohen</span>
+                  </div>
+                  <div class="card-title">Vanderbilt supplement — final review</div>
+                  <div class="card-due">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg>
+                    <span class="due-label">Due</span>
+                    <span class="due-date">Dec 18</span>
+                  </div>
+                </div>
+                <div class="card-divider"></div>
+                <div class="card-supplemental">
+                  <span class="school-chip">Vanderbilt</span>
+                  <span class="review-flag">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    Review
+                  </span>
+                </div>
+              </article>
+
+            </div>
+          </section>
+
+          <!-- ═══ COL 4 — STUCK ═══ -->
+          <section class="kanban-col status-stuck" data-design-note data-note-num="5">
+            <div class="kanban-col-header">
+              <div class="col-stage-row">
+                <div class="stage-dot"></div>
+                <span class="col-stage-name">Stuck</span>
+                <span class="col-count">4</span>
+              </div>
+              <div class="col-desc">Blocked &middot; needs intervention</div>
+            </div>
+            <div class="kanban-col-body">
+
+              <article class="task-card" data-overdue>
+                <div class="card-core">
+                  <div class="card-student">
+                    <span class="student-avatar">RN</span>
+                    <span class="student-name">Roya Nazari</span>
+                  </div>
+                  <div class="card-title">Personal statement restart — narrative pivot</div>
+                  <div class="card-due overdue">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    <span class="due-label">Overdue</span>
+                    <span class="due-date">Dec 9 · 1d</span>
+                  </div>
+                </div>
+                <div class="card-divider"></div>
+                <div class="card-supplemental">
+                  <span class="school-chip">Common App</span>
+                  <span class="ws-chip self-directed">Self-directed</span>
+                  <span class="stuck-flag">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    Blocked
+                  </span>
+                </div>
+              </article>
+
+              <article class="task-card" data-overdue>
+                <div class="card-core">
+                  <div class="card-student">
+                    <span class="student-avatar">MJ</span>
+                    <span class="student-name">Marcus Johnson</span>
+                  </div>
+                  <div class="card-title">RD list rebuild — after Stanford defer</div>
+                  <div class="card-due overdue">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    <span class="due-label">Overdue</span>
+                    <span class="due-date">Dec 7 · 3d</span>
+                  </div>
+                </div>
+                <div class="card-divider"></div>
+                <div class="card-supplemental">
+                  <span class="school-chip">RD list</span>
+                  <span class="ws-chip anxious">Anxious</span>
+                  <span class="stuck-flag">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    Blocked
+                  </span>
+                </div>
+              </article>
+
+              <article class="task-card" data-due-week>
+                <div class="card-core">
+                  <div class="card-student">
+                    <span class="student-avatar">HA</span>
+                    <span class="student-name">Hassan Ali</span>
+                  </div>
+                  <div class="card-title">Common App revision — awaiting QB pivot decision</div>
+                  <div class="card-due due-soon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg>
+                    <span class="due-label">Due</span>
+                    <span class="due-date">Dec 14</span>
+                  </div>
+                </div>
+                <div class="card-divider"></div>
+                <div class="card-supplemental">
+                  <span class="school-chip">Common App</span>
+                  <span class="stuck-flag">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    Blocked
+                  </span>
+                </div>
+              </article>
+
+              <article class="task-card">
+                <div class="card-core">
+                  <div class="card-student">
+                    <span class="student-avatar">TL</span>
+                    <span class="student-name">Tasha Lewis</span>
+                  </div>
+                  <div class="card-title">Recommender follow-up — counselor unresponsive</div>
+                  <div class="card-due">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg>
+                    <span class="due-label">Due</span>
+                    <span class="due-date">Dec 18</span>
+                  </div>
+                </div>
+                <div class="card-divider"></div>
+                <div class="card-supplemental">
+                  <span class="school-chip">Recs</span>
+                  <span class="stuck-flag">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    Blocked
+                  </span>
+                </div>
+              </article>
+
+            </div>
+          </section>
+
+          <!-- ═══ COL 5 — DONE ═══ -->
+          <section class="kanban-col status-done">
+            <div class="kanban-col-header">
+              <div class="col-stage-row">
+                <div class="stage-dot"></div>
+                <span class="col-stage-name">Done</span>
+                <span class="col-count">20</span>
+              </div>
+              <div class="col-desc">Complete</div>
+            </div>
+            <div class="kanban-col-body">
+
+              <article class="task-card">
+                <div class="card-core">
+                  <div class="card-student">
+                    <span class="student-avatar">MP</span>
+                    <span class="student-name">Min-jun Park</span>
+                  </div>
+                  <div class="card-title">Wharton enrollment paperwork — fully filed</div>
+                  <div class="card-due past">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    <span class="due-label">Done</span>
+                    <span class="due-date">Dec 1</span>
+                  </div>
+                </div>
+                <div class="card-divider"></div>
+                <div class="card-supplemental">
+                  <span class="school-chip">Wharton</span>
+                </div>
+              </article>
+
+              <article class="task-card">
+                <div class="card-core">
+                  <div class="card-student">
+                    <span class="student-avatar">JR</span>
+                    <span class="student-name">Jackson Reed</span>
+                  </div>
+                  <div class="card-title">Princeton REA — athletic LOI countersigned</div>
+                  <div class="card-due past">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    <span class="due-label">Done</span>
+                    <span class="due-date">Nov 28</span>
+                  </div>
+                </div>
+                <div class="card-divider"></div>
+                <div class="card-supplemental">
+                  <span class="school-chip">Princeton</span>
+                </div>
+              </article>
+
+              <article class="task-card">
+                <div class="card-core">
+                  <div class="card-student">
+                    <span class="student-avatar">DK</span>
+                    <span class="student-name">Daniel Kim</span>
+                  </div>
+                  <div class="card-title">Stanford QuestBridge — match acceptance filed</div>
+                  <div class="card-due past">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    <span class="due-label">Done</span>
+                    <span class="due-date">Nov 25</span>
+                  </div>
+                </div>
+                <div class="card-divider"></div>
+                <div class="card-supplemental">
+                  <span class="school-chip">Stanford</span>
+                </div>
+              </article>
+
+              <article class="task-card">
+                <div class="card-core">
+                  <div class="card-student">
+                    <span class="student-avatar">MP</span>
+                    <span class="student-name">Min-jun Park</span>
+                  </div>
+                  <div class="card-title">Housing deposit — confirmation</div>
+                  <div class="card-due past">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    <span class="due-label">Done</span>
+                    <span class="due-date">Nov 22</span>
+                  </div>
+                </div>
+                <div class="card-divider"></div>
+                <div class="card-supplemental">
+                  <span class="school-chip">Wharton</span>
+                </div>
+              </article>
+
+              <article class="task-card">
+                <div class="card-core">
+                  <div class="card-student">
+                    <span class="student-avatar">JR</span>
+                    <span class="student-name">Jackson Reed</span>
+                  </div>
+                  <div class="card-title">Final transcript release request</div>
+                  <div class="card-due past">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    <span class="due-label">Done</span>
+                    <span class="due-date">Nov 18</span>
+                  </div>
+                </div>
+                <div class="card-divider"></div>
+                <div class="card-supplemental">
+                  <span class="school-chip">Princeton</span>
+                </div>
+              </article>
+
+              <article class="task-card">
+                <div class="card-core">
+                  <div class="card-student">
+                    <span class="student-avatar">DK</span>
+                    <span class="student-name">Daniel Kim</span>
+                  </div>
+                  <div class="card-title">Financial aid forms — wrap-up</div>
+                  <div class="card-due past">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    <span class="due-label">Done</span>
+                    <span class="due-date">Nov 12</span>
+                  </div>
+                </div>
+                <div class="card-divider"></div>
+                <div class="card-supplemental">
+                  <span class="school-chip">Stanford</span>
+                </div>
+              </article>
+
+            </div>
+          </section>
+
+        </div><!-- /kanban-board -->
+      </div><!-- /kanban-wrapper -->
+
+    </main>
+  </div><!-- /app-body -->
+</div><!-- /app-shell -->
+
+<script>
+  // ── Multi-student scope selector (visible toggle, no real backend) ──
+  document.querySelectorAll('.scope-chip').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.scope-chip').forEach(b => {
+        b.setAttribute('aria-pressed', b === btn ? 'true' : 'false');
+      });
+    });
+  });
+
+  // ── Quick-view filter chips (CSS class swap, mock filtering) ──
+  document.querySelectorAll('.qv-chip').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const qv = btn.dataset.qv;
+      const wasActive = btn.getAttribute('aria-pressed') === 'true';
+      // Single-active model — clicking a chip clears others
+      document.querySelectorAll('.qv-chip').forEach(b => b.setAttribute('aria-pressed', 'false'));
+      document.body.classList.remove('qv-overdue', 'qv-due-week', 'qv-awaiting-me');
+      if (!wasActive) {
+        btn.setAttribute('aria-pressed', 'true');
+        document.body.classList.add(`qv-${qv}`);
+      }
+    });
+  });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,2073 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Today — Consultant Homepage</title>
+  <meta name="page-purpose" content="This page is for: a consultant orienting on their day — what needs attention right now across the whole roster." />
+  <meta name="variant" content="today-homepage (NEW — V3 Phase 1.6, bm-g03w.1.41, T1)" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --font-sans: 'Geist', system-ui, sans-serif;
+      --font-mono: 'Geist Mono', 'Courier New', monospace;
+
+      /* Locked tokens from SHARED-SPEC v2 */
+      --bg:        #f7f8fa;
+      --surface:   #ffffff;
+      --surface-2: #fbfcfd;
+      --ink:       #0f1419;
+      --ink-2:     #475569;
+      --ink-3:     #94a3b8;
+      --line:      #e4e6eb;
+      --line-2:    #cbd5e1;
+
+      --sidebar:        #0f172a;
+      --sidebar-ink:    #cbd5e1;
+      --sidebar-ink-2:  #64748b;
+      --sidebar-line:   rgba(255,255,255,0.08);
+
+      --primary:        #5b5fcf;
+      --primary-bg:     #eef0fb;
+      --primary-line:   #c7cbe8;
+
+      /* Status palette — LOCKED to 3 + neutral */
+      --status-done:    #047857;
+      --status-done-bg: #d1fae5;
+      --status-active:  #b45309;
+      --status-active-bg: #fef3c7;
+      --status-overdue: #be123c;
+      --status-overdue-bg: #ffe4e6;
+      --status-neutral: var(--ink-3);
+
+      /* Working-style chips (kept available for cohesion if needed, not used much here) */
+      --ws-perfectionist:    #a78bfa;
+      --ws-perfectionist-bg: #f5f3ff;
+      --ws-anxious:          #f43f5e;
+      --ws-anxious-bg:       #fff1f2;
+      --ws-self-directed:    #22c55e;
+      --ws-self-directed-bg: #f0fdf4;
+
+      --radius: 6px;
+      --radius-card: 8px;
+      --radius-chip: 4px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body { height: 100%; }
+    body {
+      font-family: var(--font-sans);
+      font-size: 13.5px;
+      line-height: 1.5;
+      color: var(--ink);
+      background: var(--bg);
+      -webkit-font-smoothing: antialiased;
+      font-feature-settings: "ss01", "cv11";
+    }
+
+    /* ─── Color-mode (Pattern 4) variants — 5 states ─── */
+
+    /* 1. OFF — no semantic color anywhere; pure neutrals. Brand indigo also neutralized. */
+    body.color-off {
+      --status-done:        var(--ink-3);
+      --status-done-bg:     transparent;
+      --status-active:      var(--ink-3);
+      --status-active-bg:   transparent;
+      --status-overdue:     var(--ink-2);
+      --status-overdue-bg:  transparent;
+      --primary:            var(--ink);
+      --primary-bg:         transparent;
+      --primary-line:       var(--line-2);
+    }
+    body.color-off .priority-bar,
+    body.color-off .priority-bar.overdue,
+    body.color-off .priority-bar.flagged,
+    body.color-off .priority-bar.active,
+    body.color-off .priority-bar.upcoming {
+      background: var(--ink-3) !important;
+    }
+    body.color-off .status-pill,
+    body.color-off .due-pill,
+    body.color-off .time-pill,
+    body.color-off .count-chip {
+      border-color: var(--line-2) !important;
+      color: var(--ink-2) !important;
+      background: transparent !important;
+    }
+    body.color-off .count-chip.overdue,
+    body.color-off .count-chip.flagged,
+    body.color-off .count-chip.meetings,
+    body.color-off .count-chip.due,
+    body.color-off .count-chip.snapshots,
+    body.color-off .count-chip.modules {
+      background: transparent !important;
+      color: var(--ink-2) !important;
+    }
+    body.color-off .summary-line .summary-num.overdue,
+    body.color-off .summary-line .summary-num.due,
+    body.color-off .summary-line .summary-num.meetings,
+    body.color-off .summary-line .summary-num.flagged {
+      color: var(--ink) !important;
+    }
+
+    /* 2. MINIMAL — overdue (rose) + brand indigo + status-done (emerald) retain saturation;
+       status-active (amber) + WS chips neutralize (D1=A, 2026-05-12). */
+    body.color-minimal {
+      --status-active:      var(--ink-3);
+      --status-active-bg:   transparent;
+      --ws-perfectionist:   var(--ink-3);
+      --ws-perfectionist-bg: transparent;
+    }
+    body.color-minimal .priority-bar.active { background: var(--ink-3); }
+    /* Mode B preserves flagged-tier visibility — flag items are escalation signal,
+       which is the whole point of Mode B (show only what matters). Use a hardcoded
+       rose-adjacent tone so the cascade doesn't mute it. */
+    body.color-minimal .priority-bar.flagged { background: #b45309; }
+    body.color-minimal .flag-glyph { color: #b45309; }
+    body.color-minimal .due-pill.due-soon {
+      background: transparent;
+      border-color: var(--line-2);
+      color: var(--ink-2);
+    }
+    body.color-minimal .count-chip.due,
+    body.color-minimal .count-chip.modules {
+      background: transparent;
+      color: var(--ink-2);
+      border-color: var(--line-2);
+    }
+    body.color-minimal .summary-line .summary-num.due { color: var(--ink); }
+
+    /* 3. STATUS — DEFAULT (no overrides). */
+
+    /* 4. STATUS+ — same as default for THIS surface (no working-style chips rendered here) */
+    body.color-status-plus {
+      /* no extra overrides — this surface doesn't render working-style chips by default */
+    }
+
+    /* 5. FULL — restore decorative tints; cluster shading on overdue widget */
+    body.color-full {
+      --status-active-bg:    #fde68a;
+      --status-done-bg:      #bbf7d0;
+      --status-overdue-bg:   #fecdd3;
+    }
+    body.color-full .widget.overdue {
+      background: linear-gradient(180deg, #fff7f8 0%, var(--surface) 60%);
+    }
+    body.color-full .widget.flagged {
+      background: linear-gradient(180deg, #fff5f6 0%, var(--surface) 60%);
+    }
+
+    /* ─── Shell ─── */
+    .shell {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* ─── Topbar (locked pattern from cohesion target) ─── */
+    .topbar {
+      height: 48px;
+      background: #ffffff;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      flex-shrink: 0;
+      position: relative;
+      z-index: 20;
+    }
+
+    .topbar-brand {
+      width: 232px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      padding: 0 18px;
+      background: var(--sidebar);
+      height: 100%;
+    }
+
+    .brand-link {
+      text-decoration: none;
+      display: inline-flex;
+      cursor: pointer;
+      transition: opacity 180ms ease;
+    }
+    .brand-link:hover { opacity: 0.85; }
+    .brand-link:focus-visible {
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
+      border-radius: 8px;
+    }
+    .brand-mark {
+      width: 24px;
+      height: 24px;
+      background: var(--primary);
+      border-radius: 7px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .brand-mark svg { display: block; }
+
+    .topbar-breadcrumb {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0 20px;
+      font-size: 13px;
+      color: var(--ink-2);
+    }
+    .bc-current { color: var(--ink); font-weight: 500; }
+
+    .topbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0 16px;
+    }
+
+    /* Pattern 4 — color-intensity slider (locked 5 states, compact) */
+    .color-slider {
+      display: inline-flex;
+      align-items: center;
+      gap: 0;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 2px;
+      background: var(--surface);
+      position: relative;
+    }
+    .color-slider button {
+      position: relative;
+      font-family: var(--font-sans);
+      font-size: 10.5px;
+      font-weight: 500;
+      color: var(--ink-2);
+      background: transparent;
+      border: 0;
+      padding: 3px 9px;
+      border-radius: 999px;
+      cursor: pointer;
+      letter-spacing: 0.005em;
+      line-height: 1.4;
+    }
+    .color-slider button[aria-pressed="true"] {
+      background: var(--primary);
+      color: #fff;
+    }
+    .color-slider button:hover:not([aria-pressed="true"]) {
+      background: var(--bg);
+      color: var(--ink);
+    }
+    .color-slider button::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      top: calc(100% + 8px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--ink);
+      color: white;
+      padding: 5px 9px;
+      border-radius: 4px;
+      font-size: 10.5px;
+      font-weight: 400;
+      width: max-content;
+      max-width: 200px;
+      white-space: normal;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.15s ease;
+      z-index: 110;
+      line-height: 1.35;
+      letter-spacing: 0;
+    }
+    .color-slider button:hover::after { opacity: 1; }
+
+    .topbar-divider {
+      width: 1px;
+      height: 18px;
+      background: var(--line);
+      margin: 0 2px;
+    }
+
+    .icon-btn {
+      width: 30px;
+      height: 30px;
+      border-radius: var(--radius);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: var(--ink-2);
+      position: relative;
+      background: transparent;
+      border: none;
+    }
+    .icon-btn:hover { background: var(--bg); }
+
+    .notif-dot {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--status-overdue);
+      border: 1.5px solid white;
+    }
+
+    .avatar-sm {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--primary-bg);
+      color: var(--primary);
+      font-size: 11px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      letter-spacing: 0.03em;
+      cursor: pointer;
+    }
+
+    /* ─── Body row ─── */
+    .body-row {
+      flex: 1;
+      display: flex;
+      overflow: hidden;
+    }
+
+    /* ─── Sidebar (workspace nav only — no per-student sub-nav since "Today" is global) ─── */
+    .sidebar {
+      width: 232px;
+      flex-shrink: 0;
+      background: var(--sidebar);
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      overflow-x: hidden;
+      color: var(--sidebar-ink);
+    }
+    .sidebar::-webkit-scrollbar { width: 4px; }
+    .sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 2px; }
+
+    .nav-section {
+      padding: 14px 10px 6px;
+    }
+
+    .nav-item {
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 7px 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      color: var(--sidebar-ink-2);
+      font-size: 13px;
+      font-weight: 400;
+      letter-spacing: -0.005em;
+    }
+    .nav-item:hover {
+      background: rgba(255,255,255,0.04);
+      color: #e2e8f0;
+    }
+    .nav-item.active {
+      background: rgba(91, 95, 207, 0.14);
+      color: #c7d2fe;
+    }
+    .nav-item.active::before {
+      content: "";
+      position: absolute;
+      left: -10px;
+      top: 6px; bottom: 6px;
+      width: 3px;
+      background: var(--primary);
+      border-radius: 0 2px 2px 0;
+    }
+    .nav-item svg { width: 16px; height: 16px; flex-shrink: 0; }
+
+    .nav-item .nav-pip {
+      margin-left: auto;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      color: var(--sidebar-ink-2);
+      font-variant-numeric: tabular-nums;
+    }
+    .nav-item.active .nav-pip { color: #818cf8; }
+    .nav-item .nav-pip-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--status-overdue);
+    }
+
+    .sidebar-divider {
+      height: 1px;
+      background: var(--sidebar-line);
+      margin: 10px 14px;
+    }
+
+    .sidebar-section-head {
+      padding: 10px 14px 8px 18px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--sidebar-ink-2);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    /* ─── Main content ─── */
+    .main-content {
+      flex: 1;
+      display: flex;
+      overflow: hidden;
+    }
+
+    .content-area {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px 36px 56px;
+      /* Round 2 fix #1 — drop max-width. Today/Homepage = roster-wide list-feed,
+         earns full viewport width. Cohesion-target student dashboards cap at 1180px
+         because they're profile-anchored single-student views; this surface is not. */
+    }
+    .content-area::-webkit-scrollbar { width: 6px; }
+    .content-area::-webkit-scrollbar-thumb { background: var(--line-2); border-radius: 3px; }
+    .content-inner {
+      max-width: 1480px;
+      margin: 0 auto;
+    }
+
+    /* ─── PAGE EYEBROW + DATE HERO ─── */
+    .section-eyebrow {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--ink-3);
+      margin-bottom: 5px;
+    }
+
+    .page-purpose {
+      font-size: 11.5px;
+      color: var(--ink-3);
+      font-style: italic;
+      margin-top: 4px;
+      letter-spacing: 0.005em;
+    }
+
+    /* ─── Demo-note box (R2.5 pattern, 2026-05-13)
+       Visual container for demo/dev metadata that's NOT product copy — page-purpose
+       statements, demo-only hints, dev affordance explanations. Lives in TOPBAR, left of
+       the color-slider (vertically centered, sized to content). Compact pill shape with
+       dashed left-border + "DEMO" mono tag signals "this is scaffolding, not UI".
+       Color-mode-invariant (stays neutral gray in all 5 modes). ─── */
+    .demo-note-box {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 10px 4px 8px;
+      background: #f0f2f5;
+      border: 1px dashed var(--line-2);
+      border-left: 3px dashed var(--ink-3);
+      border-radius: 4px;
+      font-size: 11.5px;
+      color: var(--ink-2);
+      line-height: 1.3;
+      flex-shrink: 0;
+      white-space: nowrap;
+    }
+    .demo-note-box .demo-note-label {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--ink-3);
+      flex-shrink: 0;
+      padding: 1px 5px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 3px;
+      line-height: 1.4;
+    }
+    .demo-note-box .demo-note-text {
+      font-style: italic;
+      white-space: nowrap;
+    }
+    .demo-note-box .demo-note-text strong {
+      font-style: normal;
+      font-weight: 600;
+      color: var(--ink-2);
+    }
+    body.color-off .demo-note-box { background: #f3f4f6; }
+
+    .today-hero {
+      margin: 18px 0 22px;
+      padding: 18px 20px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-card);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 28px;
+      flex-wrap: wrap;
+    }
+
+    .today-hero-left {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      min-width: 0;
+    }
+
+    .today-date-row {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .today-date-label {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--primary);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .today-date {
+      font-size: 22px;
+      font-weight: 600;
+      color: var(--ink);
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+    }
+
+    .today-date-day {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--ink-3);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .summary-line {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      flex-wrap: wrap;
+      margin-top: 2px;
+    }
+
+    .summary-cell {
+      display: inline-flex;
+      align-items: baseline;
+      gap: 6px;
+      padding: 0 14px;
+      border-right: 1px solid var(--line);
+    }
+    .summary-cell:first-child { padding-left: 0; }
+    .summary-cell:last-child { border-right: 0; padding-right: 0; }
+
+    .summary-num {
+      font-family: var(--font-mono);
+      font-size: 17px;
+      font-weight: 600;
+      color: var(--ink);
+      letter-spacing: -0.01em;
+      font-variant-numeric: tabular-nums;
+      line-height: 1;
+    }
+    /* Summary-line color discipline:
+       - overdue stays rose (TRUE overdue is the one place rose belongs)
+       - flagged → neutral (flag glyph carries semantic, not color — Wave 1 directive)
+       - due → amber (today's deadline)
+       - meetings → neutral (matches no-color meeting-time directive) */
+    .summary-num.overdue  { color: var(--status-overdue); }
+    .summary-num.flagged  { color: var(--ink-2); }
+    .summary-num.due      { color: var(--status-active); }
+    .summary-num.meetings { color: var(--ink); }
+
+    .summary-label {
+      font-size: 11.5px;
+      color: var(--ink-2);
+      letter-spacing: 0.005em;
+    }
+
+    .today-hero-right {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      align-items: flex-end;
+      text-align: right;
+    }
+
+    .today-hero-mini-eyebrow {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--ink-3);
+    }
+
+    .today-hero-greeting {
+      font-size: 13.5px;
+      color: var(--ink-2);
+      font-weight: 500;
+    }
+    .today-hero-greeting strong {
+      color: var(--ink);
+      font-weight: 600;
+    }
+
+    /* ─── Widget — generic ─── */
+    .widget {
+      margin-bottom: 22px;
+    }
+
+    .widget-head {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .widget-head-icon {
+      width: 22px;
+      height: 22px;
+      border-radius: 5px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      background: var(--bg);
+      border: 1px solid var(--line);
+      color: var(--ink-2);
+    }
+    .widget-head-icon svg { width: 13px; height: 13px; }
+
+    /* Round 5 R5-V19 (2026-05-15) — widget-head-icon color discipline:
+       overdue rose (TRUE overdue), everything else NEUTRAL. Amber was reserved
+       canonical for Awaiting Review status — re-using it on Flagged, Due, or
+       Modules widget chrome created a false status association. Glyph + count
+       chip + row-level "Today" deadline pills carry the semantics, not the
+       widget head-icon background. */
+    .widget.overdue .widget-head-icon {
+      background: var(--status-overdue-bg);
+      border-color: #fecdd3;
+      color: var(--status-overdue);
+    }
+    .widget.flagged .widget-head-icon {
+      background: var(--bg);
+      border-color: var(--line);
+      color: var(--ink-2);
+    }
+    .widget.meetings .widget-head-icon {
+      background: var(--bg);
+      border-color: var(--line);
+      color: var(--ink-2);
+    }
+    .widget.due .widget-head-icon {
+      background: var(--bg);
+      border-color: var(--line);
+      color: var(--ink-2);
+    }
+    .widget.snapshots .widget-head-icon {
+      background: var(--bg);
+      border-color: var(--line);
+      color: var(--ink-2);
+    }
+    .widget.modules .widget-head-icon {
+      background: var(--bg);
+      border-color: var(--line);
+      color: var(--ink-2);
+    }
+
+    .widget-title {
+      font-size: 14.5px;
+      font-weight: 600;
+      color: var(--ink);
+      letter-spacing: -0.01em;
+    }
+
+    .count-chip {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      padding: 1px 7px;
+      border-radius: 999px;
+      letter-spacing: 0.02em;
+      font-variant-numeric: tabular-nums;
+      border: 1px solid transparent;
+    }
+    /* Round 5 R5-V19 (2026-05-15) — count-chip color discipline:
+       overdue stays rose (true overdue); all others → NEUTRAL. Amber was
+       reserved canonical for Awaiting Review status — re-using it on Due or
+       Modules count chips created a false status association. Row-level
+       "Today" deadline pills (.due-pill.due-today) carry the deadline
+       semantic, not the count chip. */
+    .count-chip.overdue {
+      background: var(--status-overdue-bg);
+      color: var(--status-overdue);
+      border-color: #fecdd3;
+    }
+    .count-chip.flagged {
+      background: var(--bg);
+      color: var(--ink-2);
+      border-color: var(--line);
+    }
+    .count-chip.meetings {
+      background: var(--bg);
+      color: var(--ink-2);
+      border-color: var(--line);
+    }
+    .count-chip.due {
+      background: var(--bg);
+      color: var(--ink-2);
+      border-color: var(--line);
+    }
+    .count-chip.snapshots {
+      background: var(--bg);
+      color: var(--ink-2);
+      border-color: var(--line);
+    }
+    .count-chip.modules {
+      background: var(--bg);
+      color: var(--ink-2);
+      border-color: var(--line);
+    }
+
+    .widget-head-extra {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .widget-head-link {
+      font-size: 12px;
+      color: var(--ink-3);
+      text-decoration: none;
+      letter-spacing: 0.005em;
+    }
+    .widget-head-link:hover { color: var(--primary); text-decoration: underline; }
+
+    /* ─── Row — compact TickTick-style triage item ─── */
+    .row-list {
+      background: var(--surface);
+      border: 1px solid var(--line-2);
+      border-radius: var(--radius-card);
+      overflow: hidden;
+    }
+
+    .row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px 10px 0;
+      border-bottom: 1px solid var(--line);
+      position: relative;
+      text-decoration: none;
+      color: inherit;
+      transition: background 0.12s;
+    }
+    .row:last-child { border-bottom: none; }
+    .row:hover { background: var(--surface-2); }
+
+    /* Priority left-bar (D49: color is supplementary; always paired with explicit pill on the right side) */
+    .priority-bar {
+      flex-shrink: 0;
+      width: 4px;
+      align-self: stretch;
+      background: var(--ink-3);
+      margin-right: 10px;
+    }
+    /* Round 5 R5-V19 (2026-05-15) — rose stays for `.overdue` (TRUE overdue) ONLY.
+       Flagged + active (Due/Modules widget rows) are NEUTRAL — amber was
+       reserved canonical for Awaiting Review status. Row-level "Today"
+       deadline pills carry the deadline semantic; the priority bar is
+       supplementary, not the load-bearing indicator. */
+    .priority-bar.overdue   { background: var(--status-overdue); }
+    .priority-bar.flagged   { background: var(--ink-3); }
+    .priority-bar.active    { background: var(--ink-3); }
+    .priority-bar.upcoming  { background: var(--primary); }
+    .priority-bar.neutral   { background: var(--ink-3); }
+
+    .row-student {
+      flex-shrink: 0;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 130px;
+      max-width: 150px;
+    }
+    .row-student-avatar {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--primary-bg);
+      color: var(--primary);
+      font-size: 10px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      letter-spacing: 0.02em;
+      flex-shrink: 0;
+    }
+    .row-student-name {
+      font-size: 12.5px;
+      font-weight: 500;
+      color: var(--ink);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .row-body {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .row-title {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--ink);
+      line-height: 1.35;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .row-sub {
+      font-size: 11.5px;
+      color: var(--ink-3);
+      line-height: 1.35;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      flex-wrap: nowrap;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+    .row-sub .row-sub-sep {
+      color: var(--line-2);
+      flex-shrink: 0;
+    }
+    .row-sub .row-sub-bold {
+      color: var(--ink-2);
+      font-weight: 500;
+    }
+
+    .row-meta {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      flex-shrink: 0;
+      flex-wrap: nowrap;
+    }
+
+    /* Pills (locked palette only) */
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 2px 8px;
+      border-radius: 20px;
+      font-size: 10.5px;
+      font-weight: 500;
+      letter-spacing: 0.005em;
+      border: 1px solid transparent;
+      line-height: 1.4;
+      font-variant-numeric: tabular-nums;
+    }
+    .pill-active {
+      background: var(--status-active-bg);
+      color: var(--status-active);
+      border-color: #fcd34d;
+    }
+    /* R2.5 (2026-05-13): In Progress = indigo (was sharing amber pill-active with Awaiting Review).
+       Distinct from .pill-active (amber for "needs attention / awaiting") so the two read separately. */
+    .pill-in-progress {
+      background: var(--primary-bg);
+      color: var(--primary);
+      border-color: #c7cbe8;
+    }
+    .pill-done {
+      background: var(--status-done-bg);
+      color: var(--status-done);
+      border-color: #6ee7b7;
+    }
+    .pill-overdue {
+      background: var(--status-overdue-bg);
+      color: var(--status-overdue);
+      border-color: #fecdd3;
+    }
+    /* Stuck = neutral-dashed. Rose reserved for overdue only.
+       Dashed border carries "broken / needs intervention" semantic without
+       doubling on rose's color budget. Canonical: see .ts-stuck in dashboard-1-tabs-horizontal. */
+    .pill-stuck {
+      background: var(--surface);
+      color: var(--ink-2);
+      border-color: var(--line-2);
+      border-style: dashed;
+    }
+    .pill-upcoming {
+      background: var(--primary-bg);
+      color: var(--primary);
+      border-color: var(--primary-line);
+    }
+    .pill-neutral {
+      background: transparent;
+      color: var(--ink-2);
+      border-color: var(--line-2);
+    }
+
+    /* Due pill — mono numeric */
+    .due-pill {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      padding: 2px 8px;
+      border-radius: var(--radius-chip);
+      white-space: nowrap;
+      border: 1px solid transparent;
+      font-variant-numeric: tabular-nums;
+    }
+    .due-overdue {
+      background: var(--status-overdue-bg);
+      color: var(--status-overdue);
+      border-color: #fecdd3;
+    }
+    .due-soon {
+      background: var(--status-active-bg);
+      color: var(--status-active);
+      border-color: #fde68a;
+    }
+    .due-today {
+      background: var(--status-active-bg);
+      color: var(--status-active);
+      border-color: #fde68a;
+    }
+    .due-ok {
+      background: var(--bg);
+      color: var(--ink-2);
+      border-color: var(--line);
+    }
+    /* Round 2 fix #2 — recency markers ("3d ago", "5d ago", "12h ago") read as
+       neutral text. Rose is now reserved for TRUE OVERDUE state communication
+       (priority-bar + status pill), not for "how long it's been overdue". */
+    .due-recency {
+      background: transparent;
+      color: var(--ink-3);
+      border-color: var(--line);
+    }
+
+    /* Time pill — for meetings (HH:MM).
+       Round 2 fix #3 — strip color from meeting times entirely for now.
+       Alex 5/13 10:19 PM: "I don't know what time it's supposed to be in the
+       mock-up... if anything, there could be no colors, and that's fine. And
+       maybe later on, we come back and decide we want colors, post-conference." */
+    .time-pill {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      padding: 2px 8px;
+      border-radius: var(--radius-chip);
+      background: var(--bg);
+      color: var(--ink-2);
+      border: 1px solid var(--line);
+      white-space: nowrap;
+      font-variant-numeric: tabular-nums;
+    }
+    .time-pill.now {
+      /* Default-time appearance; no amber accent. Time semantics may return post-conference. */
+      background: var(--bg);
+      color: var(--ink-2);
+      border-color: var(--line);
+    }
+    .time-pill.past {
+      background: var(--bg);
+      color: var(--ink-3);
+      border-color: var(--line);
+    }
+
+    .school-badge {
+      font-size: 10.5px;
+      font-weight: 500;
+      color: var(--ink-2);
+      padding: 1px 7px;
+      background: var(--bg);
+      border-radius: var(--radius-chip);
+      border: 1px solid var(--line);
+      white-space: nowrap;
+    }
+
+    /* Quick-link arrow */
+    .row-link {
+      flex-shrink: 0;
+      width: 22px;
+      height: 22px;
+      border-radius: 4px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--ink-3);
+      transition: color 0.12s, background 0.12s;
+      margin-left: 4px;
+    }
+    .row:hover .row-link {
+      color: var(--primary);
+      background: var(--primary-bg);
+    }
+    .row-link svg { width: 12px; height: 12px; }
+
+    /* Empty state */
+    .row-empty {
+      padding: 22px 16px;
+      text-align: center;
+      color: var(--ink-3);
+      font-size: 12.5px;
+      font-style: italic;
+    }
+    .row-empty strong { color: var(--ink-2); font-weight: 500; font-style: normal; }
+
+    /* Round 2 fix #8 — "View all" link replaces "+3 more · expand to view" aggregator
+       row. Single-line subtle row that reads as a navigation affordance, not a
+       collapsed item. Sits at the bottom of a widget's row-list. */
+    .row.row-view-all {
+      justify-content: center;
+      gap: 8px;
+      padding: 11px 14px 11px 14px;
+      color: var(--ink-2);
+      font-size: 12.5px;
+      font-weight: 500;
+      border-bottom: none;
+    }
+    .row.row-view-all:hover {
+      background: var(--surface-2);
+      color: var(--primary);
+    }
+    .row-view-all-arrow {
+      flex-shrink: 0;
+      width: 14px;
+      height: 14px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: inherit;
+    }
+    .row-view-all-arrow svg { width: 12px; height: 12px; }
+
+    /* Flag widget — adds a flag glyph to the row to distinguish from overdue.
+       Round 5 R5-W1 (2026-05-15) — flag glyph in NEUTRAL ink-2 (not amber). The
+       glyph shape itself carries the "flagged" semantic; amber was reserved
+       canonical for Awaiting Review status. Mode B (color-minimal) escalates
+       the glyph back to amber for highlights-only visibility — see line ~129. */
+    .row .flag-glyph {
+      flex-shrink: 0;
+      width: 16px;
+      height: 16px;
+      color: var(--ink-2);
+      margin-right: 2px;
+    }
+    .row .flag-glyph svg { width: 13px; height: 13px; }
+
+    /* Snapshot row — show document type badge.
+       Round 2 fix #4/#5 — drop indigo from doc-type. Document type is metadata,
+       not status; lives in neutral. */
+    .doc-type-badge {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 500;
+      padding: 1px 5px;
+      background: var(--bg);
+      color: var(--ink-2);
+      border-radius: 3px;
+      letter-spacing: 0.02em;
+      border: 1px solid var(--line);
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    /* Compact "module current" inline indicator */
+    .module-progress-inline {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--ink-2);
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+    .module-progress-bar {
+      display: inline-block;
+      width: 36px;
+      height: 4px;
+      border-radius: 2px;
+      background: var(--line);
+      margin-right: 5px;
+      vertical-align: middle;
+      overflow: hidden;
+      position: relative;
+    }
+    .module-progress-bar::after {
+      content: "";
+      position: absolute;
+      left: 0; top: 0; height: 100%;
+      width: var(--p, 0%);
+      background: var(--status-active);
+      border-radius: 2px;
+    }
+
+    /* ─── Pattern 2 — fake-action button + tooltip ─── */
+    .fake-btn {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--ink-2);
+      background: var(--surface);
+      border: 1px solid var(--line);
+      padding: 4px 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-family: var(--font-sans);
+    }
+    .fake-btn:hover { background: var(--bg); border-color: var(--line-2); }
+    .fake-btn::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      top: calc(100% + 6px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--ink);
+      color: white;
+      padding: 6px 10px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 400;
+      width: max-content;
+      max-width: 240px;
+      white-space: normal;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.15s ease;
+      z-index: 100;
+      line-height: 1.4;
+    }
+    .fake-btn:hover::after { opacity: 1; }
+    .fake-btn.tooltip-left::after {
+      left: auto;
+      right: 0;
+      transform: none;
+    }
+
+    /* ─── Pattern 3 — design-intent overlay scaffolding (empty annotations for now) ─── */
+    .design-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--ink-2);
+      padding: 4px 9px;
+      border-radius: 4px;
+      background: transparent;
+      border: 1px solid var(--line);
+      cursor: pointer;
+      font-family: var(--font-sans);
+    }
+    .design-toggle:hover { background: var(--bg); }
+    .design-toggle svg { color: var(--ink-2); }
+
+    body.design-notes-on .design-toggle {
+      background: var(--primary-bg);
+      color: var(--primary);
+      border-color: var(--primary-line);
+    }
+    body.design-notes-on .design-toggle svg { color: var(--primary); }
+
+    [data-design-note] { position: relative; }
+    body.design-notes-on [data-design-note] {
+      outline: 2px dashed var(--primary);
+      outline-offset: 3px;
+      border-radius: 4px;
+    }
+    body.design-notes-on [data-design-note]::after {
+      content: attr(data-note-num);
+      position: absolute;
+      top: -11px;
+      left: -11px;
+      width: 22px;
+      height: 22px;
+      background: var(--primary);
+      color: white;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.18), 0 0 0 2px white;
+      z-index: 40;
+      font-variant-numeric: tabular-nums;
+      pointer-events: none;
+    }
+
+    /* "Newly-built — design notes coming next session" placeholder hover hint */
+    .design-pending-hint {
+      display: none;
+      position: fixed;
+      bottom: 18px;
+      right: 18px;
+      background: var(--surface);
+      border: 1px solid var(--line-2);
+      border-radius: 6px;
+      padding: 10px 14px;
+      font-size: 12px;
+      color: var(--ink-2);
+      box-shadow: 0 6px 16px rgba(15, 23, 42, 0.08);
+      max-width: 280px;
+      line-height: 1.4;
+      z-index: 50;
+    }
+    .design-pending-hint strong { color: var(--ink); font-weight: 600; }
+    body.design-notes-on .design-pending-hint { display: block; }
+  </style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- ─── TOPBAR ─── -->
+  <header class="topbar">
+    <div class="topbar-brand">
+      <a href="../index.html" class="brand-link" aria-label="Back to demo index">
+        <div class="brand-mark" aria-label="App">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="white" stroke-width="1.4">
+            <circle cx="7" cy="7" r="5.5"/>
+            <circle cx="7" cy="7" r="2.5"/>
+          </svg>
+        </div>
+      </a>
+    </div>
+    <div class="topbar-breadcrumb">
+      <span class="bc-current">Today</span>
+    </div>
+    <div class="topbar-actions">
+      <button class="icon-btn" aria-label="Notifications">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/>
+          <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>
+        </svg>
+        <span class="notif-dot"></span>
+      </button>
+      <div class="avatar-sm" title="Your account">XJ</div>
+    </div>
+  </header>
+
+  <!-- ─── BODY ─── -->
+  <div class="body-row">
+
+    <!-- ─── SIDEBAR — workspace nav only; "Today" is global, no sub-nav ─── -->
+    <nav class="sidebar">
+
+      <div class="nav-section">
+        <!-- Today = active (highest in nav, above Students) -->
+        <div class="nav-item active">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="9"/>
+            <polyline points="12 7 12 12 15 14"/>
+          </svg>
+          Today
+          <span class="nav-pip">
+            <span class="nav-pip-dot"></span>
+            5
+          </span>
+        </div>
+
+        <div class="nav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="8.5" cy="7" r="4"/>
+            <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+            <path d="M15 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+          Students
+        </div>
+
+        <div class="nav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="5" width="6" height="6" rx="1"/>
+            <path d="m3 17 2 2 4-4"/>
+            <path d="M13 6h8"/>
+            <path d="M13 12h8"/>
+            <path d="M13 18h8"/>
+          </svg>
+          Cross-Tasks
+        </div>
+
+        <div class="nav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+            <line x1="16" y1="2" x2="16" y2="6"/>
+            <line x1="8" y1="2" x2="8" y2="6"/>
+            <line x1="3" y1="10" x2="21" y2="10"/>
+          </svg>
+          Calendar
+        </div>
+
+        <div class="nav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+            <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+          </svg>
+          Modules
+        </div>
+      </div>
+
+    </nav>
+
+    <!-- ─── MAIN ─── -->
+    <div class="main-content">
+      <div class="content-area">
+       <div class="content-inner">
+
+        <!-- Eyebrow only — page-purpose moved to demo-note-box in topbar (Pattern 6) -->
+        <div style="margin-bottom: 8px;">
+          <div class="section-eyebrow">Workspace · Today</div>
+        </div>
+
+        <!-- TODAY HERO — date + summary line (V3-native numerical summary band) -->
+        <div class="today-hero">
+          <div class="today-hero-left">
+            <div class="today-date-row">
+              <span class="today-date-label">Today</span>
+              <span class="today-date">Tue, Dec 17</span>
+              <span class="today-date-day">2026 · Week 51</span>
+            </div>
+            <div class="summary-line">
+              <span class="summary-cell">
+                <span class="summary-num overdue">5</span>
+                <span class="summary-label">overdue</span>
+              </span>
+              <span class="summary-cell">
+                <span class="summary-num flagged">2</span>
+                <span class="summary-label">flagged</span>
+              </span>
+              <span class="summary-cell">
+                <span class="summary-num meetings">3</span>
+                <span class="summary-label">meetings</span>
+              </span>
+              <span class="summary-cell">
+                <span class="summary-num due">8</span>
+                <span class="summary-label">due today</span>
+              </span>
+              <span class="summary-cell">
+                <span class="summary-num">4</span>
+                <span class="summary-label">snapshots</span>
+              </span>
+              <span class="summary-cell">
+                <span class="summary-num">2</span>
+                <span class="summary-label">modules</span>
+              </span>
+            </div>
+          </div>
+          <div class="today-hero-right">
+            <div class="today-hero-mini-eyebrow">Consultant</div>
+            <div class="today-hero-greeting"><strong>Xiao Jin</strong> · 15 students</div>
+          </div>
+        </div>
+
+        <!-- ─── 1. OVERDUE ─── -->
+        <section class="widget overdue">
+          <div class="widget-head">
+            <span class="widget-head-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="9"/>
+                <line x1="12" y1="8" x2="12" y2="12"/>
+                <line x1="12" y1="16" x2="12.01" y2="16"/>
+              </svg>
+            </span>
+            <h2 class="widget-title">Overdue</h2>
+            <span class="count-chip overdue">5</span>
+            <div class="widget-head-extra">
+              <a href="cross-tasks-kanban.html" class="widget-head-link">View in Cross-Tasks →</a>
+            </div>
+          </div>
+          <div class="row-list">
+            <a href="dashboard-1-tabs-sidebar.html" class="row">
+              <div class="priority-bar overdue"></div>
+              <div class="row-student">
+                <div class="row-student-avatar">MC</div>
+                <div class="row-student-name">Maya Chen</div>
+              </div>
+              <div class="row-body">
+                <div class="row-title">Finalize Yale LOCI — draft 3 review</div>
+                <div class="row-sub">
+                  <span class="row-sub-bold">Yale</span>
+                  <span class="row-sub-sep">·</span>
+                  <span>LOCI deferred follow-up · awaiting consultant edit</span>
+                </div>
+              </div>
+              <div class="row-meta">
+                <span class="school-badge">Yale</span>
+                <span class="status-pill pill-active">Awaiting review</span>
+                <span class="due-pill due-recency">3d ago</span>
+              </div>
+              <span class="row-link" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="9 18 15 12 9 6"/>
+                </svg>
+              </span>
+            </a>
+            <a href="dashboard-1-tabs-sidebar.html" class="row">
+              <div class="priority-bar overdue"></div>
+              <div class="row-student">
+                <div class="row-student-avatar">TL</div>
+                <div class="row-student-name">Tony Liu</div>
+              </div>
+              <div class="row-body">
+                <div class="row-title">Confirm Yale enrollment deposit</div>
+                <div class="row-sub">
+                  <span class="row-sub-bold">Yale</span>
+                  <span class="row-sub-sep">·</span>
+                  <span>Cycle close-out · counselor follow-up needed</span>
+                </div>
+              </div>
+              <div class="row-meta">
+                <span class="school-badge">Yale</span>
+                <span class="status-pill pill-stuck">Stuck</span>
+                <span class="due-pill due-recency">5d ago</span>
+              </div>
+              <span class="row-link" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="9 18 15 12 9 6"/>
+                </svg>
+              </span>
+            </a>
+            <a href="dashboard-1-tabs-sidebar.html" class="row">
+              <div class="priority-bar overdue"></div>
+              <div class="row-student">
+                <div class="row-student-avatar">AP</div>
+                <div class="row-student-name">Aisha Patel</div>
+              </div>
+              <div class="row-body">
+                <div class="row-title">Stanford supplement #2 — first read</div>
+                <div class="row-sub">
+                  <span class="row-sub-bold">Stanford</span>
+                  <span class="row-sub-sep">·</span>
+                  <span>Awaiting me — student handed off 3 days ago</span>
+                </div>
+              </div>
+              <div class="row-meta">
+                <span class="school-badge">Stanford</span>
+                <span class="status-pill pill-active">Awaiting review</span>
+                <span class="due-pill due-recency">3d ago</span>
+              </div>
+              <span class="row-link" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="9 18 15 12 9 6"/>
+                </svg>
+              </span>
+            </a>
+            <a href="dashboard-1-tabs-sidebar.html" class="row">
+              <div class="priority-bar overdue"></div>
+              <div class="row-student">
+                <div class="row-student-avatar">JK</div>
+                <div class="row-student-name">Jamal Kim</div>
+              </div>
+              <div class="row-body">
+                <div class="row-title">Brown PLME activity list — return notes</div>
+                <div class="row-sub">
+                  <span class="row-sub-bold">Brown</span>
+                  <span class="row-sub-sep">·</span>
+                  <span>PLME track · supplemental list</span>
+                </div>
+              </div>
+              <div class="row-meta">
+                <span class="school-badge">Brown</span>
+                <span class="status-pill pill-stuck">Stuck</span>
+                <span class="due-pill due-recency">2d ago</span>
+              </div>
+              <span class="row-link" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="9 18 15 12 9 6"/>
+                </svg>
+              </span>
+            </a>
+            <a href="dashboard-1-tabs-sidebar.html" class="row">
+              <div class="priority-bar overdue"></div>
+              <div class="row-student">
+                <div class="row-student-avatar">SR</div>
+                <div class="row-student-name">Sofia Reyes</div>
+              </div>
+              <div class="row-body">
+                <div class="row-title">Cornell ED decision follow-up</div>
+                <div class="row-sub">
+                  <span class="row-sub-bold">Cornell</span>
+                  <span class="row-sub-sep">·</span>
+                  <span>Post-decision next-step conversation overdue</span>
+                </div>
+              </div>
+              <div class="row-meta">
+                <span class="school-badge">Cornell</span>
+                <span class="status-pill pill-active">Awaiting review</span>
+                <span class="due-pill due-recency">1d ago</span>
+              </div>
+              <span class="row-link" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="9 18 15 12 9 6"/>
+                </svg>
+              </span>
+            </a>
+          </div>
+        </section>
+
+        <!-- ─── 2. TODAY'S MEETINGS (Round 2 fix #6 — moved up: "what am I doing today" framing) ─── -->
+        <section class="widget meetings">
+          <div class="widget-head">
+            <span class="widget-head-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="4" width="18" height="18" rx="2"/>
+                <line x1="16" y1="2" x2="16" y2="6"/>
+                <line x1="8" y1="2" x2="8" y2="6"/>
+                <line x1="3" y1="10" x2="21" y2="10"/>
+              </svg>
+            </span>
+            <h2 class="widget-title">Today's meetings</h2>
+            <span class="count-chip meetings">3</span>
+            <div class="widget-head-extra">
+              <a href="calendar-week.html" class="widget-head-link">Open week view →</a>
+            </div>
+          </div>
+          <div class="row-list">
+            <a href="dashboard-1-tabs-sidebar.html" class="row">
+              <div class="priority-bar neutral"></div>
+              <div class="row-student">
+                <div class="row-student-avatar">MC</div>
+                <div class="row-student-name">Maya Chen</div>
+              </div>
+              <div class="row-body">
+                <div class="row-title">Weekly check-in · Yale LOCI strategy</div>
+                <div class="row-sub">
+                  <span>30 min · Zoom · prep notes ready</span>
+                </div>
+              </div>
+              <div class="row-meta">
+                <span class="time-pill">10:30 AM</span>
+                <span class="status-pill pill-neutral">In 38 min</span>
+              </div>
+              <span class="row-link" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="9 18 15 12 9 6"/>
+                </svg>
+              </span>
+            </a>
+            <a href="dashboard-1-tabs-sidebar.html" class="row">
+              <div class="priority-bar neutral"></div>
+              <div class="row-student">
+                <div class="row-student-avatar">JK</div>
+                <div class="row-student-name">Jamal Kim</div>
+              </div>
+              <div class="row-body">
+                <div class="row-title">Brown PLME final review · pre-submit walkthrough</div>
+                <div class="row-sub">
+                  <span>45 min · Office · prep needed (PLME supplement)</span>
+                </div>
+              </div>
+              <div class="row-meta">
+                <span class="time-pill">1:00 PM</span>
+                <span class="status-pill pill-neutral">Today</span>
+              </div>
+              <span class="row-link" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="9 18 15 12 9 6"/>
+                </svg>
+              </span>
+            </a>
+            <a href="dashboard-1-tabs-sidebar.html" class="row">
+              <div class="priority-bar neutral"></div>
+              <div class="row-student">
+                <div class="row-student-avatar">SR</div>
+                <div class="row-student-name">Sofia Reyes</div>
+              </div>
+              <div class="row-body">
+                <div class="row-title">Cornell ED decision conversation · next-step planning</div>
+                <div class="row-sub">
+                  <span>30 min · Zoom · cycle re-plan</span>
+                </div>
+              </div>
+              <div class="row-meta">
+                <span class="time-pill">4:00 PM</span>
+                <span class="status-pill pill-neutral">Today</span>
+              </div>
+              <span class="row-link" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="9 18 15 12 9 6"/>
+                </svg>
+              </span>
+            </a>
+          </div>
+        </section>
+
+        <!-- ─── 3. FLAGGED / parent complaints (B3 add) ─── -->
+        <section class="widget flagged">
+          <div class="widget-head">
+            <span class="widget-head-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/>
+                <line x1="4" y1="22" x2="4" y2="15"/>
+              </svg>
+            </span>
+            <h2 class="widget-title">Flagged · follow-up</h2>
+            <span class="count-chip flagged">2</span>
+            <div class="widget-head-extra">
+              <button class="fake-btn" data-tooltip="Mark a student or thread as needing follow-up. Stays on Today until you resolve.">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="12" y1="5" x2="12" y2="19"/>
+                  <line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
+                Flag follow-up
+              </button>
+            </div>
+          </div>
+          <div class="row-list">
+            <a href="dashboard-1-tabs-sidebar.html" class="row">
+              <div class="priority-bar flagged"></div>
+              <span class="flag-glyph" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="currentColor" stroke="none">
+                  <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/>
+                </svg>
+              </span>
+              <div class="row-student">
+                <div class="row-student-avatar">DC</div>
+                <div class="row-student-name">David Cho</div>
+              </div>
+              <div class="row-body">
+                <div class="row-title">Parent complaint — Princeton drafting timeline</div>
+                <div class="row-sub">
+                  <span class="row-sub-bold">Parent</span>
+                  <span class="row-sub-sep">·</span>
+                  <span>"David is too anxious about Princeton supplements — can we have a call?"</span>
+                </div>
+              </div>
+              <div class="row-meta">
+                <span class="status-pill pill-neutral">Parent flag</span>
+                <span class="due-pill due-recency">2d ago</span>
+              </div>
+              <span class="row-link" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="9 18 15 12 9 6"/>
+                </svg>
+              </span>
+            </a>
+            <a href="dashboard-1-tabs-sidebar.html" class="row">
+              <div class="priority-bar flagged"></div>
+              <span class="flag-glyph" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="currentColor" stroke="none">
+                  <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/>
+                </svg>
+              </span>
+              <div class="row-student">
+                <div class="row-student-avatar">NW</div>
+                <div class="row-student-name">Noah Williams</div>
+              </div>
+              <div class="row-body">
+                <div class="row-title">Self-flagged — Duke essay direction shift</div>
+                <div class="row-sub">
+                  <span class="row-sub-bold">Me</span>
+                  <span class="row-sub-sep">·</span>
+                  <span>"Reread Noah's Duke draft — direction feels off, talk through before he writes more"</span>
+                </div>
+              </div>
+              <div class="row-meta">
+                <span class="status-pill pill-neutral">My flag</span>
+                <span class="due-pill due-soon">Today</span>
+              </div>
+              <span class="row-link" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="9 18 15 12 9 6"/>
+                </svg>
+              </span>
+            </a>
+          </div>
+        </section>
+
+        <!-- ─── 4. DUE TODAY ─── -->
+        <section class="widget due">
+          <div class="widget-head">
+            <span class="widget-head-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="9 11 12 14 22 4"/>
+                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+              </svg>
+            </span>
+            <h2 class="widget-title">Due today</h2>
+            <span class="count-chip due">8</span>
+            <div class="widget-head-extra">
+              <a href="cross-tasks-kanban.html" class="widget-head-link">View in Cross-Tasks →</a>
+            </div>
+          </div>
+          <div class="row-list">
+            <a href="dashboard-1-tabs-sidebar.html" class="row">
+              <div class="priority-bar active"></div>
+              <div class="row-student">
+                <div class="row-student-avatar">MC</div>
+                <div class="row-student-name">Maya Chen</div>
+              </div>
+              <div class="row-body">
+                <div class="row-title">Send Yale LOCI to editor</div>
+                <div class="row-sub">
+                  <span class="row-sub-bold">Yale</span>
+                  <span class="row-sub-sep">·</span>
+                  <span>After 10:30 meeting · approve final draft</span>
+                </div>
+              </div>
+              <div class="row-meta">
+                <span class="school-badge">Yale</span>
+                <span class="status-pill pill-in-progress">In progress</span>
+                <span class="due-pill due-today">Today</span>
+              </div>
+              <span class="row-link" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="9 18 15 12 9 6"/>
+                </svg>
+              </span>
+            </a>
+            <a href="dashboard-1-tabs-sidebar.html" class="row">
+              <div class="priority-bar active"></div>
+              <div class="row-student">
+                <div class="row-student-avatar">AP</div>
+                <div class="row-student-name">Aisha Patel</div>
+              </div>
+              <div class="row-body">
+                <div class="row-title">Princeton "Service activity" draft 1 · first read</div>
+                <div class="row-sub">
+                  <span class="row-sub-bold">Princeton</span>
+                  <span class="row-sub-sep">·</span>
+                  <span>Student finished yesterday · awaiting first-pass</span>
+                </div>
+              </div>
+              <div class="row-meta">
+                <span class="school-badge">Princeton</span>
+                <span class="status-pill pill-active">Awaiting review</span>
+                <span class="due-pill due-today">Today</span>
+              </div>
+              <span class="row-link" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="9 18 15 12 9 6"/>
+                </svg>
+              </span>
+            </a>
+            <a href="dashboard-1-tabs-sidebar.html" class="row">
+              <div class="priority-bar active"></div>
+              <div class="row-student">
+                <div class="row-student-avatar">DC</div>
+                <div class="row-student-name">David Cho</div>
+              </div>
+              <div class="row-body">
+                <div class="row-title">Princeton supplement #3 · outline review</div>
+                <div class="row-sub">
+                  <span class="row-sub-bold">Princeton</span>
+                  <span class="row-sub-sep">·</span>
+                  <span>Pre-call prep — see Flagged above</span>
+                </div>
+              </div>
+              <div class="row-meta">
+                <span class="school-badge">Princeton</span>
+                <span class="status-pill pill-in-progress">In progress</span>
+                <span class="due-pill due-today">Today</span>
+              </div>
+              <span class="row-link" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="9 18 15 12 9 6"/>
+                </svg>
+              </span>
+            </a>
+            <a href="dashboard-1-tabs-sidebar.html" class="row">
+              <div class="priority-bar active"></div>
+              <div class="row-student">
+                <div class="row-student-avatar">EL</div>
+                <div class="row-student-name">Emily Lopez</div>
+              </div>
+              <div class="row-body">
+                <div class="row-title">Penn engineering supplement · final polish pass</div>
+                <div class="row-sub">
+                  <span class="row-sub-bold">Penn</span>
+                  <span class="row-sub-sep">·</span>
+                  <span>Submit deadline Dec 19 · last review</span>
+                </div>
+              </div>
+              <div class="row-meta">
+                <span class="school-badge">Penn</span>
+                <span class="status-pill pill-in-progress">In progress</span>
+                <span class="due-pill due-today">Today</span>
+              </div>
+              <span class="row-link" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="9 18 15 12 9 6"/>
+                </svg>
+              </span>
+            </a>
+            <a href="dashboard-1-tabs-sidebar.html" class="row">
+              <div class="priority-bar neutral"></div>
+              <div class="row-student">
+                <div class="row-student-avatar">NW</div>
+                <div class="row-student-name">Noah Williams</div>
+              </div>
+              <div class="row-body">
+                <div class="row-title">Schedule next Noah meeting · cycle pacing</div>
+                <div class="row-sub">
+                  <span class="row-sub-bold">Logistics</span>
+                  <span class="row-sub-sep">·</span>
+                  <span>Set after Duke flag conversation</span>
+                </div>
+              </div>
+              <div class="row-meta">
+                <span class="status-pill pill-neutral">Not started</span>
+                <span class="due-pill due-today">Today</span>
+              </div>
+              <span class="row-link" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="9 18 15 12 9 6"/>
+                </svg>
+              </span>
+            </a>
+            <a href="cross-tasks-kanban.html" class="row row-view-all">
+              <span class="row-view-all-text">View all 8 tasks due today</span>
+              <span class="row-view-all-arrow" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="9 18 15 12 9 6"/>
+                </svg>
+              </span>
+            </a>
+          </div>
+        </section>
+
+        <!-- ─── 5. SNAPSHOTS AWAITING REVIEW ─── -->
+        <section class="widget snapshots">
+          <div class="widget-head">
+            <span class="widget-head-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                <circle cx="12" cy="13" r="4"/>
+              </svg>
+            </span>
+            <h2 class="widget-title">New snapshots · awaiting review</h2>
+            <span class="count-chip snapshots">4</span>
+            <div class="widget-head-extra">
+              <a href="document-v2-stacked-diff.html" class="widget-head-link">Open last review →</a>
+            </div>
+          </div>
+          <div class="row-list">
+            <a href="document-v2-stacked-diff.html" class="row">
+              <div class="priority-bar neutral"></div>
+              <div class="row-student">
+                <div class="row-student-avatar">AP</div>
+                <div class="row-student-name">Aisha Patel</div>
+              </div>
+              <div class="row-body">
+                <div class="row-title">Stanford SA2 · draft 4</div>
+                <div class="row-sub">
+                  <span class="row-sub-bold">Stanford</span>
+                  <span class="row-sub-sep">·</span>
+                  <span>Snapshotted 2h ago · 480 words · +Maya's notes</span>
+                </div>
+              </div>
+              <div class="row-meta">
+                <span class="doc-type-badge">Essay</span>
+                <span class="time-pill past">2h ago</span>
+              </div>
+              <span class="row-link" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="9 18 15 12 9 6"/>
+                </svg>
+              </span>
+            </a>
+            <a href="document-v2-stacked-diff.html" class="row">
+              <div class="priority-bar neutral"></div>
+              <div class="row-student">
+                <div class="row-student-avatar">EL</div>
+                <div class="row-student-name">Emily Lopez</div>
+              </div>
+              <div class="row-body">
+                <div class="row-title">Penn engineering supplement · draft 3</div>
+                <div class="row-sub">
+                  <span class="row-sub-bold">Penn</span>
+                  <span class="row-sub-sep">·</span>
+                  <span>Snapshotted overnight · 215 words · final polish version</span>
+                </div>
+              </div>
+              <div class="row-meta">
+                <span class="doc-type-badge">Essay</span>
+                <span class="time-pill past">Overnight</span>
+              </div>
+              <span class="row-link" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="9 18 15 12 9 6"/>
+                </svg>
+              </span>
+            </a>
+            <a href="document-v2-stacked-diff.html" class="row">
+              <div class="priority-bar neutral"></div>
+              <div class="row-student">
+                <div class="row-student-avatar">JK</div>
+                <div class="row-student-name">Jamal Kim</div>
+              </div>
+              <div class="row-body">
+                <div class="row-title">Brown PLME supplement · draft 5 (final)</div>
+                <div class="row-sub">
+                  <span class="row-sub-bold">Brown</span>
+                  <span class="row-sub-sep">·</span>
+                  <span>Snapshotted last night · pre-submit candidate</span>
+                </div>
+              </div>
+              <div class="row-meta">
+                <span class="doc-type-badge">Essay</span>
+                <span class="time-pill past">12h ago</span>
+              </div>
+              <span class="row-link" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="9 18 15 12 9 6"/>
+                </svg>
+              </span>
+            </a>
+            <a href="document-v2-stacked-diff.html" class="row">
+              <div class="priority-bar neutral"></div>
+              <div class="row-student">
+                <div class="row-student-avatar">LB</div>
+                <div class="row-student-name">Liam Brooks</div>
+              </div>
+              <div class="row-body">
+                <div class="row-title">UMich activity list · draft 2</div>
+                <div class="row-sub">
+                  <span class="row-sub-bold">Michigan</span>
+                  <span class="row-sub-sep">·</span>
+                  <span>Snapshotted yesterday · less urgent — EA pool</span>
+                </div>
+              </div>
+              <div class="row-meta">
+                <span class="doc-type-badge">Activities</span>
+                <span class="time-pill past">1d ago</span>
+              </div>
+              <span class="row-link" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="9 18 15 12 9 6"/>
+                </svg>
+              </span>
+            </a>
+          </div>
+        </section>
+
+        <!-- ─── 6. MODULES DUE TODAY ─── -->
+        <section class="widget modules">
+          <div class="widget-head">
+            <span class="widget-head-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+                <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+              </svg>
+            </span>
+            <h2 class="widget-title">Module check-ins · due today</h2>
+            <span class="count-chip modules">2</span>
+            <div class="widget-head-extra">
+              <a href="module-admin-assignment.html" class="widget-head-link">Open Modules admin →</a>
+            </div>
+          </div>
+          <div class="row-list">
+            <a href="module-student-sample.html" class="row">
+              <div class="priority-bar active"></div>
+              <div class="row-student">
+                <div class="row-student-avatar">OS</div>
+                <div class="row-student-name">Olivia Singh</div>
+              </div>
+              <div class="row-body">
+                <div class="row-title">Building Your Profile · lesson 3 quiz check</div>
+                <div class="row-sub">
+                  <span class="row-sub-bold">Track 1 of 4</span>
+                  <span class="row-sub-sep">·</span>
+                  <span>Student finished lesson 3 yesterday — review quiz answers</span>
+                </div>
+              </div>
+              <div class="row-meta">
+                <span class="module-progress-inline">
+                  <span class="module-progress-bar" style="--p:65%"></span>
+                  3/5
+                </span>
+                <span class="status-pill pill-active">Lesson 3 review</span>
+                <span class="due-pill due-today">Today</span>
+              </div>
+              <span class="row-link" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="9 18 15 12 9 6"/>
+                </svg>
+              </span>
+            </a>
+            <a href="module-student-sample.html" class="row">
+              <div class="priority-bar active"></div>
+              <div class="row-student">
+                <div class="row-student-avatar">SK</div>
+                <div class="row-student-name">Sara Kowalski</div>
+              </div>
+              <div class="row-body">
+                <div class="row-title">Researching Schools · checkpoint 2 · school-list review</div>
+                <div class="row-sub">
+                  <span class="row-sub-bold">Track 2 of 4</span>
+                  <span class="row-sub-sep">·</span>
+                  <span>Student submitted preliminary college list for review</span>
+                </div>
+              </div>
+              <div class="row-meta">
+                <span class="module-progress-inline">
+                  <span class="module-progress-bar" style="--p:50%"></span>
+                  2/4
+                </span>
+                <span class="status-pill pill-active">Checkpoint review</span>
+                <span class="due-pill due-today">Today</span>
+              </div>
+              <span class="row-link" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="9 18 15 12 9 6"/>
+                </svg>
+              </span>
+            </a>
+          </div>
+        </section>
+
+       </div><!-- /.content-inner -->
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+</script>
+</body>
+</html>
+</content>
+</invoke>

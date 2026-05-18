@@ -1,0 +1,3394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cross-Tasks — List</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet" /><meta name="page-purpose" content="This page is for: same as Kanban, but list-shape — for consultants who prefer dense scannable rows.">
+  <style>
+    :root {
+      --bg: #f7f8fa;
+      --surface: #ffffff;
+      --surface-2: #fbfcfd;
+      --ink: #0f1419;
+      --ink-2: #475569;
+      --ink-3: #94a3b8;
+      --line: #e4e6eb;
+      --line-2: #cbd5e1;
+
+      --sidebar: #0f172a;
+      --sidebar-ink: #cbd5e1;
+      --sidebar-ink-2: #64748b;
+      --sidebar-line: rgba(255,255,255,0.08);
+
+      --primary: #5b5fcf;
+      --primary-bg: #eef0fb;
+      --primary-line: #c7cbe8;
+
+      /* v1-era aliases retained for legacy rules */
+      --warn: #b45309;
+      --warn-bg: #fef3c7;
+      --rose: #be123c;
+      --rose-bg: #ffe4e6;
+      --success: #047857;
+      --success-bg: #d1fae5;
+
+      /* v2 locked status palette — emerald (done) / amber (active) / rose (overdue only) / neutral-dashed (stuck) + neutral */
+      --status-done:       #047857;
+      --status-done-bg:    #d1fae5;
+      --status-active:     #b45309;
+      --status-active-bg:  #fef3c7;
+      --status-overdue:    #be123c;
+      --status-overdue-bg: #ffe4e6;
+      --status-neutral:    var(--ink-3);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: 'Geist', -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* Layout */
+    .layout {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* TOP HEADER */
+    .top-header {
+      height: 48px;
+      min-height: 48px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      padding: 0 20px 0 0;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .header-brand {
+      width: 220px;
+      min-width: 220px;
+      display: flex;
+      align-items: center;
+      gap: 0;
+      padding: 0 20px;
+      border-right: 1px solid var(--line);
+      height: 100%;
+    }
+
+    .brand-link {
+      text-decoration: none;
+      display: inline-flex;
+      cursor: pointer;
+      transition: opacity 180ms ease;
+    }
+    .brand-link:hover { opacity: 0.85; }
+    .brand-link:focus-visible {
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
+      border-radius: 8px;
+    }
+    .brand-mark {
+      width: 24px;
+      height: 24px;
+      background: var(--primary);
+      border-radius: 7px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .brand-mark svg {
+      width: 14px;
+      height: 14px;
+      stroke: white;
+      fill: none;
+      stroke-width: 1.4;
+      display: block;
+    }
+
+    .header-breadcrumb {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      padding-left: 24px;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--ink-2);
+    }
+
+    .breadcrumb-sep {
+      color: var(--line-2);
+    }
+
+    .breadcrumb-current {
+      color: var(--ink);
+      font-weight: 500;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .icon-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--ink-2);
+      transition: background 0.1s;
+      position: relative;
+    }
+
+    .icon-btn:hover {
+      background: #f1f5f9;
+      color: var(--ink);
+    }
+
+    .notif-badge {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      width: 7px;
+      height: 7px;
+      background: var(--status-overdue);
+      border-radius: 50%;
+      border: 1.5px solid white;
+    }
+
+    .avatar {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: var(--primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 600;
+      color: white;
+      cursor: pointer;
+    }
+
+    /* BODY ROW */
+    .body-row {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* SIDEBAR */
+    .sidebar {
+      width: 220px;
+      min-width: 220px;
+      background: var(--sidebar);
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      padding: 16px 0 24px;
+      scrollbar-width: thin;
+      scrollbar-color: #334155 #0f172a;
+    }
+
+    .sidebar::-webkit-scrollbar { width: 4px; }
+    .sidebar::-webkit-scrollbar-track { background: var(--sidebar); }
+    .sidebar::-webkit-scrollbar-thumb { background: #334155; border-radius: 2px; }
+
+    .nav-section { margin-bottom: 8px; }
+
+    .nav-section-label {
+      font-family: 'Geist', sans-serif;
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--sidebar-ink-2);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 0 16px 6px;
+      margin-top: 16px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 16px;
+      font-size: 13px;
+      color: #94a3b8;
+      cursor: pointer;
+      transition: all 0.1s;
+      position: relative;
+    }
+
+    .nav-item:hover {
+      color: #e2e8f0;
+      background: rgba(255,255,255,0.05);
+    }
+
+    .nav-item.active {
+      color: #e2e8f0;
+      background: rgba(91, 95, 207, 0.18);
+    }
+
+    .nav-item.active::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 3px;
+      background: var(--primary);
+      border-radius: 0 2px 2px 0;
+    }
+
+    .nav-item svg {
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+      opacity: 0.8;
+    }
+
+    .nav-item.active svg { opacity: 1; }
+
+    .nav-badge {
+      margin-left: auto;
+      font-family: 'Geist Mono', 'Courier New', monospace;
+      font-size: 10px;
+      background: rgba(255,255,255,0.1);
+      color: #94a3b8;
+      border-radius: 4px;
+      padding: 1px 5px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .nav-item.active .nav-badge {
+      background: rgba(91,95,207,0.3);
+      color: #a5b4fc;
+    }
+
+    .sidebar-divider {
+      height: 1px;
+      background: var(--sidebar-line);
+      margin: 10px 16px;
+    }
+
+    /* Saved view chips in sidebar */
+    .saved-view-chip {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 16px;
+      font-size: 12.5px;
+      color: #94a3b8;
+      cursor: pointer;
+      transition: all 0.1s;
+    }
+
+    .saved-view-chip:hover {
+      color: #e2e8f0;
+      background: rgba(255,255,255,0.04);
+    }
+
+    .saved-view-chip.active { color: #a5b4fc; }
+
+    .saved-view-chip .chip-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #334155;
+      flex-shrink: 0;
+    }
+
+    .saved-view-chip.active .chip-dot { background: var(--primary); }
+
+    .saved-view-count {
+      margin-left: auto;
+      font-family: 'Geist Mono', monospace;
+      font-size: 10.5px;
+      color: #475569;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .saved-view-chip.active .saved-view-count { color: #818cf8; }
+
+    /* MAIN CONTENT */
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background: var(--bg);
+    }
+
+    /* Page header */
+    .page-header {
+      padding: 24px 32px 4px;
+      background: var(--bg);
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .page-header-left {
+      flex: 1;
+    }
+
+    .page-title-row {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+      margin-bottom: 4px;
+    }
+
+    .page-title {
+      font-family: 'Geist', -apple-system, sans-serif;
+      font-size: 26px;
+      font-weight: 600;
+      color: var(--ink);
+      letter-spacing: -0.022em;
+      line-height: 1.15;
+    }
+
+    .page-purpose {
+      font-family: 'Geist', sans-serif;
+      font-style: italic;
+      font-size: 12.5px;
+      font-weight: 400;
+      color: var(--ink-3);
+      margin-top: 4px;
+      line-height: 1.4;
+    }
+
+    .attention-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #fff7ed;
+      border: 1px solid #fed7aa;
+      color: var(--status-active);
+      font-size: 11.5px;
+      font-weight: 500;
+      border-radius: 20px;
+      padding: 2px 10px 2px 7px;
+    }
+
+    .attention-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #f59e0b;
+    }
+
+    .task-count {
+      font-size: 13px;
+      color: var(--ink-2);
+      font-weight: 400;
+    }
+
+    .page-header-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Fake action buttons w/ tooltip */
+    .fake-btn {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      height: 30px;
+      padding: 0 12px;
+      border-radius: 6px;
+      font-size: 12.5px;
+      font-weight: 500;
+      cursor: pointer;
+      white-space: nowrap;
+      border: 1px solid var(--line);
+      background: var(--surface);
+      color: var(--ink-2);
+      transition: all 0.12s;
+    }
+
+    .fake-btn:hover {
+      border-color: var(--line-2);
+      color: var(--ink);
+    }
+
+    .fake-btn.fake-btn-primary {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: white;
+    }
+    .fake-btn.fake-btn-primary:hover {
+      background: #4f53c4;
+      border-color: #4f53c4;
+      color: white;
+    }
+
+    .fake-btn::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      top: calc(100% + 6px);
+      right: 0;
+      background: var(--ink);
+      color: white;
+      padding: 6px 10px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 400;
+      max-width: 280px;
+      white-space: normal;
+      width: max-content;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.15s ease;
+      z-index: 100;
+    }
+
+    .fake-btn:hover::after { opacity: 1; }
+
+    /* FILTER STRIP */
+    .filter-strip {
+      padding: 16px 32px 14px;
+      background: var(--bg);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .filter-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: nowrap;
+    }
+
+    .saved-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      height: 30px;
+      padding: 0 12px;
+      border-radius: 6px;
+      font-size: 12.5px;
+      font-weight: 500;
+      cursor: pointer;
+      border: 1px solid transparent;
+      white-space: nowrap;
+      transition: all 0.12s;
+    }
+
+    .saved-chip-default {
+      background: var(--surface);
+      border-color: var(--line);
+      color: var(--ink-2);
+    }
+
+    .saved-chip-default:hover {
+      border-color: #c7d0df;
+      color: var(--ink);
+    }
+
+    .saved-chip-active {
+      background: var(--primary-bg);
+      border-color: var(--primary);
+      color: #3730a3;
+    }
+
+    .saved-chip-active .chip-star { color: var(--primary); }
+
+    .chip-count-badge {
+      font-family: 'Geist Mono', monospace;
+      font-size: 10.5px;
+      font-variant-numeric: tabular-nums;
+      background: var(--primary);
+      color: white;
+      border-radius: 10px;
+      padding: 0 5px;
+      min-width: 18px;
+      text-align: center;
+    }
+
+    .saved-chip-default .chip-count-badge {
+      background: #f1f5f9;
+      color: var(--ink-2);
+    }
+
+    /* Row 2: Type filter (Marble toggle) */
+    .type-filter-strip {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 3px;
+      width: fit-content;
+    }
+
+    .type-chip {
+      height: 24px;
+      padding: 0 11px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      color: var(--ink-2);
+      transition: all 0.1s;
+      white-space: nowrap;
+    }
+
+    .type-chip:hover {
+      color: var(--ink);
+      background: var(--bg);
+    }
+
+    .type-chip.active {
+      background: var(--primary);
+      color: white;
+    }
+
+    /* Filter dropdown — chip-shaped, used in default row and Advanced panel */
+    .filter-dropdown {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      height: 28px;
+      padding: 0 10px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      font-size: 12px;
+      color: var(--ink-2);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: border-color 0.1s;
+    }
+
+    .filter-dropdown:hover { border-color: #b0b8c8; }
+
+    .filter-dropdown-label {
+      color: var(--ink-3);
+      font-size: 11.5px;
+    }
+
+    .filter-dropdown-value {
+      color: var(--ink-2);
+      font-weight: 500;
+    }
+
+    .filter-caret { color: var(--ink-3); }
+
+    .sort-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11.5px;
+      color: var(--ink-3);
+    }
+
+    .sort-indicator strong {
+      color: var(--ink-2);
+      font-weight: 500;
+    }
+
+    /* Filter strip — T2 pattern condense (per 5/12 Xiao 🔴 + bm-g03w.1 plan A6).
+       Was 3-row stack (saved views + status marble + dropdowns). Now 1 working
+       row with 3 default chip-dropdowns (Status / Overdue toggle / School) +
+       Advanced button revealing the rest in a popover panel. Saved views stay
+       above as preset entry points. */
+    .filter-active-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .filter-spacer { flex: 1; }
+
+    /* Advanced button — reveals the secondary filter panel inline */
+    .advanced-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      height: 28px;
+      padding: 0 10px 0 9px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      font-size: 12px;
+      color: var(--ink-2);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: border-color 0.1s, color 0.1s;
+    }
+    .advanced-toggle:hover { border-color: #b0b8c8; color: var(--ink); }
+    body.advanced-open .advanced-toggle {
+      border-color: var(--primary);
+      color: var(--primary);
+      background: var(--primary-bg);
+    }
+    .advanced-toggle svg {
+      transition: transform 0.15s ease;
+    }
+    body.advanced-open .advanced-toggle svg { transform: rotate(180deg); }
+
+    /* Advanced panel — collapsed by default, opens inline below the working row */
+    .advanced-panel {
+      display: none;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      padding: 10px 12px;
+      background: var(--surface);
+      border: 1px solid var(--primary-line);
+      border-radius: 6px;
+      margin-top: 2px;
+    }
+    body.advanced-open .advanced-panel { display: flex; }
+    .advanced-panel-label {
+      font-size: 10.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-weight: 600;
+      color: var(--ink-3);
+      margin-right: 4px;
+    }
+    .advanced-panel .filter-dropdown { background: var(--bg); }
+    .advanced-panel .type-filter-strip { background: var(--bg); }
+
+    /* SCROLLABLE TABLE AREA */
+    .table-container {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0 32px 0;
+      scrollbar-width: thin;
+      scrollbar-color: var(--line-2) transparent;
+    }
+
+    .table-container::-webkit-scrollbar { width: 6px; }
+    .table-container::-webkit-scrollbar-track { background: transparent; }
+    .table-container::-webkit-scrollbar-thumb { background: var(--line-2); border-radius: 3px; }
+
+    /* TASK TABLE */
+    .task-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--surface);
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      table-layout: fixed;
+    }
+
+    .task-table thead {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .task-table th {
+      background: #f8f9fb;
+      border-bottom: 1px solid var(--line);
+      padding: 9px 12px;
+      font-size: 10.5px;
+      font-weight: 600;
+      color: var(--ink-2);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      text-align: left;
+      white-space: nowrap;
+    }
+
+    .task-table th.th-sorted {
+      color: var(--primary);
+    }
+
+    .th-sort-arrow {
+      display: inline-block;
+      vertical-align: middle;
+      margin-left: 4px;
+      color: var(--primary);
+    }
+
+    .task-table th:first-child {
+      padding: 0;
+      width: 4px;
+    }
+
+    .task-table td {
+      padding: 10px 12px;
+      border-bottom: 1px solid #f0f2f5;
+      vertical-align: middle;
+      font-size: 13px;
+      color: var(--ink);
+    }
+
+    .task-table td:first-child {
+      padding: 0;
+      width: 4px;
+    }
+
+    .task-table tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    .task-table tbody tr:nth-child(even) {
+      background: var(--surface-2);
+    }
+
+    .task-table tbody tr:hover {
+      background: #f0f4ff !important;
+      cursor: pointer;
+    }
+
+    /* Status pip on left edge */
+    .status-pip {
+      width: 4px;
+      height: 100%;
+      min-height: 44px;
+      border-radius: 0;
+    }
+
+    .status-pip.overdue { background: var(--status-overdue); }
+    .status-pip.due-soon { background: var(--status-active); }
+    .status-pip.on-track { background: #047857; }
+    .status-pip.done { background: var(--line-2); }
+
+    /* Section divider row (Overdue header inside table) */
+    .table-section-row td {
+      background: #fbfcfd !important;
+      padding: 7px 12px 7px 14px;
+      font-family: 'Geist', sans-serif;
+      font-size: 10.5px;
+      font-weight: 600;
+      color: var(--ink-3);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .table-section-row td:first-child {
+      background: #fbfcfd !important;
+      padding: 0;
+    }
+
+    .table-section-row .section-count {
+      font-family: 'Geist Mono', monospace;
+      color: var(--ink-3);
+      font-weight: 400;
+      font-size: 10.5px;
+      margin-left: 6px;
+    }
+
+    .table-section-row.section-overdue td:nth-child(2) {
+      color: var(--status-overdue);
+    }
+
+    /* Task title cell */
+    .task-title {
+      font-weight: 500;
+      font-size: 13.5px;
+      color: var(--ink);
+      line-height: 1.3;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      max-width: 100%;
+    }
+
+    /* Overdue title kept in primary ink; pip + relative time carry the rose signal */
+    .task-title-overdue {
+      color: var(--ink);
+    }
+
+    /* Student initial chip + name */
+    .student-cell {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .student-initials {
+      width: 22px;
+      height: 22px;
+      min-width: 22px;
+      border-radius: 50%;
+      background: #f1f5f9;
+      border: 1px solid #e2e8f0;
+      color: #475569;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 9.5px;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+      font-feature-settings: 'tnum';
+    }
+    /* Sub-tone for cycle-done students — read as quieter */
+    .student-initials.muted {
+      background: #f8fafc;
+      border-color: #e2e8f0;
+      color: #94a3b8;
+    }
+
+    .student-name {
+      font-size: 12.5px;
+      color: var(--ink);
+      font-weight: 400;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* School chip */
+    .school-chip {
+      display: inline-block;
+      font-size: 11.5px;
+      font-weight: 500;
+      border-radius: 4px;
+      padding: 2px 8px;
+      background: #f1f5f9;
+      color: #334155;
+      white-space: nowrap;
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Universal task status pills (v2 — 5 statuses, locked 3-color palette + neutral) */
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 10.5px;
+      font-weight: 600;
+      border-radius: 4px;
+      padding: 2px 8px 2px 6px;
+      white-space: nowrap;
+      letter-spacing: 0.01em;
+      border: 1px solid transparent;
+    }
+    .status-pill::before {
+      content: '';
+      display: inline-block;
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: currentColor;
+      flex-shrink: 0;
+    }
+
+    /* Not started — neutral */
+    .status-not-started {
+      background: #f1f5f9;
+      color: var(--ink-3);
+    }
+    /* R2.5 (2026-05-13): In Progress = indigo (was amber). Resolves collision with Awaiting Review.
+       Indigo reads as "actively in flight" (brand interactive color). */
+    .status-in-progress {
+      background: var(--primary-bg);
+      color: var(--primary);
+    }
+    /* Awaiting review — SOLID amber fill. Canonical per Alex 5/13 11:05 PM verdict.
+       Amber = "needs attention / awaiting someone." Per D49, color supplements label. */
+    .status-awaiting {
+      background: var(--status-active-bg);
+      color: var(--status-active);
+    }
+    /* Stuck — neutral-dashed. Rose reserved for overdue only.
+       Dashed border carries "broken / needs intervention" semantic. Canonical: .ts-stuck in dashboard-1-tabs-horizontal. */
+    .status-stuck {
+      background: var(--surface);
+      color: var(--ink-2);
+      border-color: var(--line-2);
+      border-style: dashed;
+    }
+    .status-stuck::before {
+      background: var(--ink-2);
+      box-shadow: 0 0 0 1.5px var(--surface), 0 0 0 2.5px var(--ink-2);
+      width: 4px;
+      height: 4px;
+    }
+    /* Done — emerald */
+    .status-done {
+      background: var(--status-done-bg);
+      color: var(--status-done);
+    }
+
+    /* Date cells */
+    .date-cell {
+      font-family: 'Geist Mono', monospace;
+      font-size: 12px;
+      color: var(--ink);
+      font-variant-numeric: tabular-nums;
+      line-height: 1.25;
+    }
+
+    .date-relative {
+      font-family: 'Geist Mono', monospace;
+      font-size: 10.5px;
+      color: var(--ink-3);
+      font-variant-numeric: tabular-nums;
+      margin-top: 1px;
+    }
+
+    .date-relative.relative-overdue {
+      color: var(--status-overdue);
+      font-weight: 500;
+    }
+
+    .date-relative.relative-soon {
+      color: var(--status-active);
+      font-weight: 500;
+    }
+
+    .date-em {
+      color: var(--line-2);
+    }
+
+    /* Priority dots */
+    .priority-cell {
+      font-family: 'Geist Mono', monospace;
+      font-size: 13px;
+      color: var(--ink-3);
+      letter-spacing: -1px;
+      font-weight: 600;
+    }
+
+    .priority-high {
+      color: var(--status-overdue);
+    }
+
+    .priority-med {
+      color: var(--status-active);
+    }
+
+    .priority-none {
+      color: #d6dbe1;
+      font-size: 11px;
+    }
+
+    /* Last touched */
+    .last-touched {
+      font-family: 'Geist Mono', monospace;
+      font-size: 11.5px;
+      color: var(--ink-2);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .last-touched-stale {
+      color: var(--status-active);
+    }
+
+    /* Column widths */
+    .col-status   { width: 4px; }
+    .col-student  { width: 152px; }
+    .col-title    { width: auto; }
+    .col-due      { width: 96px; }
+    .col-stage    { width: 116px; }
+    .col-school   { width: 110px; }
+    .col-priority { width: 40px; text-align: center; }
+    .col-last     { width: 76px; }
+
+    .task-table th.col-priority { text-align: center; }
+    .task-table td.col-priority { text-align: center; }
+
+    /* TABLE FOOTER + LEGEND */
+    .table-footer {
+      padding: 14px 32px 22px;
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      flex-wrap: wrap;
+    }
+
+    .footer-text {
+      font-size: 11.5px;
+      color: var(--ink-3);
+    }
+
+    .footer-sep {
+      width: 3px;
+      height: 3px;
+      border-radius: 50%;
+      background: var(--line-2);
+    }
+
+    .sync-dot {
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #22c55e;
+      margin-right: 5px;
+      position: relative;
+      top: -0.5px;
+    }
+
+    /* Legend */
+    .legend {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font-size: 11.5px;
+      color: var(--ink-2);
+    }
+
+    .legend-label {
+      font-size: 10.5px;
+      color: var(--ink-3);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-weight: 600;
+    }
+
+    .legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .legend-pip {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 2px;
+    }
+
+    .legend-pip.overdue { background: var(--status-overdue); }
+    .legend-pip.due-soon { background: var(--status-active); }
+    .legend-pip.on-track { background: #047857; }
+    .legend-pip.done { background: var(--line-2); }
+
+    /* ===========================================================
+       Universal Pattern 4 — Color-intensity slider (5 states)
+       Off — Minimal — Status (default) — Status+ — Full
+       =========================================================== */
+    .color-slider {
+      display: inline-flex;
+      align-items: center;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 2px;
+      margin-right: 4px;
+    }
+    .color-slider button {
+      height: 24px;
+      padding: 0 9px;
+      border: none;
+      background: transparent;
+      color: var(--ink-2);
+      font-family: 'Geist', sans-serif;
+      font-size: 11.5px;
+      font-weight: 500;
+      cursor: pointer;
+      border-radius: 4px;
+      transition: all 0.12s;
+      display: inline-flex;
+      align-items: center;
+      gap: 1px;
+    }
+    .color-slider button:hover { color: var(--ink); background: var(--bg); }
+    .color-slider button[aria-pressed="true"] {
+      background: var(--primary);
+      color: white;
+    }
+    .color-slider button .plus {
+      font-family: 'Geist Mono', monospace;
+      font-size: 11px;
+      opacity: 0.85;
+    }
+    /* Pattern 2 hover tooltip on color-slider buttons (A/B/C/D/E need explanation) */
+    .color-slider button { position: relative; }
+    .color-slider button[data-tooltip]::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      top: calc(100% + 6px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--ink);
+      color: white;
+      padding: 5px 9px;
+      border-radius: 4px;
+      font-size: 10.5px;
+      font-weight: 400;
+      letter-spacing: 0;
+      white-space: nowrap;
+      max-width: 280px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.15s ease;
+      z-index: 100;
+    }
+    .color-slider button[data-tooltip]:hover::after { opacity: 1; }
+
+    /* MODE: Off — strip ALL semantic color, keep ink + indigo accent only on the slider itself */
+    /* Reset legacy aliases too — direct overrides of --status-* don't cascade through var-of-var
+       indirection on rules like .task-title { color: var(--rose) }. Match students-1 pattern. */
+    body.color-off {
+      --status-done:    var(--ink-3);
+      --status-done-bg: transparent;
+      --status-active:  var(--ink-3);
+      --status-active-bg: transparent;
+      --status-overdue: var(--ink);
+      --status-overdue-bg: transparent;
+      --primary:        var(--ink);
+      --primary-bg:     transparent;
+      --primary-line:   var(--line-2);
+      --rose:           var(--ink);
+      --rose-bg:        transparent;
+      --warn:           var(--ink-3);
+      --warn-bg:        transparent;
+      --success:        var(--ink-3);
+      --success-bg:     transparent;
+    }
+    body.color-off .status-pip.overdue,
+    body.color-off .status-pip.due-soon,
+    body.color-off .status-pip.on-track,
+    body.color-off .status-pip.done {
+      background: var(--line-2);
+    }
+    body.color-off .status-pill {
+      background: #f1f5f9 !important;
+      color: var(--ink-2) !important;
+      box-shadow: none !important;
+    }
+    body.color-off .priority-cell.priority-high,
+    body.color-off .priority-cell.priority-med {
+      color: var(--ink-3) !important;
+    }
+    body.color-off .date-relative.relative-overdue,
+    body.color-off .date-relative.relative-soon {
+      color: var(--ink-3) !important;
+      font-weight: 400 !important;
+    }
+    body.color-off .last-touched.last-touched-stale { color: var(--ink-2) !important; }
+    body.color-off .attention-chip {
+      background: #f1f5f9;
+      border-color: var(--line);
+      color: var(--ink-2);
+    }
+    body.color-off .attention-dot { background: var(--ink-3); }
+    body.color-off .saved-chip-active { color: var(--primary); }
+    body.color-off .student-initials {
+      background: #f1f5f9;
+      border-color: #e2e8f0;
+      color: var(--ink-2);
+    }
+    body.color-off .legend-pip.overdue,
+    body.color-off .legend-pip.due-soon,
+    body.color-off .legend-pip.on-track,
+    body.color-off .legend-pip.done {
+      background: var(--line-2);
+    }
+    body.color-off .table-section-row.section-overdue td:nth-child(2) {
+      color: var(--ink-2) !important;
+    }
+
+    /* MODE: Minimal — OVERDUE (rose) + brand indigo + status-done (emerald) retain saturation;
+       status-active (amber) + WS chips neutralize (D1=A, 2026-05-12) */
+    body.color-minimal {
+      --status-active:  var(--ink-3);
+      --status-active-bg: transparent;
+      --warn:           var(--ink-3);
+      --warn-bg:        transparent;
+    }
+    body.color-minimal .status-pip.due-soon {
+      background: var(--line-2);
+    }
+    /* R2.5 (2026-05-13): In-Progress is now indigo (a Mode-B retained color), so it stays saturated.
+       Only Awaiting + Not-Started neutralize in Mode B. */
+    body.color-minimal .status-pill.status-not-started,
+    body.color-minimal .status-pill.status-awaiting {
+      background: #f1f5f9 !important;
+      color: var(--ink-2) !important;
+      box-shadow: none !important;
+    }
+    /* Stuck base is already neutral-dashed; no minimal-mode override needed. Rose reserved for overdue only. */
+    body.color-minimal .priority-cell.priority-med { color: var(--ink-3) !important; }
+    body.color-minimal .date-relative.relative-soon {
+      color: var(--ink-3) !important;
+      font-weight: 400 !important;
+    }
+    body.color-minimal .last-touched.last-touched-stale { color: var(--ink-2) !important; }
+    body.color-minimal .legend-pip.due-soon {
+      background: var(--line-2);
+    }
+    body.color-minimal .attention-chip {
+      background: #f1f5f9;
+      border-color: var(--line);
+      color: var(--ink-2);
+    }
+    body.color-minimal .attention-dot { background: var(--ink-3); }
+
+    /* MODE: Status (DEFAULT) — locked 3-color status palette + indigo. No body class needed. */
+
+    /* MODE: Status+ — keeps Status base, adds per-student tinted initial chip + saturated school chips */
+    body.color-status-plus .student-initials {
+      background: linear-gradient(135deg, #5b5fcf 0%, #8b5cf6 100%);
+      border-color: transparent;
+      color: white;
+    }
+    body.color-status-plus .student-initials.muted {
+      background: #f1f5f9;
+      border-color: #e2e8f0;
+      color: #64748b;
+    }
+    body.color-status-plus .school-chip {
+      background: var(--primary-bg);
+      color: #3730a3;
+    }
+
+    /* MODE: Full — v1-style loud: per-student gradients + saturated everything */
+    body.color-full .student-initials {
+      background: linear-gradient(135deg, #5b5fcf 0%, #8b5cf6 100%);
+      border-color: transparent;
+      color: white;
+    }
+    body.color-full .student-initials.muted {
+      background: linear-gradient(135deg, #475569 0%, #64748b 100%);
+      border-color: transparent;
+      color: white;
+    }
+    body.color-full .school-chip {
+      background: var(--primary-bg);
+      color: #3730a3;
+    }
+    body.color-full .task-title { color: var(--ink); }
+    /* Bring back the v1 multi-color decorative tint on overdue title to demonstrate "loud" mode */
+    body.color-full tbody tr:has(.status-pip.overdue) .task-title { color: var(--status-overdue); }
+    body.color-full .attention-chip {
+      background: var(--status-overdue-bg);
+      border-color: #fecdd3;
+      color: var(--status-overdue);
+    }
+    body.color-full .attention-dot { background: var(--status-overdue); }
+
+    /* ===========================================================
+       Universal Pattern 3 — Design-intent overlay
+       Toggle: body.design-notes-on
+       =========================================================== */
+    .design-notes-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      height: 30px;
+      padding: 0 11px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      color: var(--ink-2);
+      transition: all 0.12s;
+      margin-right: 4px;
+    }
+    .design-notes-toggle:hover {
+      border-color: var(--primary-line);
+      color: var(--primary);
+    }
+    body.design-notes-on .design-notes-toggle {
+      background: var(--primary-bg);
+      border-color: var(--primary);
+      color: #3730a3;
+    }
+
+    /* Marker — small numbered indigo circle, top-left of annotated element */
+    [data-design-note] { position: relative; }
+    [data-design-note]::before {
+      content: attr(data-note-num);
+      position: absolute;
+      top: -8px;
+      left: -8px;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: white;
+      font-family: 'Geist Mono', monospace;
+      font-size: 10px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 60;
+      opacity: 0;
+      transform: scale(0.7);
+      transition: opacity 0.15s ease, transform 0.15s ease;
+      pointer-events: none;
+      box-shadow: 0 0 0 2px white, 0 1px 3px rgba(15,20,25,0.18);
+    }
+    [data-design-note]::after {
+      content: '';
+      position: absolute;
+      inset: -2px;
+      border: 2px dashed var(--primary);
+      border-radius: 6px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.15s ease;
+      z-index: 55;
+    }
+    body.design-notes-on [data-design-note]::before {
+      opacity: 1;
+      transform: scale(1);
+    }
+    body.design-notes-on [data-design-note]::after {
+      opacity: 1;
+    }
+
+    /* Floating notes panel */
+    .design-notes-panel {
+      position: fixed;
+      top: 64px;
+      right: 16px;
+      width: 300px;
+      max-height: calc(100vh - 96px);
+      overflow-y: auto;
+      background: var(--surface);
+      border: 1px solid var(--primary-line);
+      border-radius: 8px;
+      padding: 18px 18px 20px;
+      z-index: 200;
+      box-shadow: 0 8px 28px rgba(15,20,25,0.12), 0 2px 6px rgba(15,20,25,0.06);
+      opacity: 0;
+      transform: translateX(8px);
+      pointer-events: none;
+      transition: opacity 0.18s ease, transform 0.18s ease;
+      scrollbar-width: thin;
+      scrollbar-color: var(--line-2) transparent;
+    }
+    .design-notes-panel::-webkit-scrollbar { width: 6px; }
+    .design-notes-panel::-webkit-scrollbar-thumb { background: var(--line-2); border-radius: 3px; }
+    body.design-notes-on .design-notes-panel {
+      opacity: 1;
+      transform: translateX(0);
+      pointer-events: auto;
+    }
+
+    .design-notes-header {
+      font-family: 'Geist', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--ink);
+      letter-spacing: -0.01em;
+      margin-bottom: 4px;
+    }
+    .design-notes-subhead {
+      font-size: 11px;
+      color: var(--ink-3);
+      margin-bottom: 14px;
+      line-height: 1.45;
+    }
+    .design-note-item {
+      display: flex;
+      gap: 10px;
+      padding: 10px 0;
+      border-top: 1px solid var(--line);
+      font-size: 12px;
+      color: var(--ink-2);
+      line-height: 1.45;
+    }
+    .design-note-item:first-of-type { border-top: none; padding-top: 4px; }
+    .design-note-num {
+      flex-shrink: 0;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: white;
+      font-family: 'Geist Mono', monospace;
+      font-size: 10px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 1px;
+    }
+    .design-note-title {
+      font-weight: 600;
+      color: var(--ink);
+      font-size: 12px;
+      display: block;
+      margin-bottom: 2px;
+    }
+    .design-note-body { font-size: 11.5px; color: var(--ink-2); }
+
+    /* ── Review-only A/B toggle: Awaiting-review chip color ─────────────────
+       Default (body has no class): solid amber fill (Alex's verdict 5/13 9:08pm)
+       body.chip-alt: SOLID indigo — review comparison option (no outlines, per Alex 5/13 11:07pm).
+       Complementary with sister R2.5 fix (In Progress = indigo on kanban) — alt shows what
+       a unified indigo "in flight / awaiting" treatment would look like on the list view.
+    ─────────────────────────────────────────────────────────────────────────── */
+    body.chip-alt .status-awaiting {
+      background: var(--primary);
+      color: #fff;
+    }
+    /* Top-bar A/B toggle group — amber/yellow distinct from product chrome */
+    .review-ab-group {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 3px 8px;
+      background: #fffbeb;
+      border: 1px solid #f59e0b;
+      border-radius: 6px;
+      font-family: 'Geist Mono', monospace;
+      font-size: 11px;
+      color: #92400e;
+      flex-shrink: 0;
+    }
+    .review-ab-label {
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      font-size: 9.5px;
+      color: #b45309;
+    }
+    .review-ab-sep { color: #fde68a; padding: 0 1px; }
+    .review-ab-prefix { font-size: 10.5px; color: #92400e; }
+    .review-ab-btn {
+      padding: 2px 8px;
+      border-radius: 4px;
+      border: 1px solid #f59e0b;
+      background: #fff;
+      color: #78350f;
+      font-family: 'Geist Mono', monospace;
+      font-size: 10.5px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.12s, border-color 0.12s, color 0.12s;
+    }
+    .review-ab-btn:hover { background: #fef3c7; }
+    .review-ab-btn[aria-pressed="true"] {
+      background: #f59e0b;
+      color: #fff;
+      border-color: #d97706;
+    }
+  </style>
+</head>
+<body>
+<div class="layout">
+
+  <!-- TOP HEADER -->
+  <header class="top-header">
+    <div class="header-brand">
+      <a href="../index.html" class="brand-link" aria-label="Back to demo index">
+        <div class="brand-mark">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="white" stroke-width="1.4">
+            <circle cx="7" cy="7" r="5.5"/>
+            <circle cx="7" cy="7" r="2.5"/>
+          </svg>
+        </div>
+      </a>
+    </div>
+
+    <div class="header-breadcrumb">
+      <span>Workspace</span>
+      <span class="breadcrumb-sep">/</span>
+      <span class="breadcrumb-current">Cross-Tasks</span>
+    </div>
+
+    <div class="header-actions">
+      <button class="icon-btn" title="Search">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="7"/>
+          <path d="M21 21l-4.3-4.3"/>
+        </svg>
+      </button>
+      <button class="icon-btn" title="Notifications">
+        <div class="notif-badge"></div>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M6 8a6 6 0 0112 0c0 7 3 9 3 9H3s3-2 3-9"/>
+          <path d="M10.3 21a1.94 1.94 0 003.4 0"/>
+        </svg>
+      </button>
+      <div class="avatar">XJ</div>
+    </div>
+  </header>
+
+  <!-- BODY ROW -->
+  <div class="body-row">
+
+    <!-- SIDEBAR -->
+    <nav class="sidebar">
+      <!-- Workspace nav -->
+      <div class="nav-section" data-design-note="workspace-nav" data-note-num="1">
+        <div class="nav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+          Students
+          <span class="nav-badge">15</span>
+        </div>
+        <div class="nav-item active">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="5" width="6" height="6" rx="1"/>
+            <path d="M3 17h.01"/>
+            <path d="M3 7h.01"/>
+            <path d="M8 9l3 3 5-5"/>
+            <path d="M13 17H21"/>
+            <path d="M13 13H21"/>
+            <path d="M13 21H17"/>
+          </svg>
+          Cross-Tasks
+          <span class="nav-badge">74</span>
+        </div>
+        <div class="nav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4" width="18" height="18" rx="2"/>
+            <path d="M16 2v4M8 2v4M3 10h18"/>
+          </svg>
+          Calendar
+        </div>
+        <div class="nav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/>
+            <path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/>
+          </svg>
+          Modules
+        </div>
+      </div>
+
+      <div class="sidebar-divider"></div>
+
+      <!-- Saved Views -->
+      <div class="nav-section">
+        <div class="nav-section-label">Saved Views</div>
+        <div class="saved-view-chip active">
+          <span class="chip-dot"></span>
+          Awaiting me
+          <span class="saved-view-count">8</span>
+        </div>
+        <div class="saved-view-chip">
+          <span class="chip-dot"></span>
+          Overdue
+          <span class="saved-view-count">12</span>
+        </div>
+        <div class="saved-view-chip">
+          <span class="chip-dot"></span>
+          Due this week
+          <span class="saved-view-count">24</span>
+        </div>
+        <div class="saved-view-chip">
+          <span class="chip-dot"></span>
+          By stage
+        </div>
+        <div class="saved-view-chip">
+          <span class="chip-dot"></span>
+          By school
+        </div>
+        <div class="saved-view-chip">
+          <span class="chip-dot"></span>
+          By student
+        </div>
+      </div>
+
+      <div class="sidebar-divider"></div>
+
+      <!-- Quick groups -->
+      <div class="nav-section">
+        <div class="nav-section-label">Pinned</div>
+        <div class="saved-view-chip">
+          <span class="chip-dot"></span>
+          LOCI active
+          <span class="saved-view-count">5</span>
+        </div>
+        <div class="saved-view-chip">
+          <span class="chip-dot"></span>
+          RD drafting
+          <span class="saved-view-count">22</span>
+        </div>
+        <div class="saved-view-chip">
+          <span class="chip-dot"></span>
+          Awaiting review
+          <span class="saved-view-count">8</span>
+        </div>
+        <div class="saved-view-chip">
+          <span class="chip-dot"></span>
+          Stale 7d+
+          <span class="saved-view-count">14</span>
+        </div>
+      </div>
+    </nav>
+
+    <!-- MAIN -->
+    <main class="main">
+
+      <!-- Page header -->
+      <div class="page-header">
+        <div class="page-header-left">
+          <div class="page-title-row" data-design-note="page-title" data-note-num="2">
+            <h1 class="page-title">Cross-Tasks</h1>
+            <div class="attention-chip">
+              <span class="attention-dot"></span>
+              12 overdue
+            </div>
+          </div>
+          <div class="page-purpose">For consultants who prefer dense scannable rows over the Kanban shape.</div>
+          <div class="task-count">74 tasks across 15 students &middot; 8 awaiting your review</div>
+        </div>
+        <div class="page-header-right" data-design-note="action-buttons" data-note-num="3">
+          <button class="fake-btn fake-btn-primary" data-tooltip="Adds a new task — opens form with student/school/due-date/stage fields.">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19"/>
+              <line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            Add task
+          </button>
+        </div>
+      </div>
+
+      <!-- Filter strip — T2 pattern (3 defaults + Advanced; saved views above) -->
+      <div class="filter-strip">
+
+        <!-- Row 1: Saved views (preset entry points) -->
+        <div class="filter-row" data-design-note="saved-views" data-note-num="4">
+          <div class="saved-chip saved-chip-active">
+            <span class="chip-star" style="font-size:11px;">&#9733;</span>
+            Awaiting me
+            <span class="chip-count-badge">8</span>
+          </div>
+          <div class="saved-chip saved-chip-default">
+            Overdue
+            <span class="chip-count-badge">12</span>
+          </div>
+          <div class="saved-chip saved-chip-default">
+            Due this week
+            <span class="chip-count-badge">24</span>
+          </div>
+          <div class="saved-chip saved-chip-default">By stage</div>
+          <div class="saved-chip saved-chip-default">By school</div>
+          <div class="saved-chip saved-chip-default">By student</div>
+        </div>
+
+        <!-- Row 2: Three default filter chips + Advanced + sort indicator -->
+        <div class="filter-active-row" data-design-note="t2-filters" data-note-num="5">
+          <!-- Status chip-dropdown (was full marble toggle; full set now in Advanced) -->
+          <div class="filter-dropdown" data-tooltip="Filter by task status. Selecting opens the full status marble in Advanced.">
+            <span class="filter-dropdown-label">Status</span>
+            <span class="filter-dropdown-value">All</span>
+            <span class="filter-caret">
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M2 3.5l3 3 3-3"/>
+              </svg>
+            </span>
+          </div>
+
+          <!-- School chip-dropdown -->
+          <div class="filter-dropdown" data-tooltip="Filter by school. Mocked.">
+            <span class="filter-dropdown-label">School</span>
+            <span class="filter-dropdown-value">All</span>
+            <span class="filter-caret">
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M2 3.5l3 3 3-3"/>
+              </svg>
+            </span>
+          </div>
+
+          <!-- Advanced toggle — opens the secondary filter panel -->
+          <button type="button" class="advanced-toggle" id="advanced-toggle" aria-pressed="false" aria-controls="advanced-panel" data-tooltip="Open advanced filters — full status marble, student, due range, priority, sort.">
+            Advanced
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M2 3.5l3 3 3-3"/>
+            </svg>
+          </button>
+
+          <div class="filter-spacer"></div>
+
+          <div class="sort-indicator" data-design-note="sort-indicator" data-note-num="6">
+            Sorted by <strong>Due date &uarr;</strong> &middot; overdue pinned to top
+          </div>
+        </div>
+
+        <!-- Advanced panel — hidden by default, reveals secondary filters in one place -->
+        <div class="advanced-panel" id="advanced-panel" role="region" aria-label="Advanced filters">
+          <span class="advanced-panel-label">Status</span>
+          <div class="type-filter-strip">
+            <button class="type-chip active">All</button>
+            <button class="type-chip">Not started</button>
+            <button class="type-chip">In progress</button>
+            <button class="type-chip">Awaiting review</button>
+            <button class="type-chip">Stuck</button>
+            <button class="type-chip">Done</button>
+          </div>
+          <span class="advanced-panel-label" style="margin-left: 12px;">More</span>
+          <div class="filter-dropdown">
+            <span class="filter-dropdown-label">Student</span>
+            <span class="filter-dropdown-value">All</span>
+            <span class="filter-caret">
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M2 3.5l3 3 3-3"/>
+              </svg>
+            </span>
+          </div>
+          <div class="filter-dropdown">
+            <span class="filter-dropdown-label">Due</span>
+            <span class="filter-dropdown-value">Any</span>
+            <span class="filter-caret">
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M2 3.5l3 3 3-3"/>
+              </svg>
+            </span>
+          </div>
+          <div class="filter-dropdown">
+            <span class="filter-dropdown-label">Priority</span>
+            <span class="filter-dropdown-value">Any</span>
+            <span class="filter-caret">
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M2 3.5l3 3 3-3"/>
+              </svg>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- TABLE -->
+      <div class="table-container">
+        <table class="task-table">
+          <colgroup>
+            <col class="col-status"/>
+            <col class="col-student"/>
+            <col class="col-title"/>
+            <col class="col-due"/>
+            <col class="col-stage"/>
+            <col class="col-school"/>
+            <col class="col-priority"/>
+            <col class="col-last"/>
+          </colgroup>
+          <thead>
+            <tr>
+              <th></th>
+              <th>Student</th>
+              <th>Task</th>
+              <th class="th-sorted">Due
+                <span class="th-sort-arrow">
+                  <svg width="9" height="9" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M5 8V2M2.5 4.5L5 2l2.5 2.5"/>
+                  </svg>
+                </span>
+              </th>
+              <th>Status</th>
+              <th>School</th>
+              <th class="col-priority" data-design-note="priority-pattern" data-note-num="9">Pri</th>
+              <th>Touched</th>
+            </tr>
+          </thead>
+          <tbody>
+
+            <!-- ===== OVERDUE SECTION ===== -->
+            <tr class="table-section-row section-overdue">
+              <td></td>
+              <td colspan="7" data-design-note="section-dividers" data-note-num="7">Overdue <span class="section-count">12</span></td>
+            </tr>
+
+            <!-- 1: Marcus Stanford LOCI - 5d -->
+            <tr>
+              <td><div class="status-pip overdue"></div></td>
+              <td>
+                <div class="student-cell">
+                  <div class="student-initials">MJ</div>
+                  <div class="student-name">Marcus Johnson</div>
+                </div>
+              </td>
+              <td><div class="task-title task-title-overdue" data-design-note="task-title-restraint" data-note-num="8">Stanford LOCI &mdash; appeal letter</div></td>
+              <td>
+                <div class="date-cell">Dec 12</div>
+                <div class="date-relative relative-overdue">5d late</div>
+              </td>
+              <td><span class="status-pill status-awaiting">Awaiting review</span></td>
+              <td><span class="school-chip">Stanford</span></td>
+              <td class="col-priority"><span class="priority-cell priority-high">!!</span></td>
+              <td><div class="last-touched">2d ago</div></td>
+            </tr>
+
+            <!-- 2: Marcus Stanford backup-letter -->
+            <tr>
+              <td><div class="status-pip overdue"></div></td>
+              <td>
+                <div class="student-cell">
+                  <div class="student-initials">MJ</div>
+                  <div class="student-name">Marcus Johnson</div>
+                </div>
+              </td>
+              <td><div class="task-title task-title-overdue">Reach out to Stanford coach &mdash; backup letter</div></td>
+              <td>
+                <div class="date-cell">Dec 12</div>
+                <div class="date-relative relative-overdue">5d late</div>
+              </td>
+              <td><span class="status-pill status-stuck">Stuck</span></td>
+              <td><span class="school-chip">Stanford</span></td>
+              <td class="col-priority"><span class="priority-cell priority-high">!!</span></td>
+              <td><div class="last-touched last-touched-stale">9d ago</div></td>
+            </tr>
+
+            <!-- 3: Maya Yale LOCI -->
+            <tr>
+              <td><div class="status-pip overdue"></div></td>
+              <td>
+                <div class="student-cell">
+                  <div class="student-initials">MC</div>
+                  <div class="student-name">Maya Chen</div>
+                </div>
+              </td>
+              <td><div class="task-title task-title-overdue">Finalize Yale LOCI</div></td>
+              <td>
+                <div class="date-cell">Dec 14</div>
+                <div class="date-relative relative-overdue">3d late</div>
+              </td>
+              <td><span class="status-pill status-awaiting">Awaiting review</span></td>
+              <td><span class="school-chip">Yale</span></td>
+              <td class="col-priority"><span class="priority-cell priority-high">!!</span></td>
+              <td><div class="last-touched">1d ago</div></td>
+            </tr>
+
+            <!-- 4: Marcus regroup essay -->
+            <tr>
+              <td><div class="status-pip overdue"></div></td>
+              <td>
+                <div class="student-cell">
+                  <div class="student-initials">MJ</div>
+                  <div class="student-name">Marcus Johnson</div>
+                </div>
+              </td>
+              <td><div class="task-title task-title-overdue">Regroup essay strategy w/ parents</div></td>
+              <td>
+                <div class="date-cell">Dec 14</div>
+                <div class="date-relative relative-overdue">3d late</div>
+              </td>
+              <td><span class="status-pill status-in-progress">In progress</span></td>
+              <td><span class="school-chip">General</span></td>
+              <td class="col-priority"><span class="priority-cell priority-med">!</span></td>
+              <td><div class="last-touched">3d ago</div></td>
+            </tr>
+
+            <!-- 5: Maya Yale supplement revision -->
+            <tr>
+              <td><div class="status-pip overdue"></div></td>
+              <td>
+                <div class="student-cell">
+                  <div class="student-initials">MC</div>
+                  <div class="student-name">Maya Chen</div>
+                </div>
+              </td>
+              <td><div class="task-title task-title-overdue">Yale supplement &mdash; final revision pass</div></td>
+              <td>
+                <div class="date-cell">Dec 14</div>
+                <div class="date-relative relative-overdue">3d late</div>
+              </td>
+              <td><span class="status-pill status-in-progress">In progress</span></td>
+              <td><span class="school-chip">Yale</span></td>
+              <td class="col-priority"><span class="priority-cell priority-none">&middot;</span></td>
+              <td><div class="last-touched">2d ago</div></td>
+            </tr>
+
+            <!-- 6: Marcus Northwestern restart -->
+            <tr>
+              <td><div class="status-pip overdue"></div></td>
+              <td>
+                <div class="student-cell">
+                  <div class="student-initials">MJ</div>
+                  <div class="student-name">Marcus Johnson</div>
+                </div>
+              </td>
+              <td><div class="task-title task-title-overdue">Northwestern essay &mdash; restart</div></td>
+              <td>
+                <div class="date-cell">Dec 15</div>
+                <div class="date-relative relative-overdue">2d late</div>
+              </td>
+              <td><span class="status-pill status-in-progress">In progress</span></td>
+              <td><span class="school-chip">Northwestern</span></td>
+              <td class="col-priority"><span class="priority-cell priority-med">!</span></td>
+              <td><div class="last-touched">1d ago</div></td>
+            </tr>
+
+            <!-- 7: Henry NYU -->
+            <tr>
+              <td><div class="status-pip overdue"></div></td>
+              <td>
+                <div class="student-cell">
+                  <div class="student-initials">HW</div>
+                  <div class="student-name">Henry Wells</div>
+                </div>
+              </td>
+              <td><div class="task-title task-title-overdue">NYU supplement &mdash; community essay</div></td>
+              <td>
+                <div class="date-cell">Dec 15</div>
+                <div class="date-relative relative-overdue">2d late</div>
+              </td>
+              <td><span class="status-pill status-stuck">Stuck</span></td>
+              <td><span class="school-chip">NYU</span></td>
+              <td class="col-priority"><span class="priority-cell priority-none">&middot;</span></td>
+              <td><div class="last-touched last-touched-stale">7d ago</div></td>
+            </tr>
+
+            <!-- 8: Henry Cornell rec follow-up -->
+            <tr>
+              <td><div class="status-pip overdue"></div></td>
+              <td>
+                <div class="student-cell">
+                  <div class="student-initials">HW</div>
+                  <div class="student-name">Henry Wells</div>
+                </div>
+              </td>
+              <td><div class="task-title task-title-overdue">Cornell &mdash; recommender follow-up</div></td>
+              <td>
+                <div class="date-cell">Dec 15</div>
+                <div class="date-relative relative-overdue">2d late</div>
+              </td>
+              <td><span class="status-pill status-stuck">Stuck</span></td>
+              <td><span class="school-chip">Cornell</span></td>
+              <td class="col-priority"><span class="priority-cell priority-none">&middot;</span></td>
+              <td><div class="last-touched">5d ago</div></td>
+            </tr>
+
+            <!-- 9: Priya Penn LOCI -->
+            <tr>
+              <td><div class="status-pip overdue"></div></td>
+              <td>
+                <div class="student-cell">
+                  <div class="student-initials">PM</div>
+                  <div class="student-name">Priya Mehta</div>
+                </div>
+              </td>
+              <td><div class="task-title task-title-overdue">Penn LOCI &mdash; second draft</div></td>
+              <td>
+                <div class="date-cell">Dec 15</div>
+                <div class="date-relative relative-overdue">2d late</div>
+              </td>
+              <td><span class="status-pill status-awaiting">Awaiting review</span></td>
+              <td><span class="school-chip">Penn</span></td>
+              <td class="col-priority"><span class="priority-cell priority-med">!</span></td>
+              <td><div class="last-touched">1d ago</div></td>
+            </tr>
+
+            <!-- 10: Hassan Common App rev -->
+            <tr>
+              <td><div class="status-pip overdue"></div></td>
+              <td>
+                <div class="student-cell">
+                  <div class="student-initials">HA</div>
+                  <div class="student-name">Hassan Ali</div>
+                </div>
+              </td>
+              <td><div class="task-title task-title-overdue">Common App essay &mdash; QB-to-RD pivot revisions</div></td>
+              <td>
+                <div class="date-cell">Dec 16</div>
+                <div class="date-relative relative-overdue">1d late</div>
+              </td>
+              <td><span class="status-pill status-stuck">Stuck</span></td>
+              <td><span class="school-chip">General</span></td>
+              <td class="col-priority"><span class="priority-cell priority-none">&middot;</span></td>
+              <td><div class="last-touched">2d ago</div></td>
+            </tr>
+
+            <!-- 11: Roya Princeton restart common app rev -->
+            <tr>
+              <td><div class="status-pip overdue"></div></td>
+              <td>
+                <div class="student-cell">
+                  <div class="student-initials">RN</div>
+                  <div class="student-name">Roya Nazari</div>
+                </div>
+              </td>
+              <td><div class="task-title task-title-overdue">Princeton restart &mdash; CA edits round 2</div></td>
+              <td>
+                <div class="date-cell">Dec 16</div>
+                <div class="date-relative relative-overdue">1d late</div>
+              </td>
+              <td><span class="status-pill status-in-progress">In progress</span></td>
+              <td><span class="school-chip">Princeton</span></td>
+              <td class="col-priority"><span class="priority-cell priority-none">&middot;</span></td>
+              <td><div class="last-touched">3d ago</div></td>
+            </tr>
+
+            <!-- 12: Marcus -->
+            <tr>
+              <td><div class="status-pip overdue"></div></td>
+              <td>
+                <div class="student-cell">
+                  <div class="student-initials">MJ</div>
+                  <div class="student-name">Marcus Johnson</div>
+                </div>
+              </td>
+              <td><div class="task-title task-title-overdue">Berkeley UC PIQ #4 &mdash; sharpen</div></td>
+              <td>
+                <div class="date-cell">Dec 16</div>
+                <div class="date-relative relative-overdue">1d late</div>
+              </td>
+              <td><span class="status-pill status-in-progress">In progress</span></td>
+              <td><span class="school-chip">UC Berkeley</span></td>
+              <td class="col-priority"><span class="priority-cell priority-none">&middot;</span></td>
+              <td><div class="last-touched">2d ago</div></td>
+            </tr>
+
+            <!-- ===== DUE THIS WEEK SECTION ===== -->
+            <tr class="table-section-row">
+              <td></td>
+              <td colspan="7">Due this week <span class="section-count">24</span></td>
+            </tr>
+
+            <!-- Dec 18 -->
+            <tr>
+              <td><div class="status-pip due-soon"></div></td>
+              <td>
+                <div class="student-cell">
+                  <div class="student-initials">MC</div>
+                  <div class="student-name">Maya Chen</div>
+                </div>
+              </td>
+              <td><div class="task-title">Penn 'Why Penn' supplement</div></td>
+              <td>
+                <div class="date-cell">Dec 18</div>
+                <div class="date-relative relative-soon">in 1d</div>
+              </td>
+              <td><span class="status-pill status-in-progress">In progress</span></td>
+              <td><span class="school-chip">Penn</span></td>
+              <td class="col-priority"><span class="priority-cell priority-med">!</span></td>
+              <td><div class="last-touched">today</div></td>
+            </tr>
+
+            <tr>
+              <td><div class="status-pip due-soon"></div></td>
+              <td>
+                <div class="student-cell">
+                  <div class="student-initials">CP</div>
+                  <div class="student-name">Caroline Park</div>
+                </div>
+              </td>
+              <td><div class="task-title">Brown LOCI &mdash; awaiting confirmation</div></td>
+              <td>
+                <div class="date-cell">Dec 18</div>
+                <div class="date-relative relative-soon">in 1d</div>
+              </td>
+              <td><span class="status-pill status-awaiting">Awaiting review</span></td>
+              <td><span class="school-chip">Brown</span></td>
+              <td class="col-priority"><span class="priority-cell priority-none">&middot;</span></td>
+              <td><div class="last-touched">today</div></td>
+            </tr>
+
+            <tr>
+              <td><div class="status-pip due-soon"></div></td>
+              <td>
+                <div class="student-cell">
+                  <div class="student-initials">MC</div>
+                  <div class="student-name">Maya Chen</div>
+                </div>
+              </td>
+              <td><div class="task-title">Cornell supplement &mdash; first draft review</div></td>
+              <td>
+                <div class="date-cell">Dec 18</div>
+                <div class="date-relative relative-soon">in 1d</div>
+              </td>
+              <td><span class="status-pill status-awaiting">Awaiting review</span></td>
+              <td><span class="school-chip">Cornell</span></td>
+              <td class="col-priority"><span class="priority-cell priority-none">&middot;</span></td>
+              <td><div class="last-touched">today</div></td>
+            </tr>
+
+            <tr>
+              <td><div class="status-pip due-soon"></div></td>
+              <td>
+                <div class="student-cell">
+                  <div class="student-initials">TL</div>
+                  <div class="student-name">Tony Liu</div>
+                </div>
+              </td>
+              <td><div class="task-title">Yale REA submitted &mdash; portal check</div></td>
+              <td>
+                <div class="date-cell">Dec 18</div>
+                <div class="date-relative relative-soon">in 1d</div>
+              </td>
+              <td><span class="status-pill status-done">Done</span></td>
+              <td><span class="school-chip">Yale</span></td>
+              <td class="col-priority"><span class="priority-cell priority-none">&middot;</span></td>
+              <td><div class="last-touched">3d ago</div></td>
+            </tr>
+
+            <tr>
+              <td><div class="status-pip due-soon"></div></td>
+              <td>
+                <div class="student-cell">
+                  <div class="student-initials">SN</div>
+                  <div class="student-name">Sophia Nguyen</div>
+                </div>
+              </td>
+              <td><div class="task-title">UMiami LOCI &mdash; tone check + send</div></td>
+              <td>
+                <div class="date-cell">Dec 19</div>
+                <div class="date-relative relative-soon">in 2d</div>
+              </td>
+              <td><span class="status-pill status-in-progress">In progress</span></td>
+              <td><span class="school-chip">UMiami</span></td>
+              <td class="col-priority"><span class="priority-cell priority-none">&middot;</span></td>
+              <td><div class="last-touched">2d ago</div></td>
+            </tr>
+
+            <tr>
+              <td><div class="status-pip due-soon"></div></td>
+              <td>
+                <div class="student-cell">
+                  <div class="student-initials">MC</div>
+                  <div class="student-name">Maya Chen</div>
+                </div>
+              </td>
+              <td><div class="task-title">RISD scholarship app &mdash; financial section</div></td>
+              <td>
+                <div class="date-cell">Dec 19</div>
+                <div class="date-relative relative-soon">in 2d</div>
+              </td>
+              <td><span class="status-pill status-not-started">Not started</span></td>
+              <td><span class="school-chip">RISD</span></td>
+              <td class="col-priority"><span class="priority-cell priority-none">&middot;</span></td>
+              <td><div class="last-touched">4d ago</div></td>
+            </tr>
+
+            <tr>
+              <td><div class="status-pip due-soon"></div></td>
+              <td>
+                <div class="student-cell">
+                  <div class="student-initials">MC</div>
+                  <div class="student-name">Maya Chen</div>
+                </div>
+              </td>
+              <td><div class="task-title">NYU Tisch portfolio &mdash; statement edits</div></td>
+              <td>
+                <div class="date-cell">Dec 19</div>
+                <div class="date-relative relative-soon">in 2d</div>
+              </td>
+              <td><span class="status-pill status-in-progress">In progress</span></td>
+              <td><span class="school-chip">NYU Tisch</span></td>
+              <td class="col-priority"><span class="priority-cell priority-none">&middot;</span></td>
+              <td><div class="last-touched">today</div></td>
+            </tr>
+
+            <tr>
+              <td><div class="status-pip due-soon"></div></td>
+              <td>
+                <div class="student-cell">
+                  <div class="student-initials">PM</div>
+                  <div class="student-name">Priya Mehta</div>
+                </div>
+              </td>
+              <td><div class="task-title">Penn supplement #2 &mdash; review</div></td>
+              <td>
+                <div class="date-cell">Dec 19</div>
+                <div class="date-relative relative-soon">in 2d</div>
+              </td>
+              <td><span class="status-pill status-awaiting">Awaiting review</span></td>
+              <td><span class="school-chip">Penn</span></td>
+              <td class="col-priority"><span class="priority-cell priority-none">&middot;</span></td>
+              <td><div class="last-touched">1d ago</div></td>
+            </tr>
+
+            <tr>
+              <td><div class="status-pip due-soon"></div></td>
+              <td>
+                <div class="student-cell">
+                  <div class="student-initials">TL</div>
+                  <div class="student-name">Tony Liu</div>
+                </div>
+              </td>
+              <td><div class="task-title">Yale admit celebration call &mdash; schedule</div></td>
+              <td>
+                <div class="date-cell">Dec 19</div>
+                <div class="date-relative relative-soon">in 2d</div>
+              </td>
+              <td><span class="status-pill status-awaiting">Awaiting review</span></td>
+              <td><span class="school-chip">Yale</span></td>
+              <td class="col-priority"><span class="priority-cell priority-none">&middot;</span></td>
+              <td><div class="last-touched">5d ago</div></td>
+            </tr>
+
+            <tr>
+              <td><div class="status-pip due-soon"></div></td>
+              <td>
+                <div class="student-cell">
+                  <div class="student-initials">HA</div>
+                  <div class="student-name">Hassan Ali</div>
+                </div>
+              </td>
+              <td><div class="task-title">Hassan QB-to-RD strategy memo</div></td>
+              <td>
+                <div class="date-cell">Dec 20</div>
+                <div class="date-relative relative-soon">in 3d</div>
+              </td>
+              <td><span class="status-pill status-not-started">Not started</span></td>
+              <td><span class="school-chip">General</span></td>
+              <td class="col-priority"><span class="priority-cell priority-none">&middot;</span></td>
+              <td><div class="last-touched">2d ago</div></td>
+            </tr>
+
+            <tr>
+              <td><div class="status-pip due-soon"></div></td>
+              <td>
+                <div class="student-cell">
+                  <div class="student-initials">RN</div>
+                  <div class="student-name">Roya Nazari</div>
+                </div>
+              </td>
+              <td><div class="task-title">Princeton SPIA restart &mdash; CA revisions r3</div></td>
+              <td>
+                <div class="date-cell">Dec 20</div>
+                <div class="date-relative relative-soon">in 3d</div>
+              </td>
+              <td><span class="status-pill status-in-progress">In progress</span></td>
+              <td><span class="school-chip">Princeton</span></td>
+              <td class="col-priority"><span class="priority-cell priority-med">!</span></td>
+              <td><div class="last-touched">2d ago</div></td>
+            </tr>
+
+            <tr>
+              <td><div class="status-pip due-soon"></div></td>
+              <td>
+                <div class="student-cell">
+                  <div class="student-initials">MC</div>
+                  <div class="student-name">Maya Chen</div>
+                </div>
+              </td>
+              <td><div class="task-title">Brown supplement &mdash; "perspective" essay</div></td>
+              <td>
+                <div class="date-cell">Dec 20</div>
+                <div class="date-relative relative-soon">in 3d</div>
+              </td>
+              <td><span class="status-pill status-in-progress">In progress</span></td>
+              <td><span class="school-chip">Brown</span></td>
+              <td class="col-priority"><span class="priority-cell priority-none">&middot;</span></td>
+              <td><div class="last-touched">2d ago</div></td>
+            </tr>
+
+            <tr>
+              <td><div class="status-pip due-soon"></div></td>
+              <td>
+                <div class="student-cell">
+                  <div class="student-initials">MC</div>
+                  <div class="student-name">Maya Chen</div>
+                </div>
+              </td>
+              <td><div class="task-title">USC Roski portfolio &mdash; supplemental materials</div></td>
+              <td>
+                <div class="date-cell">Dec 20</div>
+                <div class="date-relative relative-soon">in 3d</div>
+              </td>
+              <td><span class="status-pill status-in-progress">In progress</span></td>
+              <td><span class="school-chip">USC Roski</span></td>
+              <td class="col-priority"><span class="priority-cell priority-none">&middot;</span></td>
+              <td><div class="last-touched">3d ago</div></td>
+            </tr>
+
+            <tr>
+              <td><div class="status-pip due-soon"></div></td>
+              <td>
+                <div class="student-cell">
+                  <div class="student-initials">CP</div>
+                  <div class="student-name">Caroline Park</div>
+                </div>
+              </td>
+              <td><div class="task-title">Caroline &mdash; backup essay polish</div></td>
+              <td>
+                <div class="date-cell">Dec 20</div>
+                <div class="date-relative relative-soon">in 3d</div>
+              </td>
+              <td><span class="status-pill status-in-progress">In progress</span></td>
+              <td><span class="school-chip">Vanderbilt</span></td>
+              <td class="col-priority"><span class="priority-cell priority-none">&middot;</span></td>
+              <td><div class="last-touched">today</div></td>
+            </tr>
+
+            <tr>
+              <td><div class="status-pip due-soon"></div></td>
+              <td>
+                <div class="student-cell">
+                  <div class="student-initials">MC</div>
+                  <div class="student-name">Maya Chen</div>
+                </div>
+              </td>
+              <td><div class="task-title">Pratt portfolio narrative &mdash; first draft</div></td>
+              <td>
+                <div class="date-cell">Dec 21</div>
+                <div class="date-relative relative-soon">in 4d</div>
+              </td>
+              <td><span class="status-pill status-not-started">Not started</span></td>
+              <td><span class="school-chip">Pratt</span></td>
+              <td class="col-priority"><span class="priority-cell priority-none">&middot;</span></td>
+              <td><div class="last-touched">5d ago</div></td>
+            </tr>
+
+            <tr>
+              <td><div class="status-pip due-soon"></div></td>
+              <td>
+                <div class="student-cell">
+                  <div class="student-initials">CP</div>
+                  <div class="student-name">Caroline Park</div>
+                </div>
+              </td>
+              <td><div class="task-title">Brown supplement &mdash; revise opening</div></td>
+              <td>
+                <div class="date-cell">Dec 21</div>
+                <div class="date-relative relative-soon">in 4d</div>
+              </td>
+              <td><span class="status-pill status-in-progress">In progress</span></td>
+              <td><span class="school-chip">Brown</span></td>
+              <td class="col-priority"><span class="priority-cell priority-none">&middot;</span></td>
+              <td><div class="last-touched">today</div></td>
+            </tr>
+
+            <tr>
+              <td><div class="status-pip due-soon"></div></td>
+              <td>
+                <div class="student-cell">
+                  <div class="student-initials">MC</div>
+                  <div class="student-name">Maya Chen</div>
+                </div>
+              </td>
+              <td><div class="task-title">Northwestern essay outline</div></td>
+              <td>
+                <div class="date-cell">Dec 21</div>
+                <div class="date-relative relative-soon">in 4d</div>
+              </td>
+              <td><span class="status-pill status-not-started">Not started</span></td>
+              <td><span class="school-chip">Northwestern</span></td>
+              <td class="col-priority"><span class="priority-cell priority-none">&middot;</span></td>
+              <td><div class="last-touched">7d ago</div></td>
+            </tr>
+
+            <tr>
+              <td><div class="status-pip due-soon"></div></td>
+              <td>
+                <div class="student-cell">
+                  <div class="student-initials">HW</div>
+                  <div class="student-name">Henry Wells</div>
+                </div>
+              </td>
+              <td><div class="task-title">Henry Yale denial &mdash; emotional check-in</div></td>
+              <td>
+                <div class="date-cell">Dec 22</div>
+                <div class="date-relative relative-soon">in 5d</div>
+              </td>
+              <td><span class="status-pill status-not-started">Not started</span></td>
+              <td><span class="school-chip">General</span></td>
+              <td class="col-priority"><span class="priority-cell priority-med">!</span></td>
+              <td><div class="last-touched">2d ago</div></td>
+            </tr>
+
+            <tr>
+              <td><div class="status-pip due-soon"></div></td>
+              <td>
+                <div class="student-cell">
+                  <div class="student-initials">SN</div>
+                  <div class="student-name">Sophia Nguyen</div>
+                </div>
+              </td>
+              <td><div class="task-title">Sophia &mdash; backup school list refresh</div></td>
+              <td>
+                <div class="date-cell">Dec 22</div>
+                <div class="date-relative relative-soon">in 5d</div>
+              </td>
+              <td><span class="status-pill status-not-started">Not started</span></td>
+              <td><span class="school-chip">General</span></td>
+              <td class="col-priority"><span class="priority-cell priority-none">&middot;</span></td>
+              <td><div class="last-touched">2d ago</div></td>
+            </tr>
+
+            <tr>
+              <td><div class="status-pip due-soon"></div></td>
+              <td>
+                <div class="student-cell">
+                  <div class="student-initials">HW</div>
+                  <div class="student-name">Henry Wells</div>
+                </div>
+              </td>
+              <td><div class="task-title">Henry Cornell supplement rewrite</div></td>
+              <td>
+                <div class="date-cell">Dec 22</div>
+                <div class="date-relative relative-soon">in 5d</div>
+              </td>
+              <td><span class="status-pill status-in-progress">In progress</span></td>
+              <td><span class="school-chip">Cornell</span></td>
+              <td class="col-priority"><span class="priority-cell priority-none">&middot;</span></td>
+              <td><div class="last-touched">3d ago</div></td>
+            </tr>
+
+            <tr>
+              <td><div class="status-pip due-soon"></div></td>
+              <td>
+                <div class="student-cell">
+                  <div class="student-initials">MC</div>
+                  <div class="student-name">Maya Chen</div>
+                </div>
+              </td>
+              <td><div class="task-title">Cornell supplement &mdash; fit paragraph</div></td>
+              <td>
+                <div class="date-cell">Dec 23</div>
+                <div class="date-relative relative-soon">in 6d</div>
+              </td>
+              <td><span class="status-pill status-in-progress">In progress</span></td>
+              <td><span class="school-chip">Cornell</span></td>
+              <td class="col-priority"><span class="priority-cell priority-none">&middot;</span></td>
+              <td><div class="last-touched">2d ago</div></td>
+            </tr>
+
+            <tr>
+              <td><div class="status-pip due-soon"></div></td>
+              <td>
+                <div class="student-cell">
+                  <div class="student-initials">MC</div>
+                  <div class="student-name">Maya Chen</div>
+                </div>
+              </td>
+              <td><div class="task-title">UCLA UC PIQ &mdash; review</div></td>
+              <td>
+                <div class="date-cell">Dec 23</div>
+                <div class="date-relative relative-soon">in 6d</div>
+              </td>
+              <td><span class="status-pill status-awaiting">Awaiting review</span></td>
+              <td><span class="school-chip">UCLA</span></td>
+              <td class="col-priority"><span class="priority-cell priority-none">&middot;</span></td>
+              <td><div class="last-touched">today</div></td>
+            </tr>
+
+            <tr>
+              <td><div class="status-pip due-soon"></div></td>
+              <td>
+                <div class="student-cell">
+                  <div class="student-initials">RN</div>
+                  <div class="student-name">Roya Nazari</div>
+                </div>
+              </td>
+              <td><div class="task-title">Princeton SPIA restart &mdash; recommender refresh</div></td>
+              <td>
+                <div class="date-cell">Dec 23</div>
+                <div class="date-relative relative-soon">in 6d</div>
+              </td>
+              <td><span class="status-pill status-not-started">Not started</span></td>
+              <td><span class="school-chip">Princeton</span></td>
+              <td class="col-priority"><span class="priority-cell priority-none">&middot;</span></td>
+              <td><div class="last-touched">4d ago</div></td>
+            </tr>
+
+            <!-- ===== ON TRACK / LATER SECTION ===== -->
+            <tr class="table-section-row">
+              <td></td>
+              <td colspan="7">Later <span class="section-count">38</span></td>
+            </tr>
+
+            <tr>
+              <td><div class="status-pip on-track"></div></td>
+              <td>
+                <div class="student-cell">
+                  <div class="student-initials muted">MP</div>
+                  <div class="student-name">Min-jun Park</div>
+                </div>
+              </td>
+              <td><div class="task-title">Wharton enrollment paperwork</div></td>
+              <td>
+                <div class="date-cell">Dec 30</div>
+                <div class="date-relative">in 13d</div>
+              </td>
+              <td><span class="status-pill status-done">Done</span></td>
+              <td><span class="school-chip">Wharton</span></td>
+              <td class="col-priority"><span class="priority-cell priority-none">&middot;</span></td>
+              <td><div class="last-touched">8d ago</div></td>
+            </tr>
+
+            <tr>
+              <td><div class="status-pip on-track"></div></td>
+              <td>
+                <div class="student-cell">
+                  <div class="student-initials">EC</div>
+                  <div class="student-name">Eliana Cohen</div>
+                </div>
+              </td>
+              <td><div class="task-title">UChicago supplement &mdash; final pass</div></td>
+              <td>
+                <div class="date-cell">Jan 2</div>
+                <div class="date-relative">in 16d</div>
+              </td>
+              <td><span class="status-pill status-in-progress">In progress</span></td>
+              <td><span class="school-chip">UChicago</span></td>
+              <td class="col-priority"><span class="priority-cell priority-none">&middot;</span></td>
+              <td><div class="last-touched">5d ago</div></td>
+            </tr>
+
+            <tr>
+              <td><div class="status-pip on-track"></div></td>
+              <td>
+                <div class="student-cell">
+                  <div class="student-initials muted">DK</div>
+                  <div class="student-name">Daniel Kim</div>
+                </div>
+              </td>
+              <td><div class="task-title">Stanford QB match &mdash; financial aid forms</div></td>
+              <td>
+                <div class="date-cell">Jan 5</div>
+                <div class="date-relative">in 19d</div>
+              </td>
+              <td><span class="status-pill status-done">Done</span></td>
+              <td><span class="school-chip">Stanford</span></td>
+              <td class="col-priority"><span class="priority-cell priority-none">&middot;</span></td>
+              <td><div class="last-touched">10d ago</div></td>
+            </tr>
+
+            <tr>
+              <td><div class="status-pip on-track"></div></td>
+              <td>
+                <div class="student-cell">
+                  <div class="student-initials">LA</div>
+                  <div class="student-name">Layla Ahmed</div>
+                </div>
+              </td>
+              <td><div class="task-title">Layla &mdash; junior brainstorm: hooks</div></td>
+              <td>
+                <div class="date-cell">Jan 5</div>
+                <div class="date-relative">in 19d</div>
+              </td>
+              <td><span class="status-pill status-not-started">Not started</span></td>
+              <td><span class="school-chip">General</span></td>
+              <td class="col-priority"><span class="priority-cell priority-none">&middot;</span></td>
+              <td><div class="last-touched">1d ago</div></td>
+            </tr>
+
+            <tr>
+              <td><div class="status-pip on-track"></div></td>
+              <td>
+                <div class="student-cell">
+                  <div class="student-initials">LA</div>
+                  <div class="student-name">Layla Ahmed</div>
+                </div>
+              </td>
+              <td><div class="task-title">Layla &mdash; summer program research</div></td>
+              <td>
+                <div class="date-cell">Jan 6</div>
+                <div class="date-relative">in 20d</div>
+              </td>
+              <td><span class="status-pill status-not-started">Not started</span></td>
+              <td><span class="school-chip">General</span></td>
+              <td class="col-priority"><span class="priority-cell priority-none">&middot;</span></td>
+              <td><div class="last-touched">today</div></td>
+            </tr>
+
+            <tr>
+              <td><div class="status-pip on-track"></div></td>
+              <td>
+                <div class="student-cell">
+                  <div class="student-initials">EC</div>
+                  <div class="student-name">Eliana Cohen</div>
+                </div>
+              </td>
+              <td><div class="task-title">Eliana &mdash; UChicago decision response</div></td>
+              <td>
+                <div class="date-cell">Jan 6</div>
+                <div class="date-relative">in 20d</div>
+              </td>
+              <td><span class="status-pill status-awaiting">Awaiting review</span></td>
+              <td><span class="school-chip">UChicago</span></td>
+              <td class="col-priority"><span class="priority-cell priority-none">&middot;</span></td>
+              <td><div class="last-touched">7d ago</div></td>
+            </tr>
+
+            <tr>
+              <td><div class="status-pip on-track"></div></td>
+              <td>
+                <div class="student-cell">
+                  <div class="student-initials">EW</div>
+                  <div class="student-name">Eric Watson</div>
+                </div>
+              </td>
+              <td><div class="task-title">Hawaii Pacific enrollment confirmation</div></td>
+              <td>
+                <div class="date-cell">Jan 8</div>
+                <div class="date-relative">in 22d</div>
+              </td>
+              <td><span class="status-pill status-done">Done</span></td>
+              <td><span class="school-chip">Hawaii Pacific</span></td>
+              <td class="col-priority"><span class="priority-cell priority-none">&middot;</span></td>
+              <td><div class="last-touched">14d ago</div></td>
+            </tr>
+
+            <tr>
+              <td><div class="status-pip on-track"></div></td>
+              <td>
+                <div class="student-cell">
+                  <div class="student-initials">CP</div>
+                  <div class="student-name">Caroline Park</div>
+                </div>
+              </td>
+              <td><div class="task-title">Caroline &mdash; Vanderbilt supplement #2</div></td>
+              <td>
+                <div class="date-cell">Jan 1</div>
+                <div class="date-relative">in 15d</div>
+              </td>
+              <td><span class="status-pill status-in-progress">In progress</span></td>
+              <td><span class="school-chip">Vanderbilt</span></td>
+              <td class="col-priority"><span class="priority-cell priority-none">&middot;</span></td>
+              <td><div class="last-touched">2d ago</div></td>
+            </tr>
+
+            <tr>
+              <td><div class="status-pip on-track"></div></td>
+              <td>
+                <div class="student-cell">
+                  <div class="student-initials">RN</div>
+                  <div class="student-name">Roya Nazari</div>
+                </div>
+              </td>
+              <td><div class="task-title">Roya &mdash; Stanford SCEA pivot supplement</div></td>
+              <td>
+                <div class="date-cell">Jan 2</div>
+                <div class="date-relative">in 16d</div>
+              </td>
+              <td><span class="status-pill status-in-progress">In progress</span></td>
+              <td><span class="school-chip">Stanford</span></td>
+              <td class="col-priority"><span class="priority-cell priority-none">&middot;</span></td>
+              <td><div class="last-touched">5d ago</div></td>
+            </tr>
+
+            <tr>
+              <td><div class="status-pip on-track"></div></td>
+              <td>
+                <div class="student-cell">
+                  <div class="student-initials">HA</div>
+                  <div class="student-name">Hassan Ali</div>
+                </div>
+              </td>
+              <td><div class="task-title">Hassan &mdash; Rutgers supplement</div></td>
+              <td>
+                <div class="date-cell">Jan 2</div>
+                <div class="date-relative">in 16d</div>
+              </td>
+              <td><span class="status-pill status-in-progress">In progress</span></td>
+              <td><span class="school-chip">Rutgers</span></td>
+              <td class="col-priority"><span class="priority-cell priority-none">&middot;</span></td>
+              <td><div class="last-touched">3d ago</div></td>
+            </tr>
+
+            <tr>
+              <td><div class="status-pip on-track"></div></td>
+              <td>
+                <div class="student-cell">
+                  <div class="student-initials">PM</div>
+                  <div class="student-name">Priya Mehta</div>
+                </div>
+              </td>
+              <td><div class="task-title">Priya &mdash; Cornell ILR supplement</div></td>
+              <td>
+                <div class="date-cell">Jan 2</div>
+                <div class="date-relative">in 16d</div>
+              </td>
+              <td><span class="status-pill status-in-progress">In progress</span></td>
+              <td><span class="school-chip">Cornell</span></td>
+              <td class="col-priority"><span class="priority-cell priority-none">&middot;</span></td>
+              <td><div class="last-touched">2d ago</div></td>
+            </tr>
+
+            <tr>
+              <td><div class="status-pip on-track"></div></td>
+              <td>
+                <div class="student-cell">
+                  <div class="student-initials">MC</div>
+                  <div class="student-name">Maya Chen</div>
+                </div>
+              </td>
+              <td><div class="task-title">Maya &mdash; Dartmouth research/outline</div></td>
+              <td>
+                <div class="date-cell">Jan 2</div>
+                <div class="date-relative">in 16d</div>
+              </td>
+              <td><span class="status-pill status-not-started">Not started</span></td>
+              <td><span class="school-chip">Dartmouth</span></td>
+              <td class="col-priority"><span class="priority-cell priority-none">&middot;</span></td>
+              <td><div class="last-touched last-touched-stale">9d ago</div></td>
+            </tr>
+
+            <tr>
+              <td><div class="status-pip on-track"></div></td>
+              <td>
+                <div class="student-cell">
+                  <div class="student-initials">HW</div>
+                  <div class="student-name">Henry Wells</div>
+                </div>
+              </td>
+              <td><div class="task-title">Henry &mdash; Vanderbilt supplement</div></td>
+              <td>
+                <div class="date-cell">Jan 2</div>
+                <div class="date-relative">in 16d</div>
+              </td>
+              <td><span class="status-pill status-in-progress">In progress</span></td>
+              <td><span class="school-chip">Vanderbilt</span></td>
+              <td class="col-priority"><span class="priority-cell priority-none">&middot;</span></td>
+              <td><div class="last-touched">3d ago</div></td>
+            </tr>
+
+            <tr>
+              <td><div class="status-pip on-track"></div></td>
+              <td>
+                <div class="student-cell">
+                  <div class="student-initials">CP</div>
+                  <div class="student-name">Caroline Park</div>
+                </div>
+              </td>
+              <td><div class="task-title">Caroline &mdash; Tufts supplement</div></td>
+              <td>
+                <div class="date-cell">Jan 3</div>
+                <div class="date-relative">in 17d</div>
+              </td>
+              <td><span class="status-pill status-not-started">Not started</span></td>
+              <td><span class="school-chip">Tufts</span></td>
+              <td class="col-priority"><span class="priority-cell priority-none">&middot;</span></td>
+              <td><div class="last-touched">1d ago</div></td>
+            </tr>
+
+            <tr>
+              <td><div class="status-pip on-track"></div></td>
+              <td>
+                <div class="student-cell">
+                  <div class="student-initials">TL</div>
+                  <div class="student-name">Tony Liu</div>
+                </div>
+              </td>
+              <td><div class="task-title">Tony &mdash; Harvard backup supplement</div></td>
+              <td>
+                <div class="date-cell">Jan 1</div>
+                <div class="date-relative">in 15d</div>
+              </td>
+              <td><span class="status-pill status-in-progress">In progress</span></td>
+              <td><span class="school-chip">Harvard</span></td>
+              <td class="col-priority"><span class="priority-cell priority-none">&middot;</span></td>
+              <td><div class="last-touched">4d ago</div></td>
+            </tr>
+
+            <tr>
+              <td><div class="status-pip on-track"></div></td>
+              <td>
+                <div class="student-cell">
+                  <div class="student-initials">RN</div>
+                  <div class="student-name">Roya Nazari</div>
+                </div>
+              </td>
+              <td><div class="task-title">Roya &mdash; Yale SCEA pivot statement</div></td>
+              <td>
+                <div class="date-cell">Jan 1</div>
+                <div class="date-relative">in 15d</div>
+              </td>
+              <td><span class="status-pill status-not-started">Not started</span></td>
+              <td><span class="school-chip">Yale</span></td>
+              <td class="col-priority"><span class="priority-cell priority-none">&middot;</span></td>
+              <td><div class="last-touched">5d ago</div></td>
+            </tr>
+
+            <tr>
+              <td><div class="status-pip on-track"></div></td>
+              <td>
+                <div class="student-cell">
+                  <div class="student-initials">SN</div>
+                  <div class="student-name">Sophia Nguyen</div>
+                </div>
+              </td>
+              <td><div class="task-title">Sophia &mdash; Northeastern early action followup</div></td>
+              <td>
+                <div class="date-cell">Jan 4</div>
+                <div class="date-relative">in 18d</div>
+              </td>
+              <td><span class="status-pill status-awaiting">Awaiting review</span></td>
+              <td><span class="school-chip">Northeastern</span></td>
+              <td class="col-priority"><span class="priority-cell priority-none">&middot;</span></td>
+              <td><div class="last-touched">3d ago</div></td>
+            </tr>
+
+            <tr>
+              <td><div class="status-pip on-track"></div></td>
+              <td>
+                <div class="student-cell">
+                  <div class="student-initials">EC</div>
+                  <div class="student-name">Eliana Cohen</div>
+                </div>
+              </td>
+              <td><div class="task-title">Eliana &mdash; Williams alt-essay outline</div></td>
+              <td>
+                <div class="date-cell">Jan 6</div>
+                <div class="date-relative">in 20d</div>
+              </td>
+              <td><span class="status-pill status-not-started">Not started</span></td>
+              <td><span class="school-chip">Williams</span></td>
+              <td class="col-priority"><span class="priority-cell priority-none">&middot;</span></td>
+              <td><div class="last-touched">8d ago</div></td>
+            </tr>
+
+            <tr>
+              <td><div class="status-pip on-track"></div></td>
+              <td>
+                <div class="student-cell">
+                  <div class="student-initials">MJ</div>
+                  <div class="student-name">Marcus Johnson</div>
+                </div>
+              </td>
+              <td><div class="task-title">Marcus &mdash; UMich supplement r1</div></td>
+              <td>
+                <div class="date-cell">Jan 6</div>
+                <div class="date-relative">in 20d</div>
+              </td>
+              <td><span class="status-pill status-in-progress">In progress</span></td>
+              <td><span class="school-chip">Michigan</span></td>
+              <td class="col-priority"><span class="priority-cell priority-none">&middot;</span></td>
+              <td><div class="last-touched">3d ago</div></td>
+            </tr>
+
+            <tr>
+              <td><div class="status-pip on-track"></div></td>
+              <td>
+                <div class="student-cell">
+                  <div class="student-initials">MJ</div>
+                  <div class="student-name">Marcus Johnson</div>
+                </div>
+              </td>
+              <td><div class="task-title">Marcus &mdash; UVA supplement r1</div></td>
+              <td>
+                <div class="date-cell">Jan 7</div>
+                <div class="date-relative">in 21d</div>
+              </td>
+              <td><span class="status-pill status-not-started">Not started</span></td>
+              <td><span class="school-chip">UVA</span></td>
+              <td class="col-priority"><span class="priority-cell priority-none">&middot;</span></td>
+              <td><div class="last-touched">3d ago</div></td>
+            </tr>
+
+            <tr>
+              <td><div class="status-pip on-track"></div></td>
+              <td>
+                <div class="student-cell">
+                  <div class="student-initials">LA</div>
+                  <div class="student-name">Layla Ahmed</div>
+                </div>
+              </td>
+              <td><div class="task-title">Layla &mdash; AP course planning conversation</div></td>
+              <td>
+                <div class="date-cell">Jan 7</div>
+                <div class="date-relative">in 21d</div>
+              </td>
+              <td><span class="status-pill status-not-started">Not started</span></td>
+              <td><span class="school-chip">General</span></td>
+              <td class="col-priority"><span class="priority-cell priority-none">&middot;</span></td>
+              <td><div class="last-touched">today</div></td>
+            </tr>
+
+            <tr>
+              <td><div class="status-pip on-track"></div></td>
+              <td>
+                <div class="student-cell">
+                  <div class="student-initials">CP</div>
+                  <div class="student-name">Caroline Park</div>
+                </div>
+              </td>
+              <td><div class="task-title">Caroline &mdash; Cornell supplement</div></td>
+              <td>
+                <div class="date-cell">Jan 1</div>
+                <div class="date-relative">in 15d</div>
+              </td>
+              <td><span class="status-pill status-in-progress">In progress</span></td>
+              <td><span class="school-chip">Cornell</span></td>
+              <td class="col-priority"><span class="priority-cell priority-none">&middot;</span></td>
+              <td><div class="last-touched">1d ago</div></td>
+            </tr>
+
+            <tr>
+              <td><div class="status-pip on-track"></div></td>
+              <td>
+                <div class="student-cell">
+                  <div class="student-initials">MC</div>
+                  <div class="student-name">Maya Chen</div>
+                </div>
+              </td>
+              <td><div class="task-title">Maya &mdash; UC Berkeley submitted, portal verify</div></td>
+              <td>
+                <div class="date-cell">Jan 8</div>
+                <div class="date-relative">in 22d</div>
+              </td>
+              <td><span class="status-pill status-done">Done</span></td>
+              <td><span class="school-chip">UC Berkeley</span></td>
+              <td class="col-priority"><span class="priority-cell priority-none">&middot;</span></td>
+              <td><div class="last-touched">5d ago</div></td>
+            </tr>
+
+            <tr>
+              <td><div class="status-pip on-track"></div></td>
+              <td>
+                <div class="student-cell">
+                  <div class="student-initials">MC</div>
+                  <div class="student-name">Maya Chen</div>
+                </div>
+              </td>
+              <td><div class="task-title">Maya &mdash; UCLA submitted, portal verify</div></td>
+              <td>
+                <div class="date-cell">Jan 8</div>
+                <div class="date-relative">in 22d</div>
+              </td>
+              <td><span class="status-pill status-done">Done</span></td>
+              <td><span class="school-chip">UCLA</span></td>
+              <td class="col-priority"><span class="priority-cell priority-none">&middot;</span></td>
+              <td><div class="last-touched">5d ago</div></td>
+            </tr>
+
+            <tr>
+              <td><div class="status-pip on-track"></div></td>
+              <td>
+                <div class="student-cell">
+                  <div class="student-initials">SN</div>
+                  <div class="student-name">Sophia Nguyen</div>
+                </div>
+              </td>
+              <td><div class="task-title">Sophia &mdash; Boston U supplement</div></td>
+              <td>
+                <div class="date-cell">Jan 1</div>
+                <div class="date-relative">in 15d</div>
+              </td>
+              <td><span class="status-pill status-in-progress">In progress</span></td>
+              <td><span class="school-chip">BU</span></td>
+              <td class="col-priority"><span class="priority-cell priority-none">&middot;</span></td>
+              <td><div class="last-touched">2d ago</div></td>
+            </tr>
+
+            <tr>
+              <td><div class="status-pip on-track"></div></td>
+              <td>
+                <div class="student-cell">
+                  <div class="student-initials">HA</div>
+                  <div class="student-name">Hassan Ali</div>
+                </div>
+              </td>
+              <td><div class="task-title">Hassan &mdash; UMD supplement</div></td>
+              <td>
+                <div class="date-cell">Jan 1</div>
+                <div class="date-relative">in 15d</div>
+              </td>
+              <td><span class="status-pill status-in-progress">In progress</span></td>
+              <td><span class="school-chip">UMD</span></td>
+              <td class="col-priority"><span class="priority-cell priority-none">&middot;</span></td>
+              <td><div class="last-touched">3d ago</div></td>
+            </tr>
+
+            <tr>
+              <td><div class="status-pip on-track"></div></td>
+              <td>
+                <div class="student-cell">
+                  <div class="student-initials">HW</div>
+                  <div class="student-name">Henry Wells</div>
+                </div>
+              </td>
+              <td><div class="task-title">Henry &mdash; Tufts supplement</div></td>
+              <td>
+                <div class="date-cell">Jan 5</div>
+                <div class="date-relative">in 19d</div>
+              </td>
+              <td><span class="status-pill status-not-started">Not started</span></td>
+              <td><span class="school-chip">Tufts</span></td>
+              <td class="col-priority"><span class="priority-cell priority-none">&middot;</span></td>
+              <td><div class="last-touched">4d ago</div></td>
+            </tr>
+
+            <tr>
+              <td><div class="status-pip on-track"></div></td>
+              <td>
+                <div class="student-cell">
+                  <div class="student-initials">PM</div>
+                  <div class="student-name">Priya Mehta</div>
+                </div>
+              </td>
+              <td><div class="task-title">Priya &mdash; Penn 'Why Penn' final read</div></td>
+              <td>
+                <div class="date-cell">Dec 29</div>
+                <div class="date-relative">in 12d</div>
+              </td>
+              <td><span class="status-pill status-awaiting">Awaiting review</span></td>
+              <td><span class="school-chip">Penn</span></td>
+              <td class="col-priority"><span class="priority-cell priority-none">&middot;</span></td>
+              <td><div class="last-touched">1d ago</div></td>
+            </tr>
+
+            <tr>
+              <td><div class="status-pip on-track"></div></td>
+              <td>
+                <div class="student-cell">
+                  <div class="student-initials">EW</div>
+                  <div class="student-name">Eric Watson</div>
+                </div>
+              </td>
+              <td><div class="task-title">Eric &mdash; Hawaii Pacific scholarship app</div></td>
+              <td>
+                <div class="date-cell">Dec 28</div>
+                <div class="date-relative">in 11d</div>
+              </td>
+              <td><span class="status-pill status-in-progress">In progress</span></td>
+              <td><span class="school-chip">Hawaii Pacific</span></td>
+              <td class="col-priority"><span class="priority-cell priority-none">&middot;</span></td>
+              <td><div class="last-touched">8d ago</div></td>
+            </tr>
+
+            <tr>
+              <td><div class="status-pip on-track"></div></td>
+              <td>
+                <div class="student-cell">
+                  <div class="student-initials">HA</div>
+                  <div class="student-name">Hassan Ali</div>
+                </div>
+              </td>
+              <td><div class="task-title">Hassan &mdash; SUNY Binghamton app</div></td>
+              <td>
+                <div class="date-cell">Dec 30</div>
+                <div class="date-relative">in 13d</div>
+              </td>
+              <td><span class="status-pill status-in-progress">In progress</span></td>
+              <td><span class="school-chip">Binghamton</span></td>
+              <td class="col-priority"><span class="priority-cell priority-none">&middot;</span></td>
+              <td><div class="last-touched">3d ago</div></td>
+            </tr>
+
+            <tr>
+              <td><div class="status-pip on-track"></div></td>
+              <td>
+                <div class="student-cell">
+                  <div class="student-initials">CP</div>
+                  <div class="student-name">Caroline Park</div>
+                </div>
+              </td>
+              <td><div class="task-title">Caroline &mdash; UNC supplement</div></td>
+              <td>
+                <div class="date-cell">Dec 30</div>
+                <div class="date-relative">in 13d</div>
+              </td>
+              <td><span class="status-pill status-in-progress">In progress</span></td>
+              <td><span class="school-chip">UNC</span></td>
+              <td class="col-priority"><span class="priority-cell priority-none">&middot;</span></td>
+              <td><div class="last-touched">2d ago</div></td>
+            </tr>
+
+            <tr>
+              <td><div class="status-pip on-track"></div></td>
+              <td>
+                <div class="student-cell">
+                  <div class="student-initials">PM</div>
+                  <div class="student-name">Priya Mehta</div>
+                </div>
+              </td>
+              <td><div class="task-title">Priya &mdash; Brown supplement</div></td>
+              <td>
+                <div class="date-cell">Dec 30</div>
+                <div class="date-relative">in 13d</div>
+              </td>
+              <td><span class="status-pill status-in-progress">In progress</span></td>
+              <td><span class="school-chip">Brown</span></td>
+              <td class="col-priority"><span class="priority-cell priority-none">&middot;</span></td>
+              <td><div class="last-touched">2d ago</div></td>
+            </tr>
+
+            <tr>
+              <td><div class="status-pip on-track"></div></td>
+              <td>
+                <div class="student-cell">
+                  <div class="student-initials">TL</div>
+                  <div class="student-name">Tony Liu</div>
+                </div>
+              </td>
+              <td><div class="task-title">Tony &mdash; Princeton confirm + supplement</div></td>
+              <td>
+                <div class="date-cell">Dec 31</div>
+                <div class="date-relative">in 14d</div>
+              </td>
+              <td><span class="status-pill status-in-progress">In progress</span></td>
+              <td><span class="school-chip">Princeton</span></td>
+              <td class="col-priority"><span class="priority-cell priority-none">&middot;</span></td>
+              <td><div class="last-touched">2d ago</div></td>
+            </tr>
+
+            <tr>
+              <td><div class="status-pip on-track"></div></td>
+              <td>
+                <div class="student-cell">
+                  <div class="student-initials">SN</div>
+                  <div class="student-name">Sophia Nguyen</div>
+                </div>
+              </td>
+              <td><div class="task-title">Sophia &mdash; UMiami supplement r2</div></td>
+              <td>
+                <div class="date-cell">Dec 28</div>
+                <div class="date-relative">in 11d</div>
+              </td>
+              <td><span class="status-pill status-in-progress">In progress</span></td>
+              <td><span class="school-chip">UMiami</span></td>
+              <td class="col-priority"><span class="priority-cell priority-none">&middot;</span></td>
+              <td><div class="last-touched">2d ago</div></td>
+            </tr>
+
+            <tr>
+              <td><div class="status-pip on-track"></div></td>
+              <td>
+                <div class="student-cell">
+                  <div class="student-initials">RN</div>
+                  <div class="student-name">Roya Nazari</div>
+                </div>
+              </td>
+              <td><div class="task-title">Roya &mdash; Columbia supplement r1</div></td>
+              <td>
+                <div class="date-cell">Dec 31</div>
+                <div class="date-relative">in 14d</div>
+              </td>
+              <td><span class="status-pill status-in-progress">In progress</span></td>
+              <td><span class="school-chip">Columbia</span></td>
+              <td class="col-priority"><span class="priority-cell priority-none">&middot;</span></td>
+              <td><div class="last-touched">3d ago</div></td>
+            </tr>
+
+            <tr>
+              <td><div class="status-pip on-track"></div></td>
+              <td>
+                <div class="student-cell">
+                  <div class="student-initials">HW</div>
+                  <div class="student-name">Henry Wells</div>
+                </div>
+              </td>
+              <td><div class="task-title">Henry &mdash; UMich supplement</div></td>
+              <td>
+                <div class="date-cell">Jan 7</div>
+                <div class="date-relative">in 21d</div>
+              </td>
+              <td><span class="status-pill status-in-progress">In progress</span></td>
+              <td><span class="school-chip">Michigan</span></td>
+              <td class="col-priority"><span class="priority-cell priority-none">&middot;</span></td>
+              <td><div class="last-touched">2d ago</div></td>
+            </tr>
+
+            <tr>
+              <td><div class="status-pip on-track"></div></td>
+              <td>
+                <div class="student-cell">
+                  <div class="student-initials">TL</div>
+                  <div class="student-name">Tony Liu</div>
+                </div>
+              </td>
+              <td><div class="task-title">Tony &mdash; Stanford supplement</div></td>
+              <td>
+                <div class="date-cell">Jan 1</div>
+                <div class="date-relative">in 15d</div>
+              </td>
+              <td><span class="status-pill status-in-progress">In progress</span></td>
+              <td><span class="school-chip">Stanford</span></td>
+              <td class="col-priority"><span class="priority-cell priority-none">&middot;</span></td>
+              <td><div class="last-touched">3d ago</div></td>
+            </tr>
+
+            <!-- ===== DONE SECTION ===== -->
+            <tr class="table-section-row">
+              <td></td>
+              <td colspan="7">Recently done <span class="section-count">5</span></td>
+            </tr>
+
+            <tr>
+              <td><div class="status-pip done"></div></td>
+              <td>
+                <div class="student-cell">
+                  <div class="student-initials muted">MP</div>
+                  <div class="student-name">Min-jun Park</div>
+                </div>
+              </td>
+              <td><div class="task-title" style="color: var(--ink-2); text-decoration: line-through; text-decoration-color: var(--ink-3); text-decoration-thickness: 1px;">Wharton ED admit &mdash; congratulations call</div></td>
+              <td>
+                <div class="date-cell" style="color: var(--ink-3);">Dec 8</div>
+                <div class="date-relative">9d ago</div>
+              </td>
+              <td><span class="status-pill status-done">Done</span></td>
+              <td><span class="school-chip">Wharton</span></td>
+              <td class="col-priority"><span class="priority-cell priority-none">&middot;</span></td>
+              <td><div class="last-touched">9d ago</div></td>
+            </tr>
+
+            <tr>
+              <td><div class="status-pip done"></div></td>
+              <td>
+                <div class="student-cell">
+                  <div class="student-initials muted">JR</div>
+                  <div class="student-name">Jackson Reed</div>
+                </div>
+              </td>
+              <td><div class="task-title" style="color: var(--ink-2); text-decoration: line-through; text-decoration-color: var(--ink-3); text-decoration-thickness: 1px;">Princeton REA &mdash; athletic recruit confirmation</div></td>
+              <td>
+                <div class="date-cell" style="color: var(--ink-3);">Nov 30</div>
+                <div class="date-relative">17d ago</div>
+              </td>
+              <td><span class="status-pill status-done">Done</span></td>
+              <td><span class="school-chip">Princeton</span></td>
+              <td class="col-priority"><span class="priority-cell priority-none">&middot;</span></td>
+              <td><div class="last-touched">17d ago</div></td>
+            </tr>
+
+            <tr>
+              <td><div class="status-pip done"></div></td>
+              <td>
+                <div class="student-cell">
+                  <div class="student-initials">MC</div>
+                  <div class="student-name">Maya Chen</div>
+                </div>
+              </td>
+              <td><div class="task-title" style="color: var(--ink-2); text-decoration: line-through; text-decoration-color: var(--ink-3); text-decoration-thickness: 1px;">Maya UC apps &mdash; submit confirmation</div></td>
+              <td>
+                <div class="date-cell" style="color: var(--ink-3);">Nov 30</div>
+                <div class="date-relative">17d ago</div>
+              </td>
+              <td><span class="status-pill status-done">Done</span></td>
+              <td><span class="school-chip">UC system</span></td>
+              <td class="col-priority"><span class="priority-cell priority-none">&middot;</span></td>
+              <td><div class="last-touched">17d ago</div></td>
+            </tr>
+
+            <tr>
+              <td><div class="status-pip done"></div></td>
+              <td>
+                <div class="student-cell">
+                  <div class="student-initials">TL</div>
+                  <div class="student-name">Tony Liu</div>
+                </div>
+              </td>
+              <td><div class="task-title" style="color: var(--ink-2); text-decoration: line-through; text-decoration-color: var(--ink-3); text-decoration-thickness: 1px;">Yale REA &mdash; admit decision call</div></td>
+              <td>
+                <div class="date-cell" style="color: var(--ink-3);">Dec 13</div>
+                <div class="date-relative">4d ago</div>
+              </td>
+              <td><span class="status-pill status-done">Done</span></td>
+              <td><span class="school-chip">Yale</span></td>
+              <td class="col-priority"><span class="priority-cell priority-none">&middot;</span></td>
+              <td><div class="last-touched">4d ago</div></td>
+            </tr>
+
+            <tr>
+              <td><div class="status-pip done"></div></td>
+              <td>
+                <div class="student-cell">
+                  <div class="student-initials muted">DK</div>
+                  <div class="student-name">Daniel Kim</div>
+                </div>
+              </td>
+              <td><div class="task-title" style="color: var(--ink-2); text-decoration: line-through; text-decoration-color: var(--ink-3); text-decoration-thickness: 1px;">Stanford QB Match &mdash; commitment confirmation</div></td>
+              <td>
+                <div class="date-cell" style="color: var(--ink-3);">Dec 5</div>
+                <div class="date-relative">12d ago</div>
+              </td>
+              <td><span class="status-pill status-done">Done</span></td>
+              <td><span class="school-chip">Stanford</span></td>
+              <td class="col-priority"><span class="priority-cell priority-none">&middot;</span></td>
+              <td><div class="last-touched">12d ago</div></td>
+            </tr>
+
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Footer with legend -->
+      <div class="table-footer">
+        <span class="legend-label">Status</span>
+        <div class="legend" data-design-note="status-legend" data-note-num="10">
+          <span class="legend-item"><span class="legend-pip overdue"></span>Overdue</span>
+          <span class="legend-item"><span class="legend-pip due-soon"></span>Due soon</span>
+          <span class="legend-item"><span class="legend-pip on-track"></span>On track</span>
+          <span class="legend-item"><span class="legend-pip done"></span>Done</span>
+        </div>
+        <div class="footer-sep"></div>
+        <span class="footer-text">Showing 60 of 74 tasks</span>
+        <div class="footer-sep"></div>
+        <span class="footer-text">
+          <span class="sync-dot"></span>Last sync 30s ago
+        </span>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<script>
+  // Type filter strip (inside Advanced panel) — toggle active state
+  document.querySelectorAll('.type-chip').forEach(chip => {
+    chip.addEventListener('click', function() {
+      document.querySelectorAll('.type-chip').forEach(c => c.classList.remove('active'));
+      this.classList.add('active');
+    });
+  });
+
+  // Advanced filter panel toggle
+  (function() {
+    const btn = document.getElementById('advanced-toggle');
+    if (!btn) return;
+    btn.addEventListener('click', function() {
+      const on = document.body.classList.toggle('advanced-open');
+      btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+  })();
+
+  // Saved view chips (row 1) — toggle active
+  document.querySelectorAll('.saved-chip').forEach(chip => {
+    chip.addEventListener('click', function() {
+      const wasActive = this.classList.contains('saved-chip-active');
+      document.querySelectorAll('.saved-chip').forEach(c => {
+        c.classList.remove('saved-chip-active');
+        c.classList.add('saved-chip-default');
+        const badge = c.querySelector('.chip-count-badge');
+        if (badge) {
+          badge.style.background = '#f1f5f9';
+          badge.style.color = '#64748b';
+        }
+      });
+      if (!wasActive) {
+        this.classList.add('saved-chip-active');
+        this.classList.remove('saved-chip-default');
+        const badge = this.querySelector('.chip-count-badge');
+        if (badge) {
+          badge.style.background = '#5b5fcf';
+          badge.style.color = 'white';
+        }
+      }
+    });
+  });
+
+  // Sidebar saved-view chips
+  document.querySelectorAll('.saved-view-chip').forEach(chip => {
+    chip.addEventListener('click', function() {
+      document.querySelectorAll('.saved-view-chip').forEach(c => c.classList.remove('active'));
+      this.classList.add('active');
+    });
+  });
+
+</script>
+
+</body>
+</html>

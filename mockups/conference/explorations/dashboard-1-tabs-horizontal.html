@@ -1,0 +1,2389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Maya Chen — Overview · Dashboard 1 (horizontal tabs)</title>
+  <meta name="page-purpose" content="This page is for: a consultant orienting on one student — what's urgent, what's the school landscape, who is this person." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --font-sans: 'Geist', system-ui, -apple-system, sans-serif;
+      --font-mono: 'Geist Mono', 'SFMono-Regular', monospace;
+
+      /* Locked v2 tokens */
+      --bg:        #f7f8fa;
+      --surface:   #ffffff;
+      --surface-2: #fbfcfd;
+      --ink:       #0f1419;
+      --ink-2:     #475569;
+      --ink-3:     #94a3b8;
+      --line:      #e4e6eb;
+      --line-2:    #cbd5e1;
+
+      --sidebar:        #0f172a;
+      --sidebar-ink:    #cbd5e1;
+      --sidebar-ink-2:  #64748b;
+      --sidebar-line:   rgba(255,255,255,0.08);
+
+      --primary:        #5b5fcf;
+      --primary-bg:     #eef0fb;
+      --primary-line:   #c7cbe8;
+
+      /* Locked 3-color status palette + neutral */
+      --status-done:        #047857;
+      --status-done-bg:     #d1fae5;
+      --status-active:      #b45309;
+      --status-active-bg:   #fef3c7;
+      --status-overdue:     #be123c;
+      --status-overdue-bg:  #ffe4e6;
+      --status-neutral:     var(--ink-3);
+      --status-neutral-bg:  #f1f5f9;
+
+      /* Working-style chips (counselor metadata, NOT status) */
+      --ws-perfectionist:    #8b5cf6;
+      --ws-perfectionist-bg: #f5f3ff;
+      --ws-anxious:          #e11d48;
+      --ws-anxious-bg:       #fff1f2;
+      --ws-self-directed:    #16a34a;
+      --ws-self-directed-bg: #f0fdf4;
+
+      --radius: 6px;
+      --radius-card: 8px;
+      --radius-chip: 4px;
+    }
+
+    /* Pattern 4 — color-intensity (5 states)
+       OFF → MINIMAL → STATUS (default) → STATUS+ → FULL
+       Defaults below are tuned for STATUS mode. Each lower mode strips colors;
+       STATUS+ saturates working-style chips; FULL restores decorative tints. */
+
+    /* STATUS (default): working-style chips deliberately muted (handled by .ws-chip base style) */
+
+    /* STATUS+: working-style chips at full saturation */
+    body.color-status-plus .ws-chip.ws-perfectionist {
+      color: var(--ws-perfectionist);
+      background: var(--ws-perfectionist-bg);
+      border-color: #ddd6fe;
+    }
+    body.color-status-plus .ws-chip.ws-anxious {
+      color: var(--ws-anxious);
+      background: var(--ws-anxious-bg);
+      border-color: #fecdd3;
+    }
+
+    /* MINIMAL: overdue (rose) + brand indigo + status-done (emerald) retain saturation;
+       status-active (amber) + WS chips neutralize (D1=A, 2026-05-12) */
+    body.color-minimal {
+      --status-active:      var(--ink-3);
+      --status-active-bg:   transparent;
+      --ws-perfectionist:    var(--ink-3);
+      --ws-perfectionist-bg: transparent;
+      --ws-anxious:          var(--ink-3);
+      --ws-anxious-bg:       transparent;
+      --ws-self-directed:    var(--ink-3);
+      --ws-self-directed-bg: transparent;
+    }
+    body.color-minimal .ws-chip {
+      color: var(--ink-2);
+      background: transparent;
+      border-color: var(--line);
+    }
+    body.color-minimal .pill-active { border-color: var(--line); }
+
+    /* OFF: no semantic color anywhere — even overdue is bold ink, not rose */
+    body.color-off {
+      --status-done:        var(--ink-2);
+      --status-done-bg:     transparent;
+      --status-active:      var(--ink-2);
+      --status-active-bg:   transparent;
+      --status-overdue:     var(--ink);
+      --status-overdue-bg:  transparent;
+      --primary:            var(--ink);
+      --primary-bg:         transparent;
+      --primary-line:       var(--line-2);
+      --ws-perfectionist:    var(--ink-2);
+      --ws-perfectionist-bg: transparent;
+      --ws-anxious:          var(--ink-2);
+      --ws-anxious-bg:       transparent;
+      --ws-self-directed:    var(--ink-2);
+      --ws-self-directed-bg: transparent;
+    }
+    body.color-off .ws-chip {
+      color: var(--ink-2);
+      background: transparent;
+      border-color: var(--line);
+    }
+    body.color-off .pill-active,
+    body.color-off .pill-overdue,
+    body.color-off .pill-done { border-color: var(--line); }
+    body.color-off .pill-overdue { font-weight: 600; }
+    body.color-off .top-choice-tag { background: transparent; color: var(--ink); }
+    body.color-off .pin-badge { background: transparent; color: var(--ink); }
+
+    /* FULL: decorative tints surface (essentially v1 behavior) */
+    body.color-full .profile-top-header {
+      background: linear-gradient(180deg, #ecedfa 0%, #fafbff 100%);
+    }
+    body.color-full .activity-item.evt-snapshot { background: #faf9ff; }
+    body.color-full .next-step-card.is-overdue { background: #fff8f9; }
+    body.color-full .ws-chip.ws-perfectionist {
+      color: var(--ws-perfectionist);
+      background: var(--ws-perfectionist-bg);
+      border-color: #ddd6fe;
+    }
+    body.color-full .ws-chip.ws-anxious {
+      color: var(--ws-anxious);
+      background: var(--ws-anxious-bg);
+      border-color: #fecdd3;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+    body {
+      font-family: var(--font-sans);
+      font-size: 13.5px;
+      line-height: 1.5;
+      color: var(--ink);
+      background: var(--bg);
+      -webkit-font-smoothing: antialiased;
+      font-feature-settings: "ss01", "cv11";
+    }
+
+    /* ─── Shell ─── */
+    .shell { display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+
+    /* ─── Topbar ─── */
+    .topbar {
+      height: 48px;
+      background: #ffffff;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      flex-shrink: 0;
+      position: relative;
+      z-index: 20;
+    }
+
+    .topbar-brand {
+      width: 220px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      padding: 0 18px;
+      background: var(--sidebar);
+      height: 100%;
+    }
+
+    .brand-link {
+      text-decoration: none;
+      display: inline-flex;
+      cursor: pointer;
+      transition: opacity 180ms ease;
+    }
+    .brand-link:hover { opacity: 0.85; }
+    .brand-link:focus-visible {
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
+      border-radius: 8px;
+    }
+    .brand-mark {
+      width: 24px; height: 24px;
+      background: var(--primary);
+      border-radius: 7px;
+      display: inline-flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .topbar-breadcrumb {
+      flex: 1;
+      display: flex; align-items: center;
+      gap: 6px;
+      padding: 0 20px;
+      font-size: 13px;
+      color: var(--ink-2);
+    }
+    .bc-sep { color: var(--line-2); }
+    .bc-current { color: var(--ink); font-weight: 500; }
+
+    .topbar-actions {
+      display: flex; align-items: center;
+      gap: 10px;
+      padding: 0 16px;
+    }
+
+    /* Pattern 1 — rail toggle dropped; design-toggle retained for Pattern 3 */
+    .design-toggle {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 12px;
+      color: var(--ink-2);
+      padding: 5px 10px;
+      border-radius: 4px;
+      background: transparent;
+      border: 1px solid var(--line);
+      cursor: pointer;
+      font-family: var(--font-sans);
+    }
+    .design-toggle:hover { background: var(--bg); }
+
+    /* Pattern 4 — color-intensity slider (5 states, compact) */
+    .color-slider {
+      display: inline-flex;
+      border: 1px solid var(--line);
+      border-radius: 5px;
+      overflow: hidden;
+      background: var(--surface);
+      align-items: stretch;
+    }
+    .color-slider button {
+      position: relative;
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      font-weight: 500;
+      color: var(--ink-3);
+      padding: 0 8px;
+      min-width: 26px;
+      height: 26px;
+      background: transparent;
+      border: none;
+      border-right: 1px solid var(--line);
+      cursor: pointer;
+      letter-spacing: 0.04em;
+    }
+    .color-slider button:last-child { border-right: none; }
+    .color-slider button[aria-pressed="true"] {
+      background: var(--primary-bg);
+      color: var(--primary);
+      font-weight: 600;
+    }
+    .color-slider button:hover:not([aria-pressed="true"]) {
+      background: var(--bg);
+      color: var(--ink-2);
+    }
+    /* Tooltip on color-slider buttons (matches fake-btn pattern but without arrow) */
+    .color-slider button::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      top: calc(100% + 6px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--ink);
+      color: white;
+      padding: 5px 9px;
+      border-radius: 4px;
+      font-family: var(--font-sans);
+      font-size: 10.5px;
+      font-weight: 400;
+      letter-spacing: 0;
+      white-space: nowrap;
+      max-width: 240px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.15s ease;
+      z-index: 100;
+    }
+    .color-slider button:hover::after { opacity: 1; }
+    .color-slider-label {
+      font-family: var(--font-sans);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      color: var(--ink-3);
+      text-transform: uppercase;
+      padding-right: 6px;
+      align-self: center;
+    }
+
+    body.design-notes-on .design-toggle {
+      background: var(--primary-bg);
+      color: var(--primary);
+      border-color: var(--primary-line);
+    }
+
+    .icon-btn {
+      width: 30px; height: 30px;
+      border-radius: var(--radius);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      color: var(--ink-2);
+      position: relative;
+      background: transparent;
+      border: none;
+    }
+    .icon-btn:hover { background: var(--bg); }
+
+    .notif-dot {
+      position: absolute; top: 6px; right: 6px;
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--status-overdue);
+      border: 1.5px solid white;
+    }
+
+    .avatar-sm {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: var(--primary-bg);
+      color: var(--primary);
+      font-size: 11px;
+      font-weight: 600;
+      display: flex; align-items: center; justify-content: center;
+      letter-spacing: 0.03em;
+      cursor: pointer;
+    }
+
+    /* ─── Body row ─── */
+    .body-row { flex: 1; display: flex; overflow: hidden; }
+
+    /* ─── Sidebar (workspace nav ONLY in this variant) ─── */
+    .sidebar {
+      width: 220px;
+      flex-shrink: 0;
+      background: var(--sidebar);
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      color: var(--sidebar-ink);
+    }
+    .sidebar::-webkit-scrollbar { width: 4px; }
+    .sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 2px; }
+
+    .nav-section { padding: 14px 10px 6px; }
+    .nav-section-label {
+      padding: 6px 10px 8px;
+      font-size: 10.5px;
+      font-weight: 600;
+      color: var(--sidebar-ink-2);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .nav-item {
+      position: relative;
+      display: flex; align-items: center; gap: 10px;
+      padding: 8px 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      color: var(--sidebar-ink-2);
+      font-size: 13px;
+      font-weight: 400;
+    }
+    .nav-item:hover { background: rgba(255,255,255,0.04); color: #e2e8f0; }
+    .nav-item.active {
+      background: rgba(91, 95, 207, 0.14);
+      color: #c7d2fe;
+    }
+    .nav-item.active::before {
+      content: "";
+      position: absolute;
+      left: -10px; top: 6px; bottom: 6px;
+      width: 3px;
+      background: var(--primary);
+      border-radius: 0 2px 2px 0;
+    }
+    .nav-item svg { width: 16px; height: 16px; flex-shrink: 0; }
+
+    /* Tiny student-context indicator at the bottom of sidebar */
+    .sidebar-footer {
+      margin-top: auto;
+      padding: 14px 14px 18px;
+      border-top: 1px solid var(--sidebar-line);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .sidebar-footer-avatar {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: white;
+      font-family: var(--font-sans);
+      font-size: 12px;
+      font-weight: 600;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .sidebar-footer-text {
+      display: flex; flex-direction: column; min-width: 0;
+    }
+    .sidebar-footer-eyebrow {
+      font-size: 9.5px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--sidebar-ink-2);
+    }
+    .sidebar-footer-name {
+      font-size: 12.5px;
+      color: #e2e8f0;
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* ─── Main ─── */
+    .main-content { flex: 1; display: flex; overflow: hidden; }
+    .content-area {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px 32px 56px;
+    }
+    .content-area::-webkit-scrollbar { width: 6px; }
+    .content-area::-webkit-scrollbar-thumb { background: var(--line-2); border-radius: 3px; }
+
+    /* ─── Page header ─── */
+    .page-header {
+      margin-bottom: 18px;
+    }
+
+    .page-eyebrow {
+      font-size: 10.5px;
+      font-weight: 600;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--ink-3);
+      margin-bottom: 8px;
+    }
+
+    .page-title-row {
+      display: flex;
+      align-items: baseline;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .student-name {
+      font-family: var(--font-sans);
+      font-size: 30px;
+      font-weight: 600;
+      color: var(--ink);
+      letter-spacing: -0.018em;
+      line-height: 1.05;
+    }
+
+    .page-purpose {
+      font-style: italic;
+      font-size: 12.5px;
+      color: var(--ink-3);
+      font-weight: 400;
+    }
+
+    .header-meta-row {
+      display: flex; align-items: center; gap: 8px;
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
+
+    /* ─── Status pill (unified — single locked palette) ─── */
+    .status-pill {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 2px 8px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.005em;
+      border: 1px solid transparent;
+      line-height: 1.45;
+      font-variant-numeric: tabular-nums;
+    }
+    .pill-overdue {
+      background: var(--status-overdue-bg);
+      color: var(--status-overdue);
+      border-color: #fecdd3;
+    }
+    .pill-active {
+      background: var(--status-active-bg);
+      color: var(--status-active);
+      border-color: #fde68a;
+    }
+    .pill-done {
+      background: var(--status-done-bg);
+      color: var(--status-done);
+      border-color: #6ee7b7;
+    }
+    .pill-neutral {
+      background: var(--status-neutral-bg);
+      color: var(--ink-2);
+      border-color: var(--line-2);
+    }
+    .pill-indigo {
+      background: var(--primary-bg);
+      color: var(--primary);
+      border-color: var(--primary-line);
+    }
+
+    .header-meta-divider {
+      width: 1px; height: 12px;
+      background: var(--line-2);
+      margin: 0 4px;
+    }
+    .header-year {
+      font-size: 12px;
+      color: var(--ink-3);
+    }
+    .header-year strong {
+      color: var(--ink-2);
+      font-weight: 500;
+    }
+
+    /* ─── Unified profile-top header band (v2 5/12 lock — page header doubles as profile)
+       Brought into parity with sidebar variant. Profile + page-header are ONE structure.
+       Color-accent treatment (B5 — Roei L61) via subtle indigo wash + bottom rule.
+       ─── */
+    .profile-top {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-card);
+      margin-bottom: 20px;
+      overflow: hidden;
+      /* B5 color-accent: subtle indigo wash on the header bar — gives "this is the page header" weight */
+      box-shadow: 0 1px 2px rgba(15, 20, 25, 0.025);
+    }
+
+    .profile-top-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 16px 18px;
+      cursor: pointer;
+      /* B5 color-accent: subtle indigo gradient + left accent stripe */
+      background: linear-gradient(180deg, #f8f9fd 0%, var(--surface) 100%);
+      border-bottom: 1px solid var(--line);
+      position: relative;
+    }
+    .profile-top-header::before {
+      /* B5: indigo accent stripe down the left edge of the header band */
+      content: "";
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 3px;
+      background: var(--primary);
+      opacity: 0.55;
+    }
+    body.color-off .profile-top-header { background: var(--surface); }
+    body.color-off .profile-top-header::before { background: var(--ink-3); opacity: 0.4; }
+    body.color-minimal .profile-top-header { background: linear-gradient(180deg, #f6f7fb 0%, var(--surface) 100%); }
+    body.profile-collapsed .profile-top-header { border-bottom-color: transparent; }
+
+    .profile-top-avatar {
+      width: 44px; height: 44px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: #fff;
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    body.color-off .profile-top-avatar { background: var(--ink); }
+
+    .profile-top-name-block {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .profile-top-name {
+      font-family: var(--font-sans);
+      font-size: 24px;
+      font-weight: 600;
+      color: var(--ink);
+      letter-spacing: -0.018em;
+      line-height: 1.08;
+    }
+
+    .profile-top-meta-row {
+      display: flex; align-items: center; gap: 7px;
+      flex-wrap: wrap;
+    }
+
+    .profile-top-actions {
+      display: flex; align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    /* Page-purpose-row removed from profile band in Phase 1.6 R2 — replaced by demo-note
+       box at top of content area (see .demo-note-box below). Kept selector inert in case
+       legacy markup references it; no styling applied. */
+
+    /* ─── Demo-note box (R2.5 pattern, 2026-05-13)
+       Visual container for demo/dev metadata that's NOT product copy — page-purpose
+       statements, demo-only hints, dev affordance explanations. Lives in TOPBAR, left of
+       the color-slider (vertically centered, sized to content). Compact pill shape with
+       dashed left-border + "DEMO" mono tag signals "this is scaffolding, not UI".
+       Color-mode-invariant (stays neutral gray in all 5 modes). ─── */
+    .demo-note-box {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 10px 4px 8px;
+      background: #f0f2f5;
+      border: 1px dashed var(--line-2);
+      border-left: 3px dashed var(--ink-3);
+      border-radius: 4px;
+      font-size: 11.5px;
+      color: var(--ink-2);
+      line-height: 1.3;
+      flex-shrink: 0;
+      white-space: nowrap;
+    }
+    .demo-note-box .demo-note-label {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--ink-3);
+      flex-shrink: 0;
+      padding: 1px 5px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 3px;
+      line-height: 1.4;
+    }
+    .demo-note-box .demo-note-text {
+      font-style: italic;
+      white-space: nowrap;
+    }
+    .demo-note-box .demo-note-text strong {
+      font-style: normal;
+      font-weight: 600;
+      color: var(--ink-2);
+    }
+    body.color-off .demo-note-box { background: #f3f4f6; }
+
+    .profile-collapse-btn {
+      font-family: var(--font-sans);
+      font-size: 11.5px;
+      color: var(--ink-2);
+      padding: 4px 10px;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      background: transparent;
+      cursor: pointer;
+      display: inline-flex; align-items: center; gap: 6px;
+    }
+    .profile-collapse-btn:hover { background: var(--bg); }
+    .profile-collapse-btn svg {
+      transition: transform 0.18s ease;
+    }
+    body.profile-collapsed .profile-collapse-btn svg {
+      transform: rotate(-90deg);
+    }
+
+    /* Profile-top-body — 4-column layout (R2.5 5/13: Quick stats · Hooks · Family · Meetings)
+       Module-mini moved OUT of the grid into a sibling aside (.profile-module-mini below).
+       Hooks block stacks vertically; right-side whitespace eliminated by adjusting column ratios. */
+    .profile-top-body {
+      display: grid;
+      grid-template-columns: minmax(190px, 1.1fr) minmax(150px, 0.8fr) minmax(170px, 1fr) minmax(160px, 1fr);
+      gap: 0;
+      transition: max-height 0.25s ease, opacity 0.2s ease;
+      max-height: 600px;
+      overflow: hidden;
+    }
+    body.profile-collapsed .profile-top-body {
+      max-height: 0;
+      opacity: 0;
+    }
+    /* M1 (Wave 2, 5/17): Module-mini collapses WITH profile.
+       Unifies the collapse: when profile is collapsed, the always-visible mini
+       hides too — no gray-space sibling. Mirrors profile-top-body's transition. */
+    body.profile-collapsed .profile-module-mini {
+      width: 0;
+      max-width: 0;
+      max-height: 0;
+      padding-top: 0;
+      padding-bottom: 0;
+      padding-left: 0;
+      padding-right: 0;
+      opacity: 0;
+      border-width: 0;
+      overflow: hidden;
+    }
+
+    .profile-block {
+      padding: 14px 18px;
+      border-right: 1px solid var(--line);
+    }
+    .profile-block:last-child { border-right: none; }
+
+    .profile-block-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--ink-3);
+      margin-bottom: 8px;
+    }
+
+    .stats-mini-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px 16px;
+    }
+    .stats-mini-grid .stat {
+      display: flex; flex-direction: column; gap: 1px;
+    }
+    .stats-mini-grid .stat .label {
+      font-size: 10px;
+      color: var(--ink-3);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .stats-mini-grid .stat .value {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      color: var(--ink);
+      font-variant-numeric: tabular-nums;
+    }
+    .stats-mini-grid .stat .value.text {
+      font-family: var(--font-sans);
+      font-size: 12.5px;
+      font-weight: 500;
+    }
+
+    /* R2 5/13: hooks stack vertically in the profile block (was wrap-flex row). Vertical
+       stack reads more like a list-of-attributes and matches the narrow profile-block width. */
+    .hooks-row {
+      display: flex; flex-direction: column; gap: 4px;
+      align-items: flex-start;
+    }
+    .hooks-row .hook-tag {
+      width: 100%;
+    }
+    .hook-tag {
+      font-size: 11px;
+      color: var(--ink-2);
+      background: var(--bg);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-chip);
+      padding: 2px 8px;
+    }
+
+    .ws-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: var(--radius-chip);
+      border: 1px solid var(--line);
+      background: var(--bg);
+      color: var(--ink-2);
+      margin-right: 4px;
+      margin-bottom: 4px;
+    }
+
+    .meeting-row {
+      display: flex; justify-content: space-between; align-items: baseline;
+      padding: 4px 0;
+    }
+    .meeting-row + .meeting-row { border-top: 1px dashed var(--line); }
+    .meeting-row .meeting-label {
+      font-size: 11.5px;
+      color: var(--ink-3);
+    }
+    .meeting-row .meeting-value {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--ink);
+      font-variant-numeric: tabular-nums;
+      font-weight: 500;
+    }
+
+    /* R2.5 5/13: Profile section row — flex container wrapping profile-top + always-visible
+       module-mini aside. Mini stays visible regardless of profile-top collapse state.
+       align-items: flex-start so mini sizes to content (not stretched to profile-top's height). */
+    .profile-section-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      margin-bottom: 24px;
+      transition: gap 0.25s ease;
+    }
+    /* M1 (Wave 2, 5/17): when collapsed, drop the row gap so the collapsed mini
+       contributes no horizontal whitespace beyond what the profile-top already shows. */
+    body.profile-collapsed .profile-section-row {
+      gap: 0;
+    }
+    .profile-section-row .profile-top {
+      flex: 1;
+      min-width: 0;
+      margin-bottom: 0; /* gap handles spacing now */
+    }
+
+    /* R2.5 5/13: Module-mini = always-visible aside card (taller-than-wide rectangle).
+       Shows current module + current lesson + linked task + secondary track stat.
+       Lives outside profile-top-body so it stays visible when profile collapses.
+       Replaces both the old in-band mini AND the standalone "Current module" widget below. */
+    .profile-module-mini {
+      width: 232px;
+      flex-shrink: 0;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 14px 16px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      box-shadow: 0 1px 2px rgba(15, 20, 25, 0.025);
+      position: relative;
+      /* B5 color-accent: subtle indigo accent stripe matching profile-top */
+      /* M1 (Wave 2, 5/17): transition for unified collapse with profile band. */
+      transition: max-width 0.25s ease, max-height 0.25s ease,
+                  opacity 0.2s ease, padding 0.25s ease, border-width 0.25s ease;
+    }
+    .profile-module-mini::before {
+      content: "";
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 3px;
+      background: var(--primary);
+      opacity: 0.55;
+      border-radius: 6px 0 0 6px;
+    }
+    body.color-off .profile-module-mini::before { background: var(--ink-3); opacity: 0.4; }
+
+    .profile-module-mini .mm-eyebrow {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--ink-3);
+    }
+    .profile-module-mini .mm-module-row {
+      display: flex;
+      align-items: baseline;
+      flex-wrap: wrap;
+      gap: 4px 6px;
+      margin-top: -4px;
+    }
+    .profile-module-mini .mm-module-name {
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--ink);
+      letter-spacing: -0.005em;
+    }
+    .profile-module-mini .mm-module-sep {
+      color: var(--ink-3);
+      font-size: 12px;
+    }
+    .profile-module-mini .mm-module-pos {
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+      color: var(--ink-2);
+      font-variant-numeric: tabular-nums;
+      font-weight: 500;
+    }
+    .profile-module-mini .mm-lesson {
+      padding-top: 8px;
+      border-top: 1px dashed var(--line);
+    }
+    .profile-module-mini .mm-lesson-label,
+    .profile-module-mini .mm-task-label {
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--ink-3);
+      margin-bottom: 3px;
+    }
+    .profile-module-mini .mm-lesson-title {
+      font-size: 13px;
+      color: var(--ink);
+      font-weight: 500;
+      line-height: 1.3;
+    }
+    .profile-module-mini .mm-task {
+      padding-top: 8px;
+      border-top: 1px dashed var(--line);
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .profile-module-mini .mm-task-link {
+      font-size: 12.5px;
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 500;
+      line-height: 1.3;
+    }
+    .profile-module-mini .mm-task-link:hover {
+      text-decoration: underline;
+    }
+    body.color-off .profile-module-mini .mm-task-link { color: var(--ink); }
+    .profile-module-mini .mm-task-due {
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      color: var(--ink-3);
+      font-variant-numeric: tabular-nums;
+      margin-top: 1px;
+    }
+    .profile-module-mini .mm-track {
+      padding-top: 8px;
+      border-top: 1px dashed var(--line);
+    }
+    .profile-module-mini .mm-track-frac {
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      color: var(--ink-3);
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* ─── Horizontal tab strip — variant A: tabs UNDER student name
+       R2.5 (2026-05-13): overflow-x changed from `auto` to `visible` per Alex's wheel-scroll
+       bug report. Auto-overflow was trapping mouse wheel input on the tab bar — vertical
+       scrolling over the strip would not bubble to the page. Visible lets wheel events pass
+       through to the parent (`.content-area`) which is the intended scroll container. ─── */
+    .tab-strip {
+      display: flex;
+      align-items: stretch;
+      gap: 0;
+      border-bottom: 1px solid var(--line);
+      margin-bottom: 24px;
+      overflow-x: visible;
+    }
+
+    .tab-item {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--ink-3);
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      font-family: var(--font-sans);
+      white-space: nowrap;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+    }
+    .tab-item:hover {
+      color: var(--ink-2);
+    }
+    .tab-item.active {
+      color: var(--ink);
+      border-bottom-color: var(--primary);
+    }
+    .tab-item .tab-count {
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      color: var(--ink-3);
+      background: var(--bg);
+      padding: 1px 6px;
+      border-radius: 10px;
+      font-variant-numeric: tabular-nums;
+    }
+    .tab-item.active .tab-count {
+      background: var(--primary-bg);
+      color: var(--primary);
+    }
+    .tab-item svg { width: 14px; height: 14px; flex-shrink: 0; }
+
+    /* ─── Sections ─── */
+    .section-eyebrow {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--ink-3);
+      margin-bottom: 6px;
+    }
+
+    .section-heading {
+      font-family: var(--font-sans);
+      font-size: 19px;
+      font-weight: 600;
+      color: var(--ink);
+      letter-spacing: -0.012em;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+    }
+    .section-heading .section-sub {
+      font-size: 12px;
+      font-weight: 400;
+      color: var(--ink-3);
+      letter-spacing: 0;
+    }
+
+    .section-heading-row {
+      display: flex; align-items: baseline; justify-content: space-between;
+      margin-bottom: 14px;
+      gap: 12px;
+    }
+    .section-heading-row .section-heading { margin-bottom: 0; }
+    .section-actions { display: flex; gap: 8px; flex-shrink: 0; }
+
+    /* ─── Pattern 2 — fake-action button + tooltip ─── */
+    .fake-btn {
+      position: relative;
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 12px; font-weight: 500;
+      color: var(--ink-2);
+      background: var(--surface);
+      border: 1px solid var(--line);
+      padding: 5px 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-family: var(--font-sans);
+    }
+    .fake-btn:hover { background: var(--bg); border-color: var(--line-2); }
+    .fake-btn.primary {
+      color: var(--primary);
+      background: var(--primary-bg);
+      border-color: var(--primary-line);
+    }
+    .fake-btn.primary:hover { background: #e5e8f7; }
+    .fake-btn::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      top: calc(100% + 6px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--ink);
+      color: white;
+      padding: 6px 10px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 400;
+      width: max-content;
+      max-width: 240px;
+      white-space: normal;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.15s ease;
+      z-index: 100;
+      line-height: 1.4;
+    }
+    .fake-btn:hover::after { opacity: 1; }
+    .fake-btn.tooltip-left::after { left: auto; right: 0; transform: none; }
+
+    /* ─── Tasks (triage zone — renamed from "Next Steps", numbering dropped) ─── */
+    .next-steps-zone { margin-bottom: 0; }
+
+    .next-step-card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-card);
+      padding: 13px 16px 13px 14px;
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      margin-bottom: 8px;
+      position: relative;
+      transition: border-color 0.15s;
+    }
+    .next-step-card:hover { border-color: var(--line-2); }
+
+    /* Card status accent — color discipline: ONE color per row */
+    .next-step-card.is-overdue {
+      border-color: var(--line);
+      padding-left: 17px;
+    }
+    .next-step-card.is-overdue::before {
+      content: "";
+      position: absolute;
+      left: 0; top: 12px; bottom: 12px;
+      width: 3px;
+      background: var(--status-overdue);
+      border-radius: 0 2px 2px 0;
+    }
+    .next-step-card.is-active::before {
+      content: "";
+      position: absolute;
+      left: 0; top: 12px; bottom: 12px;
+      width: 3px;
+      background: var(--primary);
+      border-radius: 0 2px 2px 0;
+    }
+    .next-step-card.is-active { padding-left: 17px; }
+
+    /* Small status dot indicator (replaces 01/02/03 numbering — 5/12 Roei L92) */
+    .next-step-bullet {
+      flex-shrink: 0;
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--ink-3);
+      margin-top: 7px;
+    }
+    .next-step-card.is-overdue .next-step-bullet { background: var(--status-overdue); }
+    .next-step-card.is-active .next-step-bullet { background: var(--primary); }
+
+    .next-step-body { flex: 1; min-width: 0; }
+
+    /* CARD HIERARCHY: Student → Title → Due → supplemental
+       (this dashboard is single-student, so student is implied; title leads, due/school sit in meta column) */
+    .next-step-title-row {
+      display: flex; align-items: center; gap: 8px;
+      margin-bottom: 3px;
+    }
+    .next-step-title {
+      font-size: 13.5px;
+      font-weight: 500;
+      color: var(--ink);
+      line-height: 1.35;
+    }
+    .pin-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 10.5px; font-weight: 500;
+      color: var(--primary);
+      background: var(--primary-bg);
+      border: 1px solid var(--primary-line);
+      padding: 1px 6px 1px 5px;
+      border-radius: 4px;
+      flex-shrink: 0;
+    }
+    .pin-badge svg { width: 9px; height: 9px; }
+
+    .next-step-context {
+      font-size: 12px;
+      color: var(--ink-2);
+      line-height: 1.45;
+    }
+
+    .next-step-pin-note {
+      margin-top: 10px;
+      font-style: italic;
+      font-size: 12.5px;
+      color: var(--ink-2);
+      padding: 8px 12px 8px 13px;
+      background: #fafbff;
+      border-left: 2px solid var(--primary);
+      border-radius: 0 4px 4px 0;
+      line-height: 1.45;
+    }
+    .next-step-pin-note .pin-author {
+      font-style: italic;
+      font-size: 11.5px;
+      color: var(--ink-3);
+      margin-left: 4px;
+    }
+
+    .next-step-meta {
+      display: flex; align-items: center; gap: 7px;
+      flex-shrink: 0;
+      flex-wrap: nowrap;
+    }
+
+    .school-badge {
+      font-size: 11px; font-weight: 500;
+      color: var(--ink-2);
+      padding: 2px 8px;
+      background: var(--bg);
+      border-radius: var(--radius-chip);
+      border: 1px solid var(--line);
+      white-space: nowrap;
+    }
+
+    .due-pill {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      padding: 2px 8px;
+      border-radius: var(--radius-chip);
+      white-space: nowrap;
+      border: 1px solid transparent;
+      font-variant-numeric: tabular-nums;
+    }
+    .due-overdue {
+      background: var(--status-overdue-bg);
+      color: var(--status-overdue);
+      border-color: #fecdd3;
+    }
+    .due-soon {
+      background: var(--status-active-bg);
+      color: var(--status-active);
+      border-color: #fde68a;
+    }
+    .due-ok {
+      background: var(--status-neutral-bg);
+      color: var(--ink-2);
+      border-color: var(--line-2);
+    }
+
+    /* Universal task-status pill for next-steps + tasks */
+    .task-status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 10.5px;
+      font-weight: 500;
+      padding: 1px 7px;
+      border-radius: 12px;
+      border: 1px solid;
+      letter-spacing: 0.005em;
+      white-space: nowrap;
+    }
+    .task-status-pill::before {
+      content: "";
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .ts-not-started {
+      color: var(--ink-2);
+      background: var(--status-neutral-bg);
+      border-color: var(--line-2);
+    }
+    .ts-not-started::before { background: var(--ink-3); }
+    /* R2.5 (2026-05-13): In-Progress flipped to indigo to distinguish from Awaiting Review.
+       Indigo reads as "actively in flight" (brand interactive color). */
+    .ts-in-progress {
+      color: var(--primary);
+      background: var(--primary-bg);
+      border-color: #c7cbe8;
+    }
+    .ts-in-progress::before { background: var(--primary); }
+    /* Awaiting-review chip: solid amber fill (canonical per Alex 5/13 11:05 PM).
+       Amber = "needs attention / awaiting someone". */
+    .ts-awaiting-review {
+      color: var(--status-active);
+      background: var(--status-active-bg);
+      border-color: #fde68a;
+    }
+    .ts-awaiting-review::before { background: var(--status-active); }
+    /* Stuck = neutral pill + dashed outline (R2 5/13 — Alex: "rose is overdue only,
+       not stuck"). Dashed border carries the "broken / needs intervention" semantic
+       without doubling on the rose-overdue color budget. The accompanying card-stripe
+       + due-pill still convey urgency when this task is ALSO overdue. */
+    .ts-stuck {
+      color: var(--ink-2);
+      background: var(--surface);
+      border-color: var(--line-2);
+      border-style: dashed;
+    }
+    .ts-stuck::before {
+      background: var(--ink-2);
+      box-shadow: 0 0 0 1.5px var(--surface), 0 0 0 2.5px var(--ink-2);
+      width: 4px; height: 4px;
+    }
+    .ts-done {
+      color: var(--status-done);
+      background: var(--status-done-bg);
+      border-color: #6ee7b7;
+    }
+    .ts-done::before { background: var(--status-done); }
+
+    /* ─── Overview grid layout — Tasks 2/3 left · Schools 1/3 right (5/12 lock — Roei L81/L100) ─── */
+    .overview-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr);
+      gap: 22px;
+      margin-bottom: 24px;
+    }
+    .overview-grid > .overview-col-left,
+    .overview-grid > .overview-col-right {
+      min-width: 0;
+    }
+    .overview-col-left .section-heading-row { margin-bottom: 12px; }
+    @media (max-width: 1100px) {
+      .overview-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* ─── Module-progress widget — CURRENT MODULE ONLY + corresponding task (B1 add) ─── */
+    .modules-section { margin-bottom: 24px; }
+
+    .modules-current-card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-card);
+      padding: 14px 18px 16px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 18px;
+      align-items: center;
+    }
+
+    .modules-current-left {
+      min-width: 0;
+      display: flex; align-items: center; gap: 14px;
+    }
+    .modules-current-icon {
+      width: 36px; height: 36px;
+      border-radius: 9px;
+      background: var(--primary-bg);
+      color: var(--primary);
+      border: 1px solid var(--primary-line);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    body.color-off .modules-current-icon { background: var(--bg); color: var(--ink-2); border-color: var(--line); }
+
+    .modules-current-text { min-width: 0; }
+    .modules-current-eyebrow {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--primary);
+      margin-bottom: 2px;
+    }
+    body.color-off .modules-current-eyebrow { color: var(--ink-3); }
+    .modules-current-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--ink);
+      letter-spacing: -0.005em;
+      line-height: 1.3;
+    }
+    .modules-current-sub {
+      font-size: 12px;
+      color: var(--ink-2);
+      margin-top: 2px;
+    }
+
+    .modules-current-right {
+      display: flex; flex-direction: column; align-items: flex-end; gap: 4px;
+      flex-shrink: 0;
+    }
+    .modules-current-frac {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--ink);
+      font-variant-numeric: tabular-nums;
+    }
+    .modules-current-bar {
+      width: 110px;
+      height: 4px;
+      background: var(--line);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .modules-current-bar > div {
+      height: 100%;
+      background: var(--primary);
+      border-radius: 2px;
+      opacity: 0.65;
+    }
+    body.color-off .modules-current-bar > div { background: var(--ink-3); }
+
+    /* Linked task callout below module (B1 — Roei L138: "and the corresponding task to it") */
+    .modules-current-task {
+      grid-column: 1 / -1;
+      margin-top: 4px;
+      padding: 9px 12px;
+      background: var(--bg);
+      border: 1px dashed var(--line-2);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 12px;
+      color: var(--ink-2);
+    }
+    .modules-current-task .label {
+      font-size: 9.5px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--ink-3);
+      flex-shrink: 0;
+    }
+    .modules-current-task .task-link {
+      flex: 1;
+      color: var(--ink);
+      font-weight: 500;
+      text-decoration: none;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .modules-current-task .task-link:hover { color: var(--primary); text-decoration: underline; }
+    .modules-current-task .task-due {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--ink-3);
+      flex-shrink: 0;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* ─── Schools list (right column of overview grid — compact stacked rows) ─── */
+    .schools-section { margin-bottom: 0; }
+    .schools-section .section-heading-row { margin-bottom: 10px; }
+
+    .schools-compact {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-card);
+      overflow: hidden;
+    }
+
+    .school-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 10px;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--line);
+      align-items: center;
+    }
+    .school-row:last-child { border-bottom: none; }
+    .school-row:hover { background: var(--surface-2); cursor: pointer; }
+
+    .school-row.pinned {
+      background: var(--surface);
+      box-shadow: inset 3px 0 0 var(--primary);
+      padding-left: 14px;
+    }
+    .school-row.pinned:hover { background: var(--primary-bg); }
+
+    .school-name-block {
+      display: flex; flex-direction: column; gap: 2px; min-width: 0;
+    }
+    .school-name-row {
+      display: flex; align-items: center; gap: 6px;
+      min-width: 0;
+    }
+    .school-name {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--ink);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      min-width: 0;
+    }
+
+    .top-choice-tag {
+      font-size: 9px;
+      font-weight: 600;
+      color: var(--primary);
+      background: var(--primary-bg);
+      border: 1px solid var(--primary-line);
+      padding: 1px 5px;
+      border-radius: 3px;
+      letter-spacing: 0.04em;
+      flex-shrink: 0;
+    }
+
+    .school-row-meta {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 11px;
+      color: var(--ink-3);
+      font-family: var(--font-mono);
+      font-variant-numeric: tabular-nums;
+    }
+    .school-row-meta .progress-text { color: var(--ink-2); }
+    .school-row-meta .deadline-text { color: var(--ink-3); }
+
+    .school-row-status {
+      flex-shrink: 0;
+    }
+    .school-row-status .status-pill {
+      font-size: 10px;
+      padding: 1px 7px;
+    }
+
+    /* Mini progress bar for schools-compact rows (replaces old progress-cell) */
+    .schools-mini-bar {
+      height: 3px;
+      background: var(--line);
+      border-radius: 2px;
+      overflow: hidden;
+      margin-top: 3px;
+      width: 100%;
+    }
+    .schools-mini-bar > div {
+      height: 100%;
+      background: var(--primary);
+      border-radius: 2px;
+      opacity: 0.55;
+    }
+    .schools-mini-bar > div.complete { background: var(--status-done); opacity: 0.85; }
+    .schools-mini-bar > div.warn     { background: var(--status-active); opacity: 0.75; }
+    .schools-mini-bar > div.early    { background: var(--ink-3); opacity: 0.45; }
+
+    /* ─── Activity / Notes split ─── */
+    .activity-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      margin-bottom: 16px;
+    }
+
+    .activity-list, .notes-list {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-card);
+      overflow: hidden;
+    }
+
+    .activity-item {
+      display: flex; align-items: flex-start; gap: 10px;
+      padding: 11px 14px;
+      border-bottom: 1px solid var(--line);
+      transition: background 0.15s;
+    }
+    .activity-item:last-child { border-bottom: none; }
+
+    .activity-icon {
+      flex-shrink: 0;
+      width: 22px; height: 22px;
+      border-radius: 5px;
+      background: var(--bg);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--ink-2);
+      margin-top: 1px;
+    }
+    /* D8.5 — neutral by default; only Mode E (color-full) restores purple tint.
+       Avoids token collision with .ws-perfectionist in Modes C/D. */
+    .activity-icon.evt-snapshot {
+      background: var(--bg);
+      color: var(--ink-2);
+    }
+    body.color-full .activity-icon.evt-snapshot {
+      background: #ede9fe;
+      color: var(--ws-perfectionist);
+    }
+    .activity-icon.evt-status-done {
+      background: var(--status-done-bg);
+      color: var(--status-done);
+    }
+    .activity-icon.evt-status-active {
+      background: var(--status-active-bg);
+      color: var(--status-active);
+    }
+    .activity-icon svg { width: 12px; height: 12px; }
+
+    .activity-body { flex: 1; min-width: 0; }
+    .activity-text {
+      font-size: 12.5px;
+      color: var(--ink);
+      line-height: 1.4;
+    }
+    .activity-text .actor {
+      font-weight: 500;
+    }
+    .activity-text .object {
+      color: var(--ink-2);
+    }
+    .activity-time {
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      color: var(--ink-3);
+      margin-top: 2px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .note-row {
+      display: flex; align-items: flex-start; gap: 12px;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line);
+    }
+    .note-row:last-child { border-bottom: none; }
+    .note-row:hover { background: var(--surface-2); }
+
+    .note-date {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--ink-3);
+      flex-shrink: 0;
+      min-width: 50px;
+      margin-top: 2px;
+      font-variant-numeric: tabular-nums;
+    }
+    .note-preview {
+      flex: 1;
+      font-size: 12.5px;
+      color: var(--ink-2);
+      line-height: 1.5;
+    }
+    .note-preview strong {
+      color: var(--ink);
+      font-weight: 500;
+    }
+    .author-chip {
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      background: transparent;
+      color: var(--ink-2);
+      font-size: 9.5px;
+      font-weight: 600;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      border: 1px solid var(--line-2);
+    }
+    /* D8.8 — Mode E restores indigo fill on author-chip */
+    body.color-full .author-chip {
+      background: var(--primary-bg);
+      color: var(--primary);
+      border-color: var(--primary-line);
+    }
+
+    /* ─── Right rail DROPPED entirely per 5/12 lock (Roei L81). ─── */
+
+    /* ─── Pattern 3 — design-intent overlay (preserved infrastructure) ─── */
+    [data-design-note] { position: relative; }
+    body.design-notes-on [data-design-note] {
+      outline: 2px dashed var(--primary);
+      outline-offset: 3px;
+      border-radius: 4px;
+    }
+    body.design-notes-on [data-design-note]::after {
+      content: attr(data-note-num);
+      position: absolute;
+      top: -11px; left: -11px;
+      width: 22px; height: 22px;
+      background: var(--primary);
+      color: white;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.18), 0 0 0 2px white;
+      z-index: 40;
+      font-variant-numeric: tabular-nums;
+      pointer-events: none;
+    }
+
+    .design-panel {
+      position: fixed;
+      top: 60px; right: 14px;
+      width: 296px;
+      max-height: calc(100vh - 80px);
+      background: var(--surface);
+      border: 1px solid var(--line-2);
+      border-radius: 8px;
+      box-shadow: 0 14px 32px rgba(15, 23, 42, 0.14), 0 2px 6px rgba(15, 23, 42, 0.06);
+      z-index: 50;
+      display: none;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    body.design-notes-on .design-panel { display: flex; }
+
+    .design-panel-header {
+      padding: 13px 14px 11px;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(180deg, #f5f6fc 0%, #fafbff 100%);
+    }
+    .design-panel-eyebrow {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--primary);
+      margin-bottom: 3px;
+    }
+    .design-panel-title {
+      font-family: var(--font-sans);
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--ink);
+      letter-spacing: -0.01em;
+    }
+    .design-panel-sub {
+      font-size: 11.5px;
+      color: var(--ink-2);
+      margin-top: 3px;
+      font-style: italic;
+    }
+    .design-panel-list {
+      overflow-y: auto;
+      padding: 4px 0;
+    }
+    .design-panel-list::-webkit-scrollbar { width: 5px; }
+    .design-panel-list::-webkit-scrollbar-thumb { background: var(--line-2); border-radius: 3px; }
+
+    .design-note {
+      display: flex; gap: 10px;
+      padding: 11px 14px;
+      border-bottom: 1px solid var(--line);
+    }
+    .design-note:last-child { border-bottom: none; }
+    .design-note:hover { background: #fafbff; }
+
+    .design-note-num {
+      width: 20px; height: 20px;
+      background: var(--primary-bg);
+      color: var(--primary);
+      border: 1px solid var(--primary-line);
+      border-radius: 50%;
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      font-weight: 500;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      margin-top: 1px;
+      font-variant-numeric: tabular-nums;
+    }
+    .design-note-body {
+      flex: 1;
+      font-size: 12px;
+      color: var(--ink-2);
+      line-height: 1.45;
+    }
+    .design-note-title {
+      font-weight: 500;
+      color: var(--ink);
+      margin-bottom: 2px;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body class="color-status">
+
+<div class="shell">
+
+  <!-- ─── TOPBAR ─── -->
+  <header class="topbar">
+    <div class="topbar-brand">
+      <a href="../index.html" class="brand-link" aria-label="Back to demo index">
+        <div class="brand-mark" aria-label="App">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="white" stroke-width="1.4">
+            <circle cx="7" cy="7" r="5.5"/>
+            <circle cx="7" cy="7" r="2.5"/>
+          </svg>
+        </div>
+      </a>
+    </div>
+    <div class="topbar-breadcrumb">
+      <span>Students</span>
+      <span class="bc-sep">/</span>
+      <span class="bc-current">Maya Chen</span>
+      <span class="bc-sep">/</span>
+      <span>Overview</span>
+    </div>
+    <div class="topbar-actions">
+      <button class="icon-btn" aria-label="Notifications">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/>
+          <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>
+        </svg>
+        <span class="notif-dot"></span>
+      </button>
+      <div class="avatar-sm" title="Your account">XJ</div>
+    </div>
+  </header>
+
+  <!-- ─── BODY ─── -->
+  <div class="body-row">
+
+    <!-- ─── SIDEBAR (workspace nav ONLY in horizontal-tabs variant) ─── -->
+    <nav class="sidebar" data-design-note="locked-nav" data-note-num="6">
+      <div class="nav-section">
+        <div class="nav-section-label">Workspace</div>
+        <div class="nav-item active">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="8.5" cy="7" r="4"/>
+            <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+            <path d="M15 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+          Students
+        </div>
+        <div class="nav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="5" width="6" height="6" rx="1"/>
+            <path d="m3 17 2 2 4-4"/>
+            <path d="M13 6h8"/>
+            <path d="M13 12h8"/>
+            <path d="M13 18h8"/>
+          </svg>
+          Cross-Tasks
+        </div>
+        <div class="nav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+            <line x1="16" y1="2" x2="16" y2="6"/>
+            <line x1="8" y1="2" x2="8" y2="6"/>
+            <line x1="3" y1="10" x2="21" y2="10"/>
+          </svg>
+          Calendar
+        </div>
+        <div class="nav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+            <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+          </svg>
+          Modules
+        </div>
+      </div>
+
+      <!-- Tiny student-context indicator (so the sidebar still shows "we're in Maya's record") -->
+      <div class="sidebar-footer">
+        <div class="sidebar-footer-avatar">M</div>
+        <div class="sidebar-footer-text">
+          <div class="sidebar-footer-eyebrow">Viewing</div>
+          <div class="sidebar-footer-name">Maya Chen</div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- ─── MAIN ─── -->
+    <div class="main-content">
+      <div class="content-area">
+
+        <!-- ─── PROFILE SECTION ROW (R2.5 5/13)
+             Wraps profile-top + always-visible module-mini side-by-side. Mini sits in the
+             slot that previously held only collapsible right-side whitespace, and stays
+             visible regardless of profile collapse state. ─── -->
+        <div class="profile-section-row">
+
+        <!-- ─── UNIFIED PROFILE-TOP HEADER (page header doubles as profile band; B5 color-accent applied) ─── -->
+        <div class="profile-top" data-design-note="profile-top" data-note-num="1">
+          <div class="profile-top-header" id="profile-header">
+            <div class="profile-top-avatar">MC</div>
+
+            <div class="profile-top-name-block">
+              <div class="profile-top-name">Maya Chen</div>
+              <div class="profile-top-meta-row">
+                <span class="status-pill pill-neutral">REA Deferred</span>
+                <span class="status-pill pill-indigo">LOCI active</span>
+                <span class="header-meta-divider"></span>
+                <span class="header-year"><strong>Class of 2027</strong> · Senior · Studio Art</span>
+                <span class="header-meta-divider"></span>
+                <span class="ws-chip ws-perfectionist" title="Working style — counselor metadata, not status">Perfectionist</span>
+                <span class="ws-chip ws-anxious" title="Working style — counselor metadata, not status">Stress-anxious</span>
+              </div>
+            </div>
+
+            <div class="profile-top-actions">
+              <button id="profile-toggle" class="profile-collapse-btn" aria-expanded="true" aria-controls="profile-body">
+                <span class="label">Hide profile</span>
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="6 9 12 15 18 9"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="profile-top-body" id="profile-body">
+
+            <div class="profile-block">
+              <div class="profile-block-label">Quick stats</div>
+              <div class="stats-mini-grid">
+                <div class="stat"><span class="label">GPA (UW)</span><span class="value">3.96</span></div>
+                <div class="stat"><span class="label">SAT</span><span class="value">1530</span></div>
+                <div class="stat"><span class="label">Major</span><span class="value text">Studio Art</span></div>
+                <div class="stat"><span class="label">2nd</span><span class="value text">Art History</span></div>
+              </div>
+            </div>
+
+            <div class="profile-block">
+              <div class="profile-block-label">Hooks</div>
+              <div class="hooks-row">
+                <span class="hook-tag">First-gen college</span>
+                <span class="hook-tag">Studio art portfolio</span>
+                <span class="hook-tag">NYC public school</span>
+              </div>
+            </div>
+
+            <div class="profile-block">
+              <div class="profile-block-label">Family / Contacts</div>
+              <div class="stats-mini-grid">
+                <div class="stat"><span class="label">Parent</span><span class="value text">Linda Chen</span></div>
+                <div class="stat"><span class="label">Phone</span><span class="value">917 555 0143</span></div>
+                <div class="stat"><span class="label">Region</span><span class="value text">NYC · LES</span></div>
+                <div class="stat"><span class="label">Citizen</span><span class="value text">US</span></div>
+              </div>
+            </div>
+
+            <div class="profile-block">
+              <div class="profile-block-label">Meetings</div>
+              <div class="meeting-row">
+                <span class="meeting-label">Last</span>
+                <span class="meeting-value">2d ago</span>
+              </div>
+              <div class="meeting-row">
+                <span class="meeting-label">Next</span>
+                <span class="meeting-value">Tom · 4pm</span>
+              </div>
+              <div class="meeting-row">
+                <span class="meeting-label">Cycle</span>
+                <span class="meeting-value">Dec 15</span>
+              </div>
+            </div>
+
+            <!-- R2.5 5/13: Module-mini moved OUT of profile-top-body and into its own
+                 always-visible aside sibling (.profile-section-row > .profile-module-mini below).
+                 Reason: visible when profile collapses + tall-rectangular shape needs vertical
+                 stack room that the horizontal 4-column grid can't provide. -->
+
+          </div>
+        </div>
+
+        <!-- ─── MODULE MINI (R2.5 5/13)
+             Tall-rectangular always-visible card: module name + current lesson + linked task + due.
+             Replaces the previously-removed standalone Module Progress widget below. ─── -->
+        <aside class="profile-module-mini" data-design-note="module-mini" data-note-num="9" aria-label="Current module progress">
+          <div class="mm-eyebrow">Module progress</div>
+          <div class="mm-module-row">
+            <span class="mm-module-name">Application Strategy</span>
+            <span class="mm-module-sep">·</span>
+            <span class="mm-module-pos">Lesson 2 of 5</span>
+          </div>
+          <div class="mm-lesson">
+            <div class="mm-lesson-label">This lesson</div>
+            <div class="mm-lesson-title">School research deep-dive</div>
+          </div>
+          <div class="mm-task">
+            <div class="mm-task-label">Linked task</div>
+            <a class="mm-task-link" href="#">Finish school deep-dive worksheet</a>
+            <span class="mm-task-due">Due Dec 19</span>
+          </div>
+          <div class="mm-track">
+            <span class="mm-track-frac">9 of 16 lessons in track</span>
+          </div>
+        </aside>
+
+        </div><!-- /profile-section-row -->
+
+        <!-- ─── HORIZONTAL TAB STRIP — Variant A ─── -->
+        <div class="tab-strip" data-design-note="horizontal-tabs" data-note-num="3" role="tablist" aria-label="Student sections">
+          <button class="tab-item active" role="tab" aria-selected="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="7" height="9" rx="1"/>
+              <rect x="14" y="3" width="7" height="5" rx="1"/>
+              <rect x="14" y="12" width="7" height="9" rx="1"/>
+              <rect x="3" y="16" width="7" height="5" rx="1"/>
+            </svg>
+            Overview
+          </button>
+          <button class="tab-item" role="tab">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+              <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+            </svg>
+            Schools <span class="tab-count">12</span>
+          </button>
+          <button class="tab-item" role="tab">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 11 12 14 22 4"/>
+              <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+            </svg>
+            Tasks <span class="tab-count">8</span>
+          </button>
+          <button class="tab-item" role="tab">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+              <circle cx="12" cy="13" r="4"/>
+            </svg>
+            Snapshots <span class="tab-count">18</span>
+          </button>
+          <button class="tab-item" role="tab">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+              <line x1="8" y1="13" x2="16" y2="13"/>
+              <line x1="8" y1="17" x2="13" y2="17"/>
+            </svg>
+            Documents <span class="tab-count">9</span>
+          </button>
+          <button class="tab-item" role="tab">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2"/>
+              <line x1="16" y1="2" x2="16" y2="6"/>
+              <line x1="8" y1="2" x2="8" y2="6"/>
+              <line x1="3" y1="10" x2="21" y2="10"/>
+              <path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/>
+            </svg>
+            Meetings <span class="tab-count">7</span>
+          </button>
+          <button class="tab-item" role="tab">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M2 6h4M2 10h4M2 14h4M2 18h4"/>
+              <rect x="6" y="3" width="14" height="18" rx="2"/>
+              <path d="m15.5 8 2.5 2.5L13 16h-2.5v-2.5z"/>
+            </svg>
+            Notes <span class="tab-count">11</span>
+          </button>
+        </div>
+
+        <!-- ─── OVERVIEW GRID — Tasks 2/3 left · Schools 1/3 right (5/12 lock Roei L81/L100) ─── -->
+        <div class="overview-grid" data-design-note="overview-grid" data-note-num="3">
+
+          <!-- LEFT COLUMN — Tasks (renamed from "Next steps", numbering dropped) -->
+          <div class="overview-col-left">
+            <div class="next-steps-zone" data-design-note="tasks-zone" data-note-num="4">
+              <div class="section-heading-row">
+                <div>
+                  <div class="section-eyebrow">Triage · This week</div>
+                  <div class="section-heading">
+                    Tasks
+                    <span class="section-sub">5 upcoming · sorted by urgency</span>
+                  </div>
+                </div>
+                <div class="section-actions">
+                  <button class="fake-btn" data-tooltip="Adds a new task to Maya's list — opens modal with title, school, due date, status">+ Add task</button>
+                  <button class="fake-btn primary tooltip-left" data-tooltip="Generates a printable agenda from these 5 items, scoped to tomorrow's 4pm meeting">Build meeting agenda</button>
+                </div>
+              </div>
+
+              <!-- Pinned, overdue -->
+              <div class="next-step-card is-overdue" data-design-note="card-hierarchy" data-note-num="5">
+                <div class="next-step-bullet"></div>
+                <div class="next-step-body">
+                  <div class="next-step-title-row">
+                    <div class="next-step-title">Finalize Yale LOCI — second draft needs a single specific anchor</div>
+                    <span class="pin-badge">
+                      <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+                        <path d="M6 1.5v3.2L8 7v1.5H4V7l2-2.3V1.5"/>
+                        <line x1="6" y1="8.5" x2="6" y2="11"/>
+                      </svg>
+                      Pinned
+                    </span>
+                  </div>
+                  <div class="next-step-context">Reads as a list of accomplishments. Needs one concrete printmaking project tying her practice to Yale's MFA-undergrad crossover. Bring to tomorrow's meeting.</div>
+                  <div class="next-step-pin-note">
+                    "Don't let her over-edit again — give her a 90-min window, kill the doc, move on. Two more drafts won't help."
+                    <span class="pin-author">— XJ · pinned Dec 13</span>
+                  </div>
+                </div>
+                <div class="next-step-meta">
+                  <span class="task-status-pill ts-stuck">Stuck</span>
+                  <span class="school-badge">Yale</span>
+                  <span class="due-pill due-overdue">Overdue · 3d</span>
+                </div>
+              </div>
+
+              <div class="next-step-card is-overdue">
+                <div class="next-step-bullet"></div>
+                <div class="next-step-body">
+                  <div class="next-step-title">RISD LOCI — second deferral, scholarship essay still blank</div>
+                  <div class="next-step-context">CSS Profile filed. Scholarship-specific 300-word artistic intent essay is a blank doc. RISD wants this with the LOCI, not after.</div>
+                </div>
+                <div class="next-step-meta">
+                  <span class="task-status-pill ts-not-started">Not started</span>
+                  <span class="school-badge">RISD</span>
+                  <span class="due-pill due-overdue">Overdue · 1d</span>
+                </div>
+              </div>
+
+              <div class="next-step-card is-active">
+                <div class="next-step-bullet"></div>
+                <div class="next-step-body">
+                  <div class="next-step-title">Penn "Why Penn?" supplement — first full draft</div>
+                  <div class="next-step-context">Outline approved Dec 10. She's stuck on the bridge between her art practice and Wharton-adjacent thinking. Suggest: open with the Brooklyn studio anecdote.</div>
+                </div>
+                <div class="next-step-meta">
+                  <span class="task-status-pill ts-in-progress">In progress</span>
+                  <span class="school-badge">Penn</span>
+                  <span class="due-pill due-soon">Due Dec 18</span>
+                </div>
+              </div>
+
+              <div class="next-step-card">
+                <div class="next-step-bullet"></div>
+                <div class="next-step-body">
+                  <div class="next-step-title">Brown REA result expected — prep regrouping convo either way</div>
+                  <div class="next-step-context">Brown decisions release Dec 14-16. Two outcomes to plan for: defer (third LOCI, exhausting) or admit (list trimming). Don't get caught flat-footed.</div>
+                </div>
+                <div class="next-step-meta">
+                  <span class="task-status-pill ts-awaiting-review">Awaiting review</span>
+                  <span class="school-badge">Brown</span>
+                  <span class="due-pill due-soon">This week</span>
+                </div>
+              </div>
+
+              <div class="next-step-card">
+                <div class="next-step-bullet"></div>
+                <div class="next-step-body">
+                  <div class="next-step-title">RD list audit — Northwestern + Dartmouth still in researching</div>
+                  <div class="next-step-context">Two RD schools haven't moved past research. Either commit + draft this week or cut. Perfectionist tendency = she'll keep them on the list and not draft.</div>
+                </div>
+                <div class="next-step-meta">
+                  <span class="task-status-pill ts-not-started">Not started</span>
+                  <span class="school-badge">3 schools</span>
+                  <span class="due-pill due-ok">Dec 23</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- RIGHT COLUMN — Schools (compact) -->
+          <div class="overview-col-right">
+            <div class="schools-section" data-design-note="schools-list" data-note-num="6">
+              <div class="section-heading-row">
+                <div>
+                  <div class="section-eyebrow">Applications</div>
+                  <div class="section-heading">
+                    Schools
+                    <span class="section-sub">12 · ED/REA · RD · UC</span>
+                  </div>
+                </div>
+                <div class="section-actions">
+                  <button class="fake-btn tooltip-left" data-tooltip="Add a school to Maya's list — opens search with deadline + round picker">+ Add</button>
+                </div>
+              </div>
+              <div class="schools-compact">
+
+                <div class="school-row pinned">
+                  <div class="school-name-block">
+                    <div class="school-name-row">
+                      <span class="school-name">Yale</span>
+                      <span class="top-choice-tag">★ TOP</span>
+                    </div>
+                    <div class="school-row-meta">
+                      <span class="progress-text">3/3</span>
+                      <span class="deadline-text">· Dec 14</span>
+                    </div>
+                  </div>
+                  <div class="school-row-status"><span class="status-pill pill-neutral">REA Def.</span></div>
+                </div>
+
+                <div class="school-row">
+                  <div class="school-name-block">
+                    <div class="school-name-row"><span class="school-name">RISD</span></div>
+                    <div class="school-row-meta"><span class="progress-text">1/2</span><span class="deadline-text">· Dec 16</span></div>
+                  </div>
+                  <div class="school-row-status"><span class="status-pill pill-neutral">ED Def.</span></div>
+                </div>
+
+                <div class="school-row">
+                  <div class="school-name-block">
+                    <div class="school-name-row"><span class="school-name">Brown</span></div>
+                    <div class="school-row-meta"><span class="progress-text">4/4</span><span class="deadline-text">· Dec 14</span></div>
+                  </div>
+                  <div class="school-row-status"><span class="status-pill pill-neutral">REA</span></div>
+                </div>
+
+                <div class="school-row">
+                  <div class="school-name-block">
+                    <div class="school-name-row"><span class="school-name">Penn</span></div>
+                    <div class="school-row-meta"><span class="progress-text">1/3</span><span class="deadline-text">· Jan 5</span></div>
+                  </div>
+                  <div class="school-row-status"><span class="status-pill pill-neutral">RD</span></div>
+                </div>
+
+                <div class="school-row">
+                  <div class="school-name-block">
+                    <div class="school-name-row"><span class="school-name">Cornell</span></div>
+                    <div class="school-row-meta"><span class="progress-text">2/4</span><span class="deadline-text">· Jan 2</span></div>
+                  </div>
+                  <div class="school-row-status"><span class="status-pill pill-neutral">RD</span></div>
+                </div>
+
+                <div class="school-row">
+                  <div class="school-name-block">
+                    <div class="school-name-row"><span class="school-name">NYU Tisch</span></div>
+                    <div class="school-row-meta"><span class="progress-text">2/3</span><span class="deadline-text">· Jan 5</span></div>
+                  </div>
+                  <div class="school-row-status"><span class="status-pill pill-neutral">RD</span></div>
+                </div>
+
+                <div class="school-row">
+                  <div class="school-name-block">
+                    <div class="school-name-row"><span class="school-name">USC Roski</span></div>
+                    <div class="school-row-meta"><span class="progress-text">1/2</span><span class="deadline-text">· Dec 1*</span></div>
+                  </div>
+                  <div class="school-row-status"><span class="status-pill pill-neutral">RD</span></div>
+                </div>
+
+                <div class="school-row">
+                  <div class="school-name-block">
+                    <div class="school-name-row"><span class="school-name">Northwestern</span></div>
+                    <div class="school-row-meta"><span class="progress-text">0/3</span><span class="deadline-text">· Jan 2</span></div>
+                  </div>
+                  <div class="school-row-status"><span class="status-pill pill-neutral">Research</span></div>
+                </div>
+
+                <div class="school-row">
+                  <div class="school-name-block">
+                    <div class="school-name-row"><span class="school-name">Dartmouth</span></div>
+                    <div class="school-row-meta"><span class="progress-text">0/3</span><span class="deadline-text">· Jan 3</span></div>
+                  </div>
+                  <div class="school-row-status"><span class="status-pill pill-neutral">Research</span></div>
+                </div>
+
+                <div class="school-row">
+                  <div class="school-name-block">
+                    <div class="school-name-row"><span class="school-name">Pratt</span></div>
+                    <div class="school-row-meta"><span class="progress-text">1/2</span><span class="deadline-text">· Jan 5</span></div>
+                  </div>
+                  <div class="school-row-status"><span class="status-pill pill-neutral">RD</span></div>
+                </div>
+
+                <div class="school-row">
+                  <div class="school-name-block">
+                    <div class="school-name-row"><span class="school-name">UC Berkeley</span></div>
+                    <div class="school-row-meta"><span class="progress-text">4/4</span><span class="deadline-text">· sent Nov 30</span></div>
+                  </div>
+                  <div class="school-row-status"><span class="status-pill pill-done">Submitted</span></div>
+                </div>
+
+                <div class="school-row">
+                  <div class="school-name-block">
+                    <div class="school-name-row"><span class="school-name">UCLA</span></div>
+                    <div class="school-row-meta"><span class="progress-text">4/4</span><span class="deadline-text">· sent Nov 30</span></div>
+                  </div>
+                  <div class="school-row-status"><span class="status-pill pill-done">Submitted</span></div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /overview-grid -->
+
+        <!-- R2.5 5/13: Standalone Module Progress widget REMOVED.
+             Module info now lives ONLY in the profile-module-mini card (top-right of profile band).
+             Removed per Alex 11:07 PM: "we do not need to have it at the top and the bottom." -->
+
+        <!-- ─── ACTIVITY + NOTES (split per v2 lock) ─── -->
+        <div class="activity-grid" data-design-note="activity-split" data-note-num="8">
+
+          <!-- Auto-events feed (Recent Activity) -->
+          <div>
+            <div>
+              <div class="section-heading">
+                Recent activity
+              </div>
+            </div>
+            <div class="activity-list">
+              <div class="activity-item">
+                <div class="activity-icon evt-snapshot">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                    <circle cx="12" cy="13" r="3.5"/>
+                  </svg>
+                </div>
+                <div class="activity-body">
+                  <div class="activity-text"><span class="actor">Maya</span> <span class="object">uploaded snapshot to Yale LOCI v3 (PDF, 12 pages)</span></div>
+                  <div class="activity-time">Today · 9:41am</div>
+                </div>
+              </div>
+              <div class="activity-item">
+                <div class="activity-icon evt-status-active">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="9"/>
+                    <polyline points="12 7 12 12 15 14"/>
+                  </svg>
+                </div>
+                <div class="activity-body">
+                  <div class="activity-text"><span class="object">Status changed:</span> <span class="actor">Penn "Why Penn?"</span> <span class="object">→ In progress</span></div>
+                  <div class="activity-time">Yesterday · 4:12pm</div>
+                </div>
+              </div>
+              <div class="activity-item">
+                <div class="activity-icon evt-status-done">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"/>
+                  </svg>
+                </div>
+                <div class="activity-body">
+                  <div class="activity-text"><span class="object">Submitted:</span> <span class="actor">UCLA (UC application)</span></div>
+                  <div class="activity-time">Dec 7 · 11:02pm</div>
+                </div>
+              </div>
+              <div class="activity-item">
+                <div class="activity-icon evt-snapshot">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                    <circle cx="12" cy="13" r="3.5"/>
+                  </svg>
+                </div>
+                <div class="activity-body">
+                  <div class="activity-text"><span class="actor">Maya</span> <span class="object">uploaded snapshot to RISD LOCI v1 (DOCX)</span></div>
+                  <div class="activity-time">Dec 6 · 7:18pm</div>
+                </div>
+              </div>
+              <div class="activity-item">
+                <div class="activity-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+                  </svg>
+                </div>
+                <div class="activity-body">
+                  <div class="activity-text"><span class="object">Comment thread closed on</span> <span class="actor">Brown supplement v4</span></div>
+                  <div class="activity-time">Dec 5 · 3:30pm</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Manual notes (Recent Notes) — explicitly separate per v2 lock -->
+          <div>
+            <div>
+              <div class="section-heading">
+                Recent notes
+                <span class="section-sub">(internal only)</span>
+              </div>
+            </div>
+            <div class="notes-list">
+              <div class="note-row">
+                <span class="note-date">Dec 13</span>
+                <div class="note-preview">
+                  <strong>Post-meeting:</strong> Maya was rattled by the second deferral (RISD) on top of Yale. We talked about LOCI as opportunity, not penance. Energy improved by end. Action: keep this week's drafts tight; don't pile on.
+                </div>
+                <div class="author-chip">XJ</div>
+              </div>
+              <div class="note-row">
+                <span class="note-date">Dec 11</span>
+                <div class="note-preview">
+                  <strong>RISD scholarship:</strong> Confirmed via portal that the merit essay is required — Maya wasn't aware. Sent her the prompt. She needs to treat this like a mini common-app essay, not an artist statement.
+                </div>
+                <div class="author-chip">XJ</div>
+              </div>
+              <div class="note-row">
+                <span class="note-date">Dec 8</span>
+                <div class="note-preview">
+                  <strong>Portfolio review:</strong> Final portfolio PDF sent to Penn art dept contact for informal review. Not official — relationship check-in.
+                </div>
+                <div class="author-chip">XJ</div>
+              </div>
+              <div class="note-row">
+                <span class="note-date">Dec 3</span>
+                <div class="note-preview">
+                  <strong>List strategy:</strong> Parents asked about adding more safeties. Pushed back — Pratt and SVA are real options if she engages with them.
+                </div>
+                <div class="author-chip">XJ</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /content-area -->
+
+      <!-- Right rail DROPPED per 5/12 lock (Roei L81). Profile fold-in to header replaces it. -->
+
+    </div><!-- /main-content -->
+  </div><!-- /body-row -->
+</div><!-- /shell -->
+
+<script>
+  // Right rail dropped — no rail-toggle handler needed.
+
+  // Profile collapse — unified profile-top header band
+  document.getElementById('profile-toggle').addEventListener('click', (e) => {
+    e.stopPropagation();
+    document.body.classList.toggle('profile-collapsed');
+    const collapsed = document.body.classList.contains('profile-collapsed');
+    document.querySelector('#profile-toggle .label').textContent = collapsed ? 'Show profile' : 'Hide profile';
+    document.getElementById('profile-toggle').setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+  });
+
+  // Tab strip — visible affordance only (mock)
+  document.querySelectorAll('.tab-item').forEach(t => {
+    t.addEventListener('click', () => {
+      document.querySelectorAll('.tab-item').forEach(x => {
+        x.classList.remove('active');
+        x.setAttribute('aria-selected', 'false');
+      });
+      t.classList.add('active');
+      t.setAttribute('aria-selected', 'true');
+    });
+  });
+</script>
+
+</body>
+</html>

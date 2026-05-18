@@ -1,0 +1,1235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Counselor LMS — IECA Baltimore 2026</title>
+<meta name="description" content="Static HTML mockup index — Counselor LMS, IECA Baltimore booth 2026-05-18." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500&family=Geist:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f7f8fa;
+    --surface: #ffffff;
+    --surface-2: #fbfcfd;
+    --ink: #0f1419;
+    --ink-2: #475569;
+    --ink-3: #94a3b8;
+    --line: #e4e6eb;
+    --line-2: #cbd5e1;
+
+    --sidebar: #0f172a;
+    --sidebar-ink: #cbd5e1;
+
+    --primary: #5b5fcf;
+    --primary-bg: #eef0fb;
+    --primary-line: #c7cbe8;
+
+    --emerald: #047857;
+    --emerald-bg: #d1fae5;
+    --amber: #b45309;
+    --amber-bg: #fef3c7;
+    --rose: #be123c;
+    --rose-bg: #ffe4e6;
+
+    --radius: 6px;
+    --radius-card: 10px;
+    --radius-chip: 4px;
+  }
+
+  html, body { background: var(--bg); color: var(--ink); min-height: 100%; }
+  body {
+    font-family: 'Geist', system-ui, sans-serif;
+    font-size: 14px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    font-feature-settings: "ss01", "cv11";
+  }
+
+  /* ─── Topbar ─── */
+  .topbar {
+    height: 56px;
+    background: var(--sidebar);
+    display: flex;
+    align-items: center;
+    padding: 0 32px;
+    color: #fff;
+  }
+  .topbar-brand {
+    display: flex; align-items: center; gap: 12px;
+  }
+  .brand-mark {
+    width: 30px; height: 30px;
+    border-radius: 8px;
+    background: var(--primary);
+    display: inline-flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .brand-mark svg { display: block; }
+  .topbar-title {
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: -0.005em;
+    color: #ffffff;
+  }
+  .topbar-eyebrow {
+    margin-left: 14px;
+    font-family: 'Geist Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(203, 213, 225, 0.7);
+    padding-left: 14px;
+    border-left: 1px solid rgba(255,255,255,0.12);
+  }
+  .topbar-meta {
+    margin-left: auto;
+    font-family: 'Geist Mono', monospace;
+    font-size: 11px;
+    color: rgba(203, 213, 225, 0.65);
+    letter-spacing: 0.04em;
+  }
+  .topbar-meta .live-dot {
+    display: inline-block;
+    width: 7px; height: 7px;
+    background: #34d399;
+    border-radius: 50%;
+    margin-right: 6px;
+    vertical-align: 1px;
+    box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.18);
+  }
+
+  /* ─── Page wrapper ─── */
+  .page {
+    max-width: 1320px;
+    margin: 0 auto;
+    padding: 48px 40px 80px;
+  }
+
+  /* ─── Hero ─── */
+  .hero {
+    margin-bottom: 32px;
+  }
+  .hero-eyebrow {
+    font-family: 'Geist Mono', monospace;
+    font-size: 11px;
+    color: var(--primary);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .hero-eyebrow::before {
+    content: "";
+    width: 20px; height: 1px;
+    background: var(--primary-line);
+  }
+  .hero h1 {
+    font-size: 32px;
+    font-weight: 600;
+    letter-spacing: -0.024em;
+    line-height: 1.1;
+    color: var(--ink);
+    margin-bottom: 14px;
+    max-width: 720px;
+  }
+  .hero .lede {
+    font-size: 15px;
+    color: var(--ink-2);
+    max-width: 660px;
+    line-height: 1.55;
+  }
+
+  /* ─── Filter bar (visual only — no real filter logic) ─── */
+  .filter-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 28px;
+    padding: 14px 18px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    flex-wrap: wrap;
+  }
+  .filter-bar-label {
+    font-family: 'Geist Mono', monospace;
+    font-size: 10.5px;
+    color: var(--ink-3);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-right: 6px;
+  }
+  .filter-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: 100px;
+    font-size: 12.5px;
+    color: var(--ink-2);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    user-select: none;
+  }
+  .filter-chip:hover {
+    border-color: var(--primary-line);
+    color: var(--ink);
+  }
+  .filter-chip.active {
+    background: var(--primary-bg);
+    border-color: var(--primary-line);
+    color: var(--primary);
+    font-weight: 500;
+  }
+  .filter-chip .count {
+    font-family: 'Geist Mono', monospace;
+    font-size: 10.5px;
+    background: rgba(15, 20, 25, 0.06);
+    padding: 1px 6px;
+    border-radius: 3px;
+    color: var(--ink-3);
+  }
+  .filter-chip.active .count {
+    background: rgba(91, 95, 207, 0.15);
+    color: var(--primary);
+  }
+
+  /* ─── Catalog grid ─── */
+  .catalog {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px;
+  }
+
+  .tile {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-card);
+    text-decoration: none;
+    color: var(--ink);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: border-color 0.18s, transform 0.18s, box-shadow 0.18s;
+  }
+  .tile:hover {
+    border-color: var(--primary-line);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 22px -10px rgba(91, 95, 207, 0.2);
+  }
+  .tile:hover .tile-arrow {
+    color: var(--primary);
+    transform: translateX(2px);
+  }
+
+  /* ─── Thumbnail container ─── */
+  .thumb {
+    height: 148px;
+    background: var(--surface-2);
+    border-bottom: 1px solid var(--line);
+    position: relative;
+    overflow: hidden;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+  }
+  .thumb::before {
+    /* Subtle background grain — chrome bar at top */
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 6px;
+    background: linear-gradient(180deg, rgba(15, 23, 42, 0.04) 0%, transparent 100%);
+  }
+
+  /* ─── Tile body ─── */
+  .tile-body {
+    padding: 16px 18px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+  }
+  .tile-cat {
+    font-family: 'Geist Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-3);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .tile-cat.per-student { color: var(--primary); }
+  .tile-cat.cross-student { color: var(--amber); }
+  .tile-cat.documents { color: var(--emerald); }
+  .tile-cat.modules { color: #7c3aed; }
+  .tile-name {
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: -0.008em;
+    color: var(--ink);
+    line-height: 1.3;
+  }
+  .tile-blurb {
+    font-size: 12.5px;
+    color: var(--ink-2);
+    line-height: 1.45;
+    margin-top: 6px;
+  }
+  .tile-foot {
+    margin-top: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .tile-path {
+    font-family: 'Geist Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-3);
+    letter-spacing: 0.01em;
+  }
+  .tile-arrow {
+    width: 14px; height: 14px;
+    color: var(--ink-3);
+    transition: color 0.18s, transform 0.18s;
+    flex-shrink: 0;
+  }
+
+  /* ─── Thumbnail components (CSS-only mini visualizations) ─── */
+  /* Generic horizontal lines */
+  .mini-line {
+    height: 5px;
+    background: var(--line-2);
+    border-radius: 2px;
+    margin-bottom: 5px;
+  }
+  .mini-line.w70 { width: 70%; }
+  .mini-line.w50 { width: 50%; }
+  .mini-line.w40 { width: 40%; }
+  .mini-line.w30 { width: 30%; }
+  .mini-line.w90 { width: 90%; }
+  .mini-line.dark { background: var(--ink); }
+  .mini-line.primary { background: var(--primary); }
+
+  /* Tab strip */
+  .mini-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 10px;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 6px;
+  }
+  .mini-tab {
+    height: 5px; width: 22px;
+    background: var(--line-2);
+    border-radius: 2px;
+  }
+  .mini-tab.active {
+    background: var(--primary);
+    box-shadow: 0 2px 0 var(--primary);
+  }
+
+  /* Pill row */
+  .mini-pill-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 6px; }
+  .mini-pill {
+    height: 12px;
+    border-radius: 6px;
+    background: var(--primary-bg);
+    border: 1px solid var(--primary-line);
+    padding: 0 6px;
+  }
+  .mini-pill.w28 { width: 28px; }
+  .mini-pill.w20 { width: 20px; }
+  .mini-pill.w34 { width: 34px; }
+  .mini-pill.w42 { width: 42px; }
+
+  /* Table */
+  .mini-table {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .mini-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 7px;
+    border-bottom: 1px solid var(--line);
+  }
+  .mini-row:last-child { border-bottom: none; }
+  .mini-row.header { background: var(--surface-2); }
+  .mini-cell {
+    height: 4px;
+    background: var(--ink-3);
+    border-radius: 2px;
+    opacity: 0.55;
+  }
+  .mini-row.header .mini-cell { background: var(--ink-2); opacity: 0.5; }
+
+  /* Kanban mini */
+  .mini-kanban {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    flex: 1;
+  }
+  .mini-kanban-col {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 5px 5px 4px;
+  }
+  .mini-kanban-col .col-head {
+    height: 4px; width: 70%;
+    background: var(--ink-3);
+    border-radius: 2px;
+    margin-bottom: 6px;
+    opacity: 0.55;
+  }
+  .mini-kanban-card {
+    background: var(--surface-2);
+    border-radius: 3px;
+    padding: 4px;
+    margin-bottom: 4px;
+    border-left: 2px solid var(--primary);
+  }
+  .mini-kanban-card.amber { border-left-color: var(--amber); }
+  .mini-kanban-card.rose { border-left-color: var(--rose); }
+  .mini-kanban-card.emerald { border-left-color: var(--emerald); }
+  .mini-kanban-card .mini-line { height: 3px; margin: 0; }
+
+  /* Calendar grid */
+  .mini-cal {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+    flex: 1;
+  }
+  .mini-cal-cell {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 2px;
+    aspect-ratio: 1.2;
+    position: relative;
+  }
+  .mini-cal-cell.event::after {
+    content: "";
+    position: absolute;
+    left: 2px; right: 2px; bottom: 2px;
+    height: 2px;
+    background: var(--primary);
+    border-radius: 1px;
+  }
+  .mini-cal-cell.event.amber::after { background: var(--amber); }
+  .mini-cal-cell.event.rose::after { background: var(--rose); }
+  .mini-cal-cell.today {
+    background: var(--primary-bg);
+    border-color: var(--primary-line);
+  }
+
+  /* Calendar Week (rows of timed slots) */
+  .mini-week {
+    display: flex;
+    gap: 3px;
+    flex: 1;
+  }
+  .mini-week-col {
+    flex: 1;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 2px;
+    padding: 4px 3px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+  .mini-week-col .label {
+    height: 3px;
+    background: var(--ink-3);
+    border-radius: 1px;
+    opacity: 0.5;
+    margin-bottom: 1px;
+  }
+  .mini-week-col .slot {
+    height: 5px;
+    border-radius: 1px;
+  }
+  .mini-week-col .slot.indigo { background: var(--primary); }
+  .mini-week-col .slot.amber  { background: var(--amber); }
+  .mini-week-col .slot.rose   { background: var(--rose); }
+  .mini-week-col .slot.empty  { background: transparent; height: 3px; }
+  .mini-week-col.today { background: var(--primary-bg); border-color: var(--primary-line); }
+
+  /* Schools view — bubble tabs */
+  .mini-bubbles {
+    display: flex; gap: 4px; margin-bottom: 8px;
+  }
+  .mini-bubble {
+    height: 14px;
+    border-radius: 100px;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    padding: 0 4px;
+  }
+  .mini-bubble.active {
+    background: var(--primary-bg);
+    border-color: var(--primary-line);
+  }
+  .mini-bubble.w22 { width: 22px; }
+  .mini-bubble.w30 { width: 30px; }
+  .mini-bubble.w26 { width: 26px; }
+  .mini-bubble.w34 { width: 34px; }
+
+  /* Timeline strip */
+  .mini-timeline {
+    height: 18px;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    position: relative;
+    margin-bottom: 8px;
+    overflow: hidden;
+  }
+  .mini-timeline::before {
+    content: "";
+    position: absolute;
+    top: 0; bottom: 0;
+    left: 18%;
+    width: 1px;
+    background: var(--line);
+  }
+  .mini-timeline::after {
+    content: "";
+    position: absolute;
+    top: 0; bottom: 0;
+    left: 56%;
+    width: 1px;
+    background: var(--line);
+  }
+  .mini-tl-marker {
+    position: absolute;
+    top: 50%; transform: translateY(-50%);
+    width: 7px; height: 7px;
+    border-radius: 50%;
+  }
+  .mini-tl-marker.indigo { background: var(--primary); left: 22%; }
+  .mini-tl-marker.amber  { background: var(--amber); left: 60%; }
+  .mini-tl-marker.rose   { background: var(--rose); left: 78%; }
+
+  /* Tasks rows (task list with status bar) */
+  .mini-tasks {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .mini-task-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 7px;
+    border-bottom: 1px solid var(--line);
+  }
+  .mini-task-row:last-child { border-bottom: none; }
+  .mini-task-row .bar {
+    width: 2px; height: 12px;
+    border-radius: 1px;
+    flex-shrink: 0;
+  }
+  .mini-task-row .bar.rose   { background: var(--rose); }
+  .mini-task-row .bar.amber  { background: var(--amber); }
+  .mini-task-row .bar.indigo { background: var(--primary); }
+  .mini-task-row .bar.neutral { background: var(--ink-3); }
+  .mini-task-row .label {
+    flex: 1;
+    height: 4px;
+    background: var(--ink-3);
+    border-radius: 2px;
+    opacity: 0.5;
+  }
+  .mini-task-row .pill {
+    width: 18px; height: 7px;
+    border-radius: 3px;
+  }
+  .mini-task-row .pill.rose   { background: var(--rose-bg); border: 1px solid var(--rose); }
+  .mini-task-row .pill.amber  { background: var(--amber-bg); border: 1px solid var(--amber); }
+  .mini-task-row .pill.indigo { background: var(--primary-bg); border: 1px solid var(--primary-line); }
+  .mini-task-row .pill.neutral { background: var(--surface-2); border: 1px solid var(--line-2); }
+
+  /* Document mini (single page) */
+  .mini-doc {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    padding: 8px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .mini-doc-line {
+    height: 3px;
+    background: var(--ink-3);
+    border-radius: 1px;
+    opacity: 0.45;
+  }
+  .mini-doc-line.w90 { width: 90%; }
+  .mini-doc-line.w80 { width: 80%; }
+  .mini-doc-line.w70 { width: 70%; }
+  .mini-doc-line.w50 { width: 50%; }
+  .mini-doc-line.highlight {
+    background: var(--amber-bg);
+    border-bottom: 1px solid var(--amber);
+    opacity: 0.7;
+  }
+  .mini-doc-line.del {
+    background: var(--rose-bg);
+    opacity: 0.6;
+    text-decoration: line-through;
+  }
+
+  /* Side-by-side doc */
+  .mini-doc-pair {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    flex: 1;
+  }
+
+  /* Module library (3-column) */
+  .mini-mod-admin {
+    display: grid;
+    grid-template-columns: 1fr 1.4fr 1fr;
+    gap: 4px;
+    flex: 1;
+  }
+  .mini-mod-col {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    padding: 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+  .mini-mod-card {
+    height: 12px;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: 2px;
+  }
+  .mini-mod-card.primary {
+    background: var(--primary-bg);
+    border-color: var(--primary-line);
+  }
+
+  /* Module student (bubble progress + lesson) */
+  .mini-mod-student {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex: 1;
+  }
+  .mini-progress-row {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+  }
+  .mini-progress-bubble {
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    background: var(--line-2);
+    border: 1px solid var(--line);
+  }
+  .mini-progress-bubble.done {
+    background: var(--emerald);
+    border-color: var(--emerald);
+  }
+  .mini-progress-bubble.active {
+    background: var(--primary);
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px var(--primary-bg);
+  }
+  .mini-progress-line {
+    flex: 1;
+    height: 2px;
+    background: var(--line);
+  }
+
+  /* Today widget */
+  .mini-today {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    flex: 1;
+  }
+  .mini-today-widget {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    padding: 5px 7px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .mini-today-widget .swatch {
+    width: 3px; height: 12px;
+    border-radius: 1px;
+  }
+  .mini-today-widget .swatch.rose { background: var(--rose); }
+  .mini-today-widget .swatch.amber { background: var(--amber); }
+  .mini-today-widget .swatch.indigo { background: var(--primary); }
+  .mini-today-widget .label {
+    flex: 1;
+    height: 4px;
+    background: var(--ink-3);
+    border-radius: 2px;
+    opacity: 0.5;
+  }
+  .mini-today-widget .count {
+    font-family: 'Geist Mono', monospace;
+    font-size: 9px;
+    color: var(--ink);
+    font-weight: 500;
+  }
+
+  /* Stats footer */
+  .stats {
+    margin-top: 56px;
+    padding: 28px 0;
+    border-top: 1px solid var(--line);
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 32px;
+  }
+  .stat {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .stat .num {
+    font-family: 'Geist Mono', monospace;
+    font-size: 26px;
+    font-weight: 500;
+    letter-spacing: -0.014em;
+    color: var(--ink);
+  }
+  .stat .num .accent { color: var(--primary); }
+  .stat .label {
+    font-size: 13px;
+    color: var(--ink-2);
+  }
+  .stat .sublabel {
+    font-family: 'Geist Mono', monospace;
+    font-size: 10.5px;
+    color: var(--ink-3);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  /* Footer */
+  footer {
+    margin-top: 48px;
+    padding-top: 24px;
+    border-top: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: var(--ink-3);
+    font-size: 12px;
+    font-family: 'Geist Mono', monospace;
+    letter-spacing: 0.02em;
+  }
+  footer .footer-left { display: flex; align-items: center; gap: 12px; }
+  footer .footer-mark {
+    width: 16px; height: 16px;
+    border-radius: 4px;
+    background: var(--primary);
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  footer .footer-mark svg { display: block; }
+
+  /* Responsive */
+  @media (max-width: 1100px) {
+    .catalog { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .stats { grid-template-columns: repeat(2, 1fr); gap: 24px; }
+  }
+  @media (max-width: 720px) {
+    .page { padding: 32px 22px 64px; }
+    .topbar { padding: 0 18px; }
+    .catalog { grid-template-columns: 1fr; }
+    .stats { grid-template-columns: 1fr 1fr; gap: 18px; }
+    .hero h1 { font-size: 26px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-brand">
+    <span class="brand-mark" aria-hidden="true">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="white" stroke-width="1.4">
+        <circle cx="7" cy="7" r="5.5"/>
+        <circle cx="7" cy="7" r="2.5"/>
+      </svg>
+    </span>
+    <span class="topbar-title">Counselor LMS</span>
+    <span class="topbar-eyebrow">IECA Baltimore · 2026-05-18</span>
+  </div>
+  <span class="topbar-meta"><span class="live-dot"></span>Live demo · 14 surfaces</span>
+</div>
+
+<div class="page">
+
+  <div class="hero">
+    <div class="hero-eyebrow">Conference demo</div>
+    <h1>The whole product, surface by surface.</h1>
+    <p class="lede">Fourteen working mockups across four workflows. Browse the catalog — each card opens the live surface so you can poke around exactly as a consultant would.</p>
+  </div>
+
+  <div class="filter-bar" role="tablist" aria-label="Filter surfaces (visual only)">
+    <span class="filter-bar-label">View</span>
+    <span class="filter-chip active">All <span class="count">14</span></span>
+    <span class="filter-chip">Per-student <span class="count">3</span></span>
+    <span class="filter-chip">Cross-student <span class="count">6</span></span>
+    <span class="filter-chip">Documents <span class="count">2</span></span>
+    <span class="filter-chip">Modules <span class="count">2</span></span>
+    <span class="filter-chip" style="margin-left: auto">Newest first</span>
+  </div>
+
+  <div class="catalog">
+
+    <!-- ─── Single-student dashboard ─── -->
+    <a class="tile" href="explorations/dashboard-1-tabs-horizontal.html">
+      <div class="thumb">
+        <div class="mini-tabs">
+          <div class="mini-tab active"></div>
+          <div class="mini-tab"></div>
+          <div class="mini-tab"></div>
+          <div class="mini-tab"></div>
+          <div class="mini-tab"></div>
+          <div class="mini-tab"></div>
+        </div>
+        <div class="mini-tasks">
+          <div class="mini-task-row"><span class="bar rose"></span><span class="label"></span><span class="pill rose"></span></div>
+          <div class="mini-task-row"><span class="bar amber"></span><span class="label"></span><span class="pill amber"></span></div>
+          <div class="mini-task-row"><span class="bar indigo"></span><span class="label"></span><span class="pill indigo"></span></div>
+          <div class="mini-task-row"><span class="bar neutral"></span><span class="label"></span><span class="pill neutral"></span></div>
+        </div>
+      </div>
+      <div class="tile-body">
+        <div class="tile-cat per-student">Per-student</div>
+        <div class="tile-name">Single-student dashboard</div>
+        <div class="tile-blurb">All seven tabs in one page — Overview, Schools, Tasks, Snapshots, Documents, Meetings, Notes.</div>
+        <div class="tile-foot">
+          <span class="tile-path">dashboard-1-tabs-horizontal</span>
+          <svg class="tile-arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+        </div>
+      </div>
+    </a>
+
+    <!-- ─── Schools ─── -->
+    <a class="tile" href="explorations/dashboard-2-schools-first.html">
+      <div class="thumb">
+        <div class="mini-bubbles">
+          <div class="mini-bubble active w30"></div>
+          <div class="mini-bubble w22"></div>
+          <div class="mini-bubble w26"></div>
+          <div class="mini-bubble w22"></div>
+          <div class="mini-bubble w34"></div>
+        </div>
+        <div style="margin-top: 4px;">
+          <div class="mini-line w90"></div>
+          <div class="mini-line w70"></div>
+          <div class="mini-line w50"></div>
+        </div>
+        <div class="mini-pill-row" style="margin-top: 8px;">
+          <span class="mini-pill w34" style="background: var(--rose-bg); border-color: var(--rose);"></span>
+          <span class="mini-pill w28" style="background: var(--amber-bg); border-color: var(--amber);"></span>
+          <span class="mini-pill w20" style="background: var(--emerald-bg); border-color: var(--emerald);"></span>
+        </div>
+      </div>
+      <div class="tile-body">
+        <div class="tile-cat per-student">Per-student</div>
+        <div class="tile-name">Schools</div>
+        <div class="tile-blurb">One student's full college landscape — bubble tabs per school, with expand-inline as alternative.</div>
+        <div class="tile-foot">
+          <span class="tile-path">dashboard-2-schools-first</span>
+          <svg class="tile-arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+        </div>
+      </div>
+    </a>
+
+    <!-- ─── Tasks (single-student) ─── -->
+    <a class="tile" href="explorations/dashboard-3-deadline-timeline.html">
+      <div class="thumb">
+        <div class="mini-timeline">
+          <div class="mini-tl-marker indigo"></div>
+          <div class="mini-tl-marker amber"></div>
+          <div class="mini-tl-marker rose"></div>
+        </div>
+        <div class="mini-tasks">
+          <div class="mini-task-row"><span class="bar rose"></span><span class="label"></span><span class="pill rose"></span></div>
+          <div class="mini-task-row"><span class="bar amber"></span><span class="label"></span><span class="pill amber"></span></div>
+          <div class="mini-task-row"><span class="bar indigo"></span><span class="label"></span><span class="pill indigo"></span></div>
+        </div>
+      </div>
+      <div class="tile-body">
+        <div class="tile-cat per-student">Per-student</div>
+        <div class="tile-name">Tasks · time buckets + deadlines</div>
+        <div class="tile-blurb">Single-student task pipeline with school-deadline context band at top, time-bucket grouped.</div>
+        <div class="tile-foot">
+          <span class="tile-path">dashboard-3-deadline-timeline</span>
+          <svg class="tile-arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+        </div>
+      </div>
+    </a>
+
+    <!-- ─── Consultant Today ─── -->
+    <a class="tile" href="explorations/today-homepage.html">
+      <div class="thumb">
+        <div class="mini-today">
+          <div class="mini-today-widget"><span class="swatch rose"></span><span class="label"></span><span class="count">3</span></div>
+          <div class="mini-today-widget"><span class="swatch amber"></span><span class="label"></span><span class="count">5</span></div>
+          <div class="mini-today-widget"><span class="swatch indigo"></span><span class="label"></span><span class="count">2</span></div>
+          <div class="mini-today-widget"><span class="swatch" style="background: var(--ink-3);"></span><span class="label"></span><span class="count">7</span></div>
+        </div>
+      </div>
+      <div class="tile-body">
+        <div class="tile-cat cross-student">Cross-student</div>
+        <div class="tile-name">Consultant Today</div>
+        <div class="tile-blurb">Top-of-nav homepage. Six widgets ordered by urgency — what needs you, right now, across the whole roster.</div>
+        <div class="tile-foot">
+          <span class="tile-path">today-homepage</span>
+          <svg class="tile-arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+        </div>
+      </div>
+    </a>
+
+    <!-- ─── All students ─── -->
+    <a class="tile" href="explorations/students-1-filterable-table.html">
+      <div class="thumb">
+        <div class="mini-pill-row">
+          <span class="mini-pill w28" style="background: var(--surface-2); border-color: var(--line);"></span>
+          <span class="mini-pill w34" style="background: var(--surface-2); border-color: var(--line);"></span>
+          <span class="mini-pill w20" style="background: var(--primary-bg); border-color: var(--primary-line);"></span>
+        </div>
+        <div class="mini-table" style="margin-top: 6px;">
+          <div class="mini-row header"><span class="mini-cell" style="width: 24%;"></span><span class="mini-cell" style="width: 18%;"></span><span class="mini-cell" style="width: 16%;"></span><span class="mini-cell" style="width: 22%;"></span></div>
+          <div class="mini-row"><span class="mini-cell" style="width: 24%;"></span><span class="mini-cell" style="width: 18%;"></span><span class="mini-cell" style="width: 16%;"></span><span class="mini-cell" style="width: 22%;"></span></div>
+          <div class="mini-row"><span class="mini-cell" style="width: 24%;"></span><span class="mini-cell" style="width: 18%;"></span><span class="mini-cell" style="width: 16%;"></span><span class="mini-cell" style="width: 22%;"></span></div>
+          <div class="mini-row"><span class="mini-cell" style="width: 24%;"></span><span class="mini-cell" style="width: 18%;"></span><span class="mini-cell" style="width: 16%;"></span><span class="mini-cell" style="width: 22%;"></span></div>
+        </div>
+      </div>
+      <div class="tile-body">
+        <div class="tile-cat cross-student">Cross-student</div>
+        <div class="tile-name">All students</div>
+        <div class="tile-blurb">Filterable table across the whole roster — stage, deadlines, next deliverable, working style.</div>
+        <div class="tile-foot">
+          <span class="tile-path">students-1-filterable-table</span>
+          <svg class="tile-arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+        </div>
+      </div>
+    </a>
+
+    <!-- ─── Cross-tasks Kanban ─── -->
+    <a class="tile" href="explorations/cross-tasks-kanban.html">
+      <div class="thumb">
+        <div class="mini-kanban">
+          <div class="mini-kanban-col">
+            <div class="col-head"></div>
+            <div class="mini-kanban-card amber"><div class="mini-line w90"></div></div>
+            <div class="mini-kanban-card amber"><div class="mini-line w70"></div></div>
+          </div>
+          <div class="mini-kanban-col">
+            <div class="col-head"></div>
+            <div class="mini-kanban-card"><div class="mini-line w90"></div></div>
+            <div class="mini-kanban-card"><div class="mini-line w70"></div></div>
+            <div class="mini-kanban-card"><div class="mini-line w50"></div></div>
+          </div>
+          <div class="mini-kanban-col">
+            <div class="col-head"></div>
+            <div class="mini-kanban-card emerald"><div class="mini-line w70"></div></div>
+            <div class="mini-kanban-card emerald"><div class="mini-line w50"></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="tile-body">
+        <div class="tile-cat cross-student">Cross-student</div>
+        <div class="tile-name">Cross-tasks · Kanban</div>
+        <div class="tile-blurb">Five universal columns. Card hierarchy: Student → Title → Due. Multi-student selector + quick filters.</div>
+        <div class="tile-foot">
+          <span class="tile-path">cross-tasks-kanban</span>
+          <svg class="tile-arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+        </div>
+      </div>
+    </a>
+
+    <!-- ─── Cross-tasks List ─── -->
+    <a class="tile" href="explorations/cross-tasks-list.html">
+      <div class="thumb">
+        <div class="mini-tasks">
+          <div class="mini-task-row"><span class="bar rose"></span><span class="label" style="width: 60%;"></span><span class="pill rose"></span></div>
+          <div class="mini-task-row"><span class="bar amber"></span><span class="label" style="width: 75%;"></span><span class="pill amber"></span></div>
+          <div class="mini-task-row"><span class="bar amber"></span><span class="label" style="width: 65%;"></span><span class="pill amber"></span></div>
+          <div class="mini-task-row"><span class="bar indigo"></span><span class="label" style="width: 80%;"></span><span class="pill indigo"></span></div>
+          <div class="mini-task-row"><span class="bar indigo"></span><span class="label" style="width: 50%;"></span><span class="pill indigo"></span></div>
+          <div class="mini-task-row"><span class="bar neutral"></span><span class="label" style="width: 70%;"></span><span class="pill neutral"></span></div>
+        </div>
+      </div>
+      <div class="tile-body">
+        <div class="tile-cat cross-student">Cross-student</div>
+        <div class="tile-name">Cross-tasks · List</div>
+        <div class="tile-blurb">Same data, list-shape. Dense scannable rows for consultants who prefer them over kanban cards.</div>
+        <div class="tile-foot">
+          <span class="tile-path">cross-tasks-list</span>
+          <svg class="tile-arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+        </div>
+      </div>
+    </a>
+
+    <!-- ─── Calendar Week ─── -->
+    <a class="tile" href="explorations/calendar-week.html">
+      <div class="thumb">
+        <div class="mini-week">
+          <div class="mini-week-col"><span class="label"></span><span class="slot empty"></span><span class="slot indigo"></span><span class="slot empty"></span></div>
+          <div class="mini-week-col"><span class="label"></span><span class="slot amber"></span><span class="slot empty"></span><span class="slot indigo"></span></div>
+          <div class="mini-week-col today"><span class="label"></span><span class="slot indigo"></span><span class="slot indigo"></span><span class="slot rose"></span></div>
+          <div class="mini-week-col"><span class="label"></span><span class="slot empty"></span><span class="slot amber"></span><span class="slot empty"></span></div>
+          <div class="mini-week-col"><span class="label"></span><span class="slot indigo"></span><span class="slot empty"></span><span class="slot empty"></span></div>
+          <div class="mini-week-col"><span class="label"></span><span class="slot empty"></span><span class="slot empty"></span><span class="slot indigo"></span></div>
+          <div class="mini-week-col"><span class="label"></span><span class="slot empty"></span><span class="slot empty"></span><span class="slot empty"></span></div>
+        </div>
+      </div>
+      <div class="tile-body">
+        <div class="tile-cat cross-student">Cross-student</div>
+        <div class="tile-name">Calendar · Week</div>
+        <div class="tile-blurb">Meetings + tasks + deadlines on a 7-day grid. Three-tier deadline coloring.</div>
+        <div class="tile-foot">
+          <span class="tile-path">calendar-week</span>
+          <svg class="tile-arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+        </div>
+      </div>
+    </a>
+
+    <!-- ─── Calendar Month ─── -->
+    <a class="tile" href="explorations/calendar-month.html">
+      <div class="thumb">
+        <div class="mini-cal">
+          <div class="mini-cal-cell"></div>
+          <div class="mini-cal-cell event"></div>
+          <div class="mini-cal-cell"></div>
+          <div class="mini-cal-cell event amber"></div>
+          <div class="mini-cal-cell"></div>
+          <div class="mini-cal-cell"></div>
+          <div class="mini-cal-cell"></div>
+          <div class="mini-cal-cell event rose"></div>
+          <div class="mini-cal-cell"></div>
+          <div class="mini-cal-cell today event"></div>
+          <div class="mini-cal-cell"></div>
+          <div class="mini-cal-cell event"></div>
+          <div class="mini-cal-cell"></div>
+          <div class="mini-cal-cell"></div>
+          <div class="mini-cal-cell"></div>
+          <div class="mini-cal-cell event amber"></div>
+          <div class="mini-cal-cell"></div>
+          <div class="mini-cal-cell"></div>
+          <div class="mini-cal-cell"></div>
+          <div class="mini-cal-cell event"></div>
+          <div class="mini-cal-cell"></div>
+        </div>
+      </div>
+      <div class="tile-body">
+        <div class="tile-cat cross-student">Cross-student</div>
+        <div class="tile-name">Calendar · Month</div>
+        <div class="tile-blurb">Horizon scanning. Defaults to school deadlines + cross-cutting events; tasks opt-in via filter.</div>
+        <div class="tile-foot">
+          <span class="tile-path">calendar-month</span>
+          <svg class="tile-arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+        </div>
+      </div>
+    </a>
+
+    <!-- ─── Document V2 ─── -->
+    <a class="tile" href="explorations/document-v2-stacked-diff.html">
+      <div class="thumb">
+        <div class="mini-doc">
+          <div class="mini-doc-line w90"></div>
+          <div class="mini-doc-line w80"></div>
+          <div class="mini-doc-line highlight w70"></div>
+          <div class="mini-doc-line w90"></div>
+          <div class="mini-doc-line del w50"></div>
+          <div class="mini-doc-line w70"></div>
+          <div class="mini-doc-line w50"></div>
+          <div class="mini-doc-line w80"></div>
+        </div>
+      </div>
+      <div class="tile-body">
+        <div class="tile-cat documents">Documents</div>
+        <div class="tile-name">Document · stacked + compare</div>
+        <div class="tile-blurb">Single version vs comparative-inline diff. Comparison implicit on draft-pair selection.</div>
+        <div class="tile-foot">
+          <span class="tile-path">document-v2-stacked-diff</span>
+          <svg class="tile-arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+        </div>
+      </div>
+    </a>
+
+    <!-- ─── Document V1 side-by-side ─── -->
+    <a class="tile" href="explorations/document-v1-sidebyside.html">
+      <div class="thumb">
+        <div class="mini-doc-pair">
+          <div class="mini-doc">
+            <div class="mini-doc-line w90"></div>
+            <div class="mini-doc-line w80"></div>
+            <div class="mini-doc-line w70"></div>
+            <div class="mini-doc-line w90"></div>
+            <div class="mini-doc-line w50"></div>
+          </div>
+          <div class="mini-doc">
+            <div class="mini-doc-line w90"></div>
+            <div class="mini-doc-line highlight w70"></div>
+            <div class="mini-doc-line w90"></div>
+            <div class="mini-doc-line highlight w50"></div>
+            <div class="mini-doc-line w70"></div>
+          </div>
+        </div>
+      </div>
+      <div class="tile-body">
+        <div class="tile-cat documents">Documents</div>
+        <div class="tile-name">Document · side-by-side</div>
+        <div class="tile-blurb">Two drafts compared in parallel columns. Alternative layout for in-depth revision review.</div>
+        <div class="tile-foot">
+          <span class="tile-path">document-v1-sidebyside</span>
+          <svg class="tile-arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+        </div>
+      </div>
+    </a>
+
+    <!-- ─── Module Admin ─── -->
+    <a class="tile" href="explorations/module-admin-assignment.html">
+      <div class="thumb">
+        <div class="mini-mod-admin">
+          <div class="mini-mod-col">
+            <div class="mini-mod-card"></div>
+            <div class="mini-mod-card"></div>
+            <div class="mini-mod-card primary"></div>
+            <div class="mini-mod-card"></div>
+            <div class="mini-mod-card"></div>
+          </div>
+          <div class="mini-mod-col">
+            <div style="background: var(--primary-bg); border: 1px solid var(--primary-line); border-radius: 2px; padding: 4px; flex: 1; display: flex; flex-direction: column; gap: 3px;">
+              <div class="mini-line w70" style="background: var(--primary);"></div>
+              <div class="mini-line w50"></div>
+              <div class="mini-line w90"></div>
+              <div class="mini-line w70"></div>
+            </div>
+          </div>
+          <div class="mini-mod-col">
+            <div class="mini-mod-card primary"></div>
+            <div class="mini-mod-card primary"></div>
+            <div class="mini-mod-card"></div>
+            <div class="mini-mod-card"></div>
+            <div class="mini-mod-card"></div>
+          </div>
+        </div>
+      </div>
+      <div class="tile-body">
+        <div class="tile-cat modules">Modules</div>
+        <div class="tile-name">Admin · module assignment</div>
+        <div class="tile-blurb">Three-column workspace: preset library → preview → student's custom track.</div>
+        <div class="tile-foot">
+          <span class="tile-path">module-admin-assignment</span>
+          <svg class="tile-arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+        </div>
+      </div>
+    </a>
+
+    <!-- ─── Module Student ─── -->
+    <a class="tile" href="explorations/module-student-sample.html">
+      <div class="thumb">
+        <div class="mini-mod-student">
+          <div class="mini-progress-row">
+            <span class="mini-progress-bubble done"></span>
+            <span class="mini-progress-line" style="background: var(--emerald);"></span>
+            <span class="mini-progress-bubble done"></span>
+            <span class="mini-progress-line" style="background: var(--emerald);"></span>
+            <span class="mini-progress-bubble active"></span>
+            <span class="mini-progress-line"></span>
+            <span class="mini-progress-bubble"></span>
+            <span class="mini-progress-line"></span>
+            <span class="mini-progress-bubble"></span>
+          </div>
+          <div class="mini-doc" style="margin-top: 4px;">
+            <div class="mini-doc-line w90"></div>
+            <div class="mini-doc-line w80"></div>
+            <div style="background: var(--primary-bg); border: 1px solid var(--primary-line); border-radius: 3px; height: 24px; margin: 4px 0;">
+              <div style="display: flex; align-items: center; justify-content: center; height: 100%;">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                  <circle cx="7" cy="7" r="5.5" stroke="var(--primary)" stroke-width="1.4"/>
+                  <path d="M5.5 4.5 9 7 5.5 9.5 z" fill="var(--primary)"/>
+                </svg>
+              </div>
+            </div>
+            <div class="mini-doc-line w70"></div>
+          </div>
+        </div>
+      </div>
+      <div class="tile-body">
+        <div class="tile-cat modules">Modules</div>
+        <div class="tile-name">Student · sample module</div>
+        <div class="tile-blurb">What the student sees — section overview + one lesson with video, quiz, and resource example.</div>
+        <div class="tile-foot">
+          <span class="tile-path">module-student-sample</span>
+          <svg class="tile-arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+        </div>
+      </div>
+    </a>
+
+  </div>
+
+  <div class="stats">
+    <div class="stat">
+      <div class="num"><span class="accent">14</span> surfaces</div>
+      <div class="label">Interactive mockups</div>
+      <div class="sublabel">Full visual fidelity</div>
+    </div>
+    <div class="stat">
+      <div class="num"><span class="accent">4</span> workflows</div>
+      <div class="label">Per-student · cross · docs · modules</div>
+      <div class="sublabel">End-to-end</div>
+    </div>
+    <div class="stat">
+      <div class="num"><span class="accent">15</span> students</div>
+      <div class="label">Sample roster</div>
+      <div class="sublabel">Cycle anchor Dec 15 2026</div>
+    </div>
+    <div class="stat">
+      <div class="num"><span class="accent">12</span> drafts</div>
+      <div class="label">Maya's Yale SA2 essay</div>
+      <div class="sublabel">Documents demo</div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="footer-left">
+      <span class="footer-mark">
+        <svg width="9" height="9" viewBox="0 0 14 14" fill="none" stroke="white" stroke-width="1.6"><circle cx="7" cy="7" r="5.5"/><circle cx="7" cy="7" r="2.5"/></svg>
+      </span>
+      <span>Counselor LMS · Conference build</span>
+    </div>
+    <div>IECA Baltimore · 2026-05-18</div>
+  </footer>
+
+</div>
+
+</body>
+</html>
