@@ -1459,7 +1459,7 @@
     <div class="topbar-actions">
       <div class="header-today">
         <span class="today-dot"></span>
-        Today, <span class="mono">Mon Dec 15</span>
+        Today, <span class="mono">Tue Dec 16</span>
       </div>
       <button class="icon-btn" title="Notifications">
         <span class="notif-badge"></span>
@@ -1498,7 +1498,7 @@
             <path d="M13 12h8"/>
             <path d="M13 18h8"/>
           </svg>
-          Cross-Tasks
+          All Tasks
           <span class="nav-badge">31</span>
         </div>
         <div class="nav-item active">
@@ -1625,8 +1625,8 @@
           <!-- Day-of-week header -->
           <div class="cal-dow-header" data-design-note="dow" data-note-num="4">
             <div class="dow weekend">Sun</div>
-            <div class="dow is-today-col">Mon</div>
-            <div class="dow">Tue</div>
+            <div class="dow">Mon</div>
+            <div class="dow is-today-col">Tue</div>
             <div class="dow">Wed</div>
             <div class="dow">Thu</div>
             <div class="dow">Fri</div>
@@ -1773,9 +1773,9 @@
               </div>
             </div>
 
-            <!-- TODAY: Dec 15 (Mon) -->
-            <div class="day-cell today" data-design-note="today" data-note-num="5">
-              <div class="day-num-row"><span class="day-num">15</span><span class="today-tag">Today</span></div>
+            <!-- Dec 15 (Mon) -->
+            <div class="day-cell" data-design-note="today" data-note-num="5">
+              <div class="day-num-row"><span class="day-num">15</span></div>
               <div class="ev meeting">
                 <span class="ev-time">9a</span><span class="ev-label">Team standup</span>
               </div>
@@ -1788,8 +1788,9 @@
               <div class="more-link">+ 2 more</div>
             </div>
 
-            <div class="day-cell">
-              <div class="day-num-row"><span class="day-num">16</span></div>
+            <!-- TODAY: Dec 16 (Tue) -->
+            <div class="day-cell today">
+              <div class="day-num-row"><span class="day-num">16</span><span class="today-tag">Today</span></div>
               <div class="ev task">
                 <span class="ev-time">11a</span><span class="ev-label">Marcus — regroup</span>
               </div>
@@ -2050,27 +2051,12 @@
           <div class="rail-card">
             <div class="rail-card-header">
               <div class="rail-card-title">Upcoming this month</div>
-              <div class="rail-card-sub">Next <span class="mono">7</span> events from <span class="mono">Mon Dec 15</span></div>
+              <div class="rail-card-sub">Next <span class="mono">7</span> events from <span class="mono">Tue Dec 16</span></div>
             </div>
             <div class="upcoming-list">
 
               <div class="upcoming-item">
                 <div class="ui-date today">
-                  <span class="ui-day">15</span><span class="ui-mon">Mon</span>
-                </div>
-                <div class="ui-body">
-                  <div class="ui-title-row">
-                    <span class="ui-title">Roya — Princeton restart kickoff</span>
-                  </div>
-                  <div class="ui-meta">
-                    <span class="ui-tag meeting">Meeting</span>
-                    <span class="ui-countdown">Today · 1pm</span>
-                  </div>
-                </div>
-              </div>
-
-              <div class="upcoming-item">
-                <div class="ui-date">
                   <span class="ui-day">16</span><span class="ui-mon">Tue</span>
                 </div>
                 <div class="ui-body">
@@ -2079,13 +2065,13 @@
                   </div>
                   <div class="ui-meta">
                     <span class="ui-tag meeting">Meeting</span>
-                    <span class="ui-countdown">in 1d · 11am</span>
+                    <span class="ui-countdown">Today · 11am</span>
                   </div>
                 </div>
               </div>
 
               <div class="upcoming-item">
-                <div class="ui-date">
+                <div class="ui-date today">
                   <span class="ui-day">16</span><span class="ui-mon">Tue</span>
                 </div>
                 <div class="ui-body">
@@ -2094,7 +2080,7 @@
                   </div>
                   <div class="ui-meta">
                     <span class="ui-tag meeting">Meeting</span>
-                    <span class="ui-countdown">in 1d · 4pm</span>
+                    <span class="ui-countdown">Today · 4pm</span>
                   </div>
                 </div>
               </div>

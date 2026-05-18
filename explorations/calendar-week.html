@@ -1088,7 +1088,7 @@
             <path d="M3 14l1.5 1.5"/>
             <line x1="9" y1="14" x2="14" y2="14"/>
           </svg>
-          Cross-Tasks
+          All Tasks
           <span class="nav-badge">31</span>
         </div>
         <div class="nav-item active">
@@ -1234,12 +1234,12 @@
           <!-- Day headers -->
           <div class="day-headers">
             <div class="time-gutter-head"></div>
-            <div class="day-head today" data-design-note="today-day-head" data-note-id="3">
-              <span class="day-head-name">Today · Monday</span>
+            <div class="day-head">
+              <span class="day-head-name">Monday</span>
               <span class="day-head-date">Dec 15</span>
             </div>
-            <div class="day-head">
-              <span class="day-head-name">Tuesday</span>
+            <div class="day-head today" data-design-note="today-day-head" data-note-id="3">
+              <span class="day-head-name">Today · Tuesday</span>
               <span class="day-head-date">Dec 16</span>
             </div>
             <div class="day-head">
@@ -1315,18 +1315,13 @@
                 <div class="time-row-label">7<span class="ampm">PM</span></div>
               </div>
 
-              <!-- MON Dec 15 — TODAY -->
-              <div class="day-col today">
+              <!-- MON Dec 15 -->
+              <div class="day-col">
                 <!-- 11 hour slots: 9am–7pm -->
                 <div class="hour-slot"></div><div class="hour-slot"></div><div class="hour-slot"></div>
                 <div class="hour-slot"></div><div class="hour-slot"></div><div class="hour-slot"></div>
                 <div class="hour-slot"></div><div class="hour-slot"></div><div class="hour-slot"></div>
                 <div class="hour-slot"></div><div class="hour-slot"></div>
-
-                <!-- "Now" line: 1:30pm → (13.5-9)*56 = 252 -->
-                <div class="now-line" style="top: 252px;" data-design-note="now-line" data-note-id="5">
-                  <span class="now-chip mono">1:30 PM</span>
-                </div>
 
                 <!-- Maya prep block 10:00–10:45 -->
                 <div class="event event-meeting" style="top: 60px; height: 38px;" data-tooltip="Internal prep block — review Maya's Yale LOCI before 4pm meeting">
@@ -1358,12 +1353,17 @@
                 </div>
               </div>
 
-              <!-- TUE Dec 16 -->
-              <div class="day-col">
+              <!-- TUE Dec 16 — TODAY -->
+              <div class="day-col today">
                 <div class="hour-slot"></div><div class="hour-slot"></div><div class="hour-slot"></div>
                 <div class="hour-slot"></div><div class="hour-slot"></div><div class="hour-slot"></div>
                 <div class="hour-slot"></div><div class="hour-slot"></div><div class="hour-slot"></div>
                 <div class="hour-slot"></div><div class="hour-slot"></div>
+
+                <!-- "Now" line: 1:30pm → (13.5-9)*56 = 252 -->
+                <div class="now-line" style="top: 252px;" data-design-note="now-line" data-note-id="5">
+                  <span class="now-chip mono">1:30 PM</span>
+                </div>
 
                 <!-- Roya regroup 9:00–9:45 -->
                 <div class="event event-meeting" style="top: 4px; height: 38px;" data-tooltip="Roya Nazari — regroup after Princeton SPIA denial. Self-directed, restart RD list strategy.">

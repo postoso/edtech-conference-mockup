@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Cross-Tasks — Kanban by Status</title>
+<title>All Tasks — Kanban by Status</title>
 <meta name="page-purpose" content="This page is for: a consultant triaging the work pipeline — what's stuck where across (some or all) students, what needs my review." />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -654,15 +654,15 @@
 
   .kanban-board {
     display: flex;
-    gap: 12px;
+    gap: 8px;
     height: 100%;
     min-width: max-content;
     padding-bottom: 4px;
   }
 
-  /* Column shell */
+  /* Column shell — sized so all 5 columns fit at 1440×900 (booth target) */
   .kanban-col {
-    width: 268px;
+    width: 228px;
     flex-shrink: 0;
     display: flex;
     flex-direction: column;
@@ -1064,7 +1064,7 @@
     </div>
 
     <div class="topbar-breadcrumb">
-      <span>Cross-Tasks</span>
+      <span>All Tasks</span>
       <span class="bc-sep">/</span>
       <span class="bc-current">Board</span>
     </div>
@@ -1114,7 +1114,7 @@
             <path d="M13 12h8"/>
             <path d="M13 18h8"/>
           </svg>
-          Cross-Tasks
+          All Tasks
           <span class="nav-count">74</span>
         </a>
 
@@ -1200,7 +1200,7 @@
       <div class="page-header">
         <div class="page-title-row">
           <div>
-            <h1 class="page-title" data-design-note data-note-num="1">Cross-Tasks</h1>
+            <h1 class="page-title" data-design-note data-note-num="1">All Tasks</h1>
             <p class="page-purpose">For triaging the pipeline — what's stuck where, what needs my review.</p>
           </div>
           <div class="page-summary">
