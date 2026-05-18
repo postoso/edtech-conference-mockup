@@ -388,19 +388,8 @@
     margin: 0 auto;
   }
 
-  /* ─── PROFILE SECTION (canonical dashboard-1 pattern, W1.2 parity)
-     Profile-top + always-visible module-mini side-by-side in a flex row. ─── */
-  .profile-section-row {
-    display: flex;
-    align-items: flex-start;
-    gap: 14px;
-    margin-bottom: 24px;
-  }
-  .profile-section-row .profile-top {
-    flex: 1;
-    min-width: 0;
-    margin-bottom: 0;
-  }
+  /* Wave 4 (5/17): module-mini sibling removed — module folded into profile card as Block D
+     per Variant A=Synthesis. Section-row wrapper no longer needed (single child). */
 
   .profile-top {
     background: var(--surface);
@@ -408,6 +397,7 @@
     border-radius: 8px;
     overflow: hidden;
     box-shadow: 0 1px 2px rgba(15, 20, 25, 0.025);
+    margin-bottom: 24px;
   }
   .profile-top-header {
     display: flex;
@@ -543,10 +533,11 @@
   .profile-collapse-btn svg { transition: transform 0.18s ease; }
   body.profile-collapsed .profile-collapse-btn svg { transform: rotate(-90deg); }
 
-  /* Profile-top-body — 4-column grid (Quick stats · Hooks · Family · Meetings). */
+  /* Profile-top-body — Variant A (Wave 4, 5/17): 4-column layout
+     Academic · Hooks · Engagement · Current Module. */
   .profile-top-body {
     display: grid;
-    grid-template-columns: minmax(190px, 1.1fr) minmax(150px, 0.8fr) minmax(170px, 1fr) minmax(160px, 1fr);
+    grid-template-columns: minmax(170px, 1.05fr) minmax(150px, 0.9fr) minmax(170px, 1fr) minmax(200px, 1.2fr);
     gap: 0;
     transition: max-height 0.25s ease, opacity 0.2s ease;
     max-height: 600px;
@@ -555,6 +546,20 @@
   body.profile-collapsed .profile-top-body {
     max-height: 0;
     opacity: 0;
+  }
+  /* Wave 4 narrow-viewport fallback: 2x2 grid so all four blocks remain visible
+     on iPad portrait and similar (matches dashboard-1 Wave 4 treatment). */
+  @media (max-width: 1000px) {
+    .profile-top-body {
+      grid-template-columns: 1fr 1fr;
+    }
+    .profile-top-body .profile-block:nth-child(2) {
+      border-right: none;
+    }
+    .profile-top-body .profile-block:nth-child(1),
+    .profile-top-body .profile-block:nth-child(2) {
+      border-bottom: 1px solid var(--line);
+    }
   }
 
   .profile-block {
@@ -629,109 +634,126 @@
     font-weight: 500;
   }
 
-  /* Module-mini: tall always-visible aside (stays visible when profile collapses). */
-  .profile-module-mini {
-    width: 232px;
-    flex-shrink: 0;
-    background: var(--surface);
-    border: 1px solid var(--line);
-    border-radius: 6px;
-    padding: 14px 16px 12px;
+  /* Wave 4 (5/17): Module Block — in-card layout (rightmost column of profile-top-body).
+     Replaces the standalone .profile-module-mini aside that lived next to the profile.
+     Matches dashboard-1 Wave 4 styling for parity. */
+  .profile-module-block {
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    box-shadow: 0 1px 2px rgba(15, 20, 25, 0.025);
-    position: relative;
+    gap: 8px;
   }
-  .profile-module-mini::before {
-    content: "";
-    position: absolute;
-    left: 0; top: 0; bottom: 0;
-    width: 3px;
-    background: var(--primary);
-    opacity: 0.55;
-    border-radius: 6px 0 0 6px;
-  }
-  body.color-off .profile-module-mini::before { background: var(--ink-3); opacity: 0.4; }
-  .profile-module-mini .mm-eyebrow {
-    font-size: 10px;
-    font-weight: 600;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--ink-3);
-  }
-  .profile-module-mini .mm-module-row {
-    display: flex; align-items: baseline; flex-wrap: wrap;
+  .profile-module-block .pm-module-row {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
     gap: 4px 6px;
-    margin-top: -4px;
+    margin-top: -2px;
   }
-  .profile-module-mini .mm-module-name {
-    font-size: 13.5px;
+  .profile-module-block .pm-module-name {
+    font-size: 12.5px;
     font-weight: 600;
     color: var(--ink);
     letter-spacing: -0.005em;
   }
-  .profile-module-mini .mm-module-sep {
-    color: var(--ink-3);
-    font-size: 12px;
-  }
-  .profile-module-mini .mm-module-pos {
+  .profile-module-block .pm-module-pos {
     font-family: 'Geist Mono', monospace;
-    font-size: 11.5px;
+    font-size: 11px;
     color: var(--ink-2);
     font-variant-numeric: tabular-nums;
-    font-weight: 500;
   }
-  .profile-module-mini .mm-lesson {
-    padding-top: 8px;
-    border-top: 1px dashed var(--line);
-  }
-  .profile-module-mini .mm-lesson-label,
-  .profile-module-mini .mm-task-label {
+  .profile-module-block .pm-lesson-label {
     font-size: 10px;
-    font-weight: 500;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
     color: var(--ink-3);
-    margin-bottom: 3px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    margin-bottom: 2px;
   }
-  .profile-module-mini .mm-lesson-title {
-    font-size: 13px;
-    color: var(--ink);
-    font-weight: 500;
-    line-height: 1.3;
+  .profile-module-block .pm-lesson-title {
+    font-size: 11.5px;
+    color: var(--ink-2);
+    line-height: 1.35;
   }
-  .profile-module-mini .mm-task {
-    padding-top: 8px;
-    border-top: 1px dashed var(--line);
-    display: flex; flex-direction: column; gap: 2px;
+  .profile-module-block .pm-task {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    margin-top: 2px;
+    font-size: 11.5px;
   }
-  .profile-module-mini .mm-task-link {
-    font-size: 12.5px;
+  .profile-module-block .pm-task-link {
     color: var(--primary);
     text-decoration: none;
     font-weight: 500;
-    line-height: 1.3;
   }
-  .profile-module-mini .mm-task-link:hover { text-decoration: underline; }
-  body.color-off .profile-module-mini .mm-task-link { color: var(--ink); }
-  .profile-module-mini .mm-task-due {
+  .profile-module-block .pm-task-link:hover { text-decoration: underline; }
+  body.color-off .profile-module-block .pm-task-link { color: var(--ink); }
+  .profile-module-block .pm-task-due {
     font-family: 'Geist Mono', monospace;
     font-size: 10.5px;
     color: var(--ink-3);
-    font-variant-numeric: tabular-nums;
-    margin-top: 1px;
   }
-  .profile-module-mini .mm-track {
-    padding-top: 8px;
-    border-top: 1px dashed var(--line);
-  }
-  .profile-module-mini .mm-track-frac {
-    font-family: 'Geist Mono', monospace;
+  .profile-module-block .pm-track {
     font-size: 10.5px;
     color: var(--ink-3);
-    font-variant-numeric: tabular-nums;
+    margin-top: 2px;
+    font-family: 'Geist Mono', monospace;
   }
+
+  /* Wave 4 (5/17): Manage link on the Current Module block label. */
+  .profile-block-label .manage-link {
+    font-family: 'Geist', sans-serif;
+    font-size: 10px;
+    color: var(--primary);
+    text-transform: none;
+    letter-spacing: 0;
+    font-weight: 500;
+    text-decoration: none;
+  }
+  .profile-block-label .manage-link:hover { text-decoration: underline; }
+  body.color-off .profile-block-label .manage-link { color: var(--ink); }
+  /* Layout — block label can host a right-aligned Manage link inline. */
+  .profile-block-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+
+  /* Wave 4 (5/17): Engagement block — adds Log meeting button + Prep notes link. */
+  .engagement-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .engagement-action {
+    margin-top: 4px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .log-meeting-btn {
+    font-family: 'Geist', sans-serif;
+    font-size: 11.5px;
+    color: var(--ink);
+    padding: 4px 10px;
+    border: 1px solid var(--line-2);
+    border-radius: 4px;
+    background: var(--surface);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+    font-weight: 500;
+  }
+  .log-meeting-btn svg { width: 11px; height: 11px; }
+  .prep-notes-link {
+    font-size: 11.5px;
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: 500;
+  }
+  .prep-notes-link:hover { text-decoration: underline; }
+  body.color-off .prep-notes-link { color: var(--ink); }
 
   /* ─── Horizontal tab strip — under profile band (matches dashboard-1 W1.3 canonical). ─── */
   .tab-strip {
@@ -1460,70 +1482,62 @@
     <main class="main-content">
       <div class="content-frame">
 
-        <!-- ─── PROFILE SECTION ROW: profile-top + always-visible module-mini side-by-side
-             Matches dashboard-1-tabs-horizontal.html canonical pattern (W1.2). ─── -->
-        <div class="profile-section-row">
+        <!-- ─── UNIFIED PROFILE CARD (Wave 4, 5/17) — Variant A=Synthesis
+             4-column body (Academic · Hooks · Engagement · Current Module). Module-mini
+             folded IN as Block D (per design-review.html). Family/Contacts dropped;
+             Citizenship promoted into the Academic block. Maintains parity with
+             dashboard-1-tabs-horizontal.html. ─── -->
+        <div class="profile-top">
+          <div class="profile-top-header" id="profile-header">
+            <div class="profile-top-avatar">MC</div>
 
-          <!-- Unified profile-top header band (page-header doubles as profile band) -->
-          <div class="profile-top">
-            <div class="profile-top-header" id="profile-header">
-              <div class="profile-top-avatar">MC</div>
-
-              <div class="profile-top-name-block">
-                <div class="profile-top-name">Maya Chen</div>
-                <div class="profile-top-meta-row">
-                  <span class="status-pill pill-neutral">REA Deferred</span>
-                  <span class="status-pill pill-indigo">LOCI active</span>
-                  <span class="header-meta-divider"></span>
-                  <span class="header-year"><strong>Class of 2027</strong> · Senior · Studio Art</span>
-                  <span class="header-meta-divider"></span>
-                  <span class="ws-chip ws-perfectionist" title="Working style — counselor metadata, not status">Perfectionist</span>
-                </div>
-              </div>
-
-              <div class="profile-top-actions">
-                <button id="profile-toggle" class="profile-collapse-btn" aria-expanded="true" aria-controls="profile-body">
-                  <span class="label">Hide profile</span>
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="6 9 12 15 18 9"/>
-                  </svg>
-                </button>
+            <div class="profile-top-name-block">
+              <div class="profile-top-name">Maya Chen</div>
+              <div class="profile-top-meta-row">
+                <span class="status-pill pill-neutral">REA Deferred</span>
+                <span class="status-pill pill-indigo">LOCI active</span>
+                <span class="header-meta-divider"></span>
+                <span class="header-year"><strong>Class of 2027</strong> · Senior · Studio Art</span>
+                <span class="header-meta-divider"></span>
+                <span class="ws-chip ws-perfectionist" title="Working style — counselor metadata, not status">Perfectionist</span>
               </div>
             </div>
 
-            <div class="profile-top-body" id="profile-body">
+            <div class="profile-top-actions">
+              <button id="profile-toggle" class="profile-collapse-btn" aria-expanded="true" aria-controls="profile-body">
+                <span class="label">Hide profile</span>
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="6 9 12 15 18 9"/>
+                </svg>
+              </button>
+            </div>
+          </div>
 
-              <div class="profile-block">
-                <div class="profile-block-label">Quick stats</div>
-                <div class="stats-mini-grid">
-                  <div class="stat"><span class="label">GPA (UW)</span><span class="value">3.96</span></div>
-                  <div class="stat"><span class="label">SAT</span><span class="value">1530</span></div>
-                  <div class="stat"><span class="label">Major</span><span class="value text">Studio Art</span></div>
-                  <div class="stat"><span class="label">2nd</span><span class="value text">Art History</span></div>
-                </div>
+          <div class="profile-top-body" id="profile-body">
+
+            <div class="profile-block">
+              <div class="profile-block-label">Academic</div>
+              <div class="stats-mini-grid">
+                <div class="stat"><span class="label">GPA (UW)</span><span class="value">3.96</span></div>
+                <div class="stat"><span class="label">SAT</span><span class="value">1530</span></div>
+                <div class="stat"><span class="label">Major</span><span class="value text">Studio Art</span></div>
+                <div class="stat"><span class="label">2nd</span><span class="value text">Art History</span></div>
+                <div class="stat"><span class="label">Citizen</span><span class="value text">US</span></div>
               </div>
+            </div>
 
-              <div class="profile-block">
-                <div class="profile-block-label">Hooks</div>
-                <div class="hooks-row">
-                  <span class="hook-tag">First-gen college</span>
-                  <span class="hook-tag">Studio art portfolio</span>
-                  <span class="hook-tag">NYC public school</span>
-                </div>
+            <div class="profile-block">
+              <div class="profile-block-label">Hooks</div>
+              <div class="hooks-row">
+                <span class="hook-tag">First-gen college</span>
+                <span class="hook-tag">Studio art portfolio</span>
+                <span class="hook-tag">NYC public school</span>
               </div>
+            </div>
 
-              <div class="profile-block">
-                <div class="profile-block-label">Family / Contacts</div>
-                <div class="stats-mini-grid">
-                  <div class="stat"><span class="label">Parent</span><span class="value text">Linda Chen</span></div>
-                  <div class="stat"><span class="label">Phone</span><span class="value">917 555 0143</span></div>
-                  <div class="stat"><span class="label">Region</span><span class="value text">NYC · LES</span></div>
-                  <div class="stat"><span class="label">Citizen</span><span class="value text">US</span></div>
-                </div>
-              </div>
-
-              <div class="profile-block">
-                <div class="profile-block-label">Meetings</div>
+            <div class="profile-block">
+              <div class="profile-block-label">Engagement</div>
+              <div class="engagement-stack">
                 <div class="meeting-row">
                   <span class="meeting-label">Last</span>
                   <span class="meeting-value">2d ago</span>
@@ -1533,37 +1547,46 @@
                   <span class="meeting-value">Tom · 4pm</span>
                 </div>
                 <div class="meeting-row">
-                  <span class="meeting-label">Cycle</span>
-                  <span class="meeting-value">Dec 15</span>
+                  <span class="meeting-label">Cadence</span>
+                  <span class="meeting-value">Weekly</span>
+                </div>
+                <div class="engagement-action">
+                  <button class="log-meeting-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="12" cy="12" r="10"/>
+                      <polyline points="12 6 12 12 16 14"/>
+                    </svg>
+                    Log meeting
+                  </button>
+                  <a href="#" class="prep-notes-link">Prep notes →</a>
                 </div>
               </div>
-
             </div>
+
+            <div class="profile-block">
+              <div class="profile-block-label">
+                Current Module
+                <a class="manage-link" href="#">Manage</a>
+              </div>
+              <div class="profile-module-block">
+                <div class="pm-module-row">
+                  <span class="pm-module-name">Application Strategy</span>
+                  <span class="pm-module-pos">· Lesson 2 of 5</span>
+                </div>
+                <div>
+                  <div class="pm-lesson-label">This lesson</div>
+                  <div class="pm-lesson-title">School research deep-dive</div>
+                </div>
+                <div class="pm-task">
+                  <a class="pm-task-link" href="#">Finish worksheet</a>
+                  <span class="pm-task-due">· Due Dec 19</span>
+                </div>
+                <div class="pm-track">9 of 16 lessons in track</div>
+              </div>
+            </div>
+
           </div>
-
-          <!-- Module-mini = always-visible aside card (tall rectangle, stays visible when profile collapses). -->
-          <aside class="profile-module-mini" aria-label="Current module progress">
-            <div class="mm-eyebrow">Module progress</div>
-            <div class="mm-module-row">
-              <span class="mm-module-name">Application Strategy</span>
-              <span class="mm-module-sep">·</span>
-              <span class="mm-module-pos">Lesson 2 of 5</span>
-            </div>
-            <div class="mm-lesson">
-              <div class="mm-lesson-label">This lesson</div>
-              <div class="mm-lesson-title">School research deep-dive</div>
-            </div>
-            <div class="mm-task">
-              <div class="mm-task-label">Linked task</div>
-              <a class="mm-task-link" href="#">Finish school deep-dive worksheet</a>
-              <span class="mm-task-due">Due Dec 19</span>
-            </div>
-            <div class="mm-track">
-              <span class="mm-track-frac">9 of 16 lessons in track</span>
-            </div>
-          </aside>
-
-        </div><!-- /profile-section-row -->
+        </div>
 
         <!-- ─── HORIZONTAL TAB STRIP — matches dashboard-1 W1.3 canonical pattern ─── -->
         <div class="tab-strip" role="tablist" aria-label="Student sections">

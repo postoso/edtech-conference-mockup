@@ -680,12 +680,13 @@
       transform: rotate(-90deg);
     }
 
-    /* Profile-top-body — 4-column layout (R2.5 5/13: Quick stats · Hooks · Family · Meetings)
-       Module-mini moved OUT of the grid into a sibling aside (.profile-module-mini below).
-       Hooks block stacks vertically; right-side whitespace eliminated by adjusting column ratios. */
+    /* Profile-top-body — Variant A (Wave 4, 5/17): 4-column layout
+       Academic · Hooks · Engagement · Current Module. Module-mini folded IN as Block D
+       (per design-review.html → Variant A=Synthesis). Family/Contacts dropped; Citizenship
+       promoted into the Academic block. Hooks block stacks vertically. */
     .profile-top-body {
       display: grid;
-      grid-template-columns: minmax(190px, 1.1fr) minmax(150px, 0.8fr) minmax(170px, 1fr) minmax(160px, 1fr);
+      grid-template-columns: minmax(170px, 1.05fr) minmax(150px, 0.9fr) minmax(170px, 1fr) minmax(200px, 1.2fr);
       gap: 0;
       transition: max-height 0.25s ease, opacity 0.2s ease;
       max-height: 600px;
@@ -694,21 +695,6 @@
     body.profile-collapsed .profile-top-body {
       max-height: 0;
       opacity: 0;
-    }
-    /* M1 (Wave 2, 5/17): Module-mini collapses WITH profile.
-       Unifies the collapse: when profile is collapsed, the always-visible mini
-       hides too — no gray-space sibling. Mirrors profile-top-body's transition. */
-    body.profile-collapsed .profile-module-mini {
-      width: 0;
-      max-width: 0;
-      max-height: 0;
-      padding-top: 0;
-      padding-bottom: 0;
-      padding-left: 0;
-      padding-right: 0;
-      opacity: 0;
-      border-width: 0;
-      overflow: hidden;
     }
 
     .profile-block {
@@ -724,6 +710,9 @@
       text-transform: uppercase;
       color: var(--ink-3);
       margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
     }
 
     .stats-mini-grid {
@@ -801,144 +790,135 @@
       font-weight: 500;
     }
 
-    /* R2.5 5/13: Profile section row — flex container wrapping profile-top + always-visible
-       module-mini aside. Mini stays visible regardless of profile-top collapse state.
-       align-items: flex-start so mini sizes to content (not stretched to profile-top's height). */
-    .profile-section-row {
-      display: flex;
-      align-items: flex-start;
-      gap: 14px;
-      margin-bottom: 24px;
-      transition: gap 0.25s ease;
-    }
-    /* M1 (Wave 2, 5/17): when collapsed, drop the row gap so the collapsed mini
-       contributes no horizontal whitespace beyond what the profile-top already shows. */
-    body.profile-collapsed .profile-section-row {
-      gap: 0;
-    }
-    .profile-section-row .profile-top {
-      flex: 1;
-      min-width: 0;
-      margin-bottom: 0; /* gap handles spacing now */
-    }
-
-    /* R2.5 5/13: Module-mini = always-visible aside card (taller-than-wide rectangle).
-       Shows current module + current lesson + linked task + secondary track stat.
-       Lives outside profile-top-body so it stays visible when profile collapses.
-       Replaces both the old in-band mini AND the standalone "Current module" widget below. */
-    .profile-module-mini {
-      width: 232px;
-      flex-shrink: 0;
-      background: var(--surface);
-      border: 1px solid var(--line);
-      border-radius: 6px;
-      padding: 14px 16px 12px;
+    /* Wave 4 (5/17): Variant A folds the module into the profile card as Block D.
+       Module Block — in-card layout (rightmost column of profile-top-body).
+       Replaces the standalone .profile-module-mini aside that lived next to the profile. */
+    .profile-module-block {
       display: flex;
       flex-direction: column;
-      gap: 10px;
-      box-shadow: 0 1px 2px rgba(15, 20, 25, 0.025);
-      position: relative;
-      /* B5 color-accent: subtle indigo accent stripe matching profile-top */
-      /* M1 (Wave 2, 5/17): transition for unified collapse with profile band. */
-      transition: max-width 0.25s ease, max-height 0.25s ease,
-                  opacity 0.2s ease, padding 0.25s ease, border-width 0.25s ease;
+      gap: 8px;
     }
-    .profile-module-mini::before {
-      content: "";
-      position: absolute;
-      left: 0; top: 0; bottom: 0;
-      width: 3px;
-      background: var(--primary);
-      opacity: 0.55;
-      border-radius: 6px 0 0 6px;
+    .profile-module-block .pm-eyebrow {
+      display: none; /* eyebrow is provided by the .profile-block-label parent now */
     }
-    body.color-off .profile-module-mini::before { background: var(--ink-3); opacity: 0.4; }
-
-    .profile-module-mini .mm-eyebrow {
-      font-size: 10px;
-      font-weight: 600;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--ink-3);
-    }
-    .profile-module-mini .mm-module-row {
+    .profile-module-block .pm-module-row {
       display: flex;
       align-items: baseline;
       flex-wrap: wrap;
       gap: 4px 6px;
-      margin-top: -4px;
+      margin-top: -2px;
     }
-    .profile-module-mini .mm-module-name {
-      font-size: 13.5px;
+    .profile-module-block .pm-module-name {
+      font-size: 12.5px;
       font-weight: 600;
       color: var(--ink);
       letter-spacing: -0.005em;
     }
-    .profile-module-mini .mm-module-sep {
-      color: var(--ink-3);
-      font-size: 12px;
-    }
-    .profile-module-mini .mm-module-pos {
+    .profile-module-block .pm-module-pos {
       font-family: var(--font-mono);
-      font-size: 11.5px;
+      font-size: 11px;
       color: var(--ink-2);
       font-variant-numeric: tabular-nums;
-      font-weight: 500;
     }
-    .profile-module-mini .mm-lesson {
-      padding-top: 8px;
-      border-top: 1px dashed var(--line);
-    }
-    .profile-module-mini .mm-lesson-label,
-    .profile-module-mini .mm-task-label {
+    .profile-module-block .pm-lesson-label {
       font-size: 10px;
-      font-weight: 500;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
       color: var(--ink-3);
-      margin-bottom: 3px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      margin-bottom: 2px;
     }
-    .profile-module-mini .mm-lesson-title {
-      font-size: 13px;
-      color: var(--ink);
-      font-weight: 500;
-      line-height: 1.3;
+    .profile-module-block .pm-lesson-title {
+      font-size: 11.5px;
+      color: var(--ink-2);
+      line-height: 1.35;
     }
-    .profile-module-mini .mm-task {
-      padding-top: 8px;
-      border-top: 1px dashed var(--line);
+    .profile-module-block .pm-task {
       display: flex;
-      flex-direction: column;
-      gap: 2px;
+      align-items: baseline;
+      gap: 6px;
+      margin-top: 2px;
+      font-size: 11.5px;
     }
-    .profile-module-mini .mm-task-link {
-      font-size: 12.5px;
+    .profile-module-block .pm-task-link {
       color: var(--primary);
       text-decoration: none;
       font-weight: 500;
-      line-height: 1.3;
     }
-    .profile-module-mini .mm-task-link:hover {
+    .profile-module-block .pm-task-link:hover {
       text-decoration: underline;
     }
-    body.color-off .profile-module-mini .mm-task-link { color: var(--ink); }
-    .profile-module-mini .mm-task-due {
+    body.color-off .profile-module-block .pm-task-link { color: var(--ink); }
+    .profile-module-block .pm-task-due {
       font-family: var(--font-mono);
       font-size: 10.5px;
       color: var(--ink-3);
-      font-variant-numeric: tabular-nums;
-      margin-top: 1px;
     }
-    .profile-module-mini .mm-track {
-      padding-top: 8px;
-      border-top: 1px dashed var(--line);
-    }
-    .profile-module-mini .mm-track-frac {
-      font-family: var(--font-mono);
+    .profile-module-block .pm-track {
       font-size: 10.5px;
       color: var(--ink-3);
-      font-variant-numeric: tabular-nums;
+      margin-top: 2px;
+      font-family: var(--font-mono);
     }
+
+    /* Wave 4 (5/17): Manage link on the Current Module block label.
+       Matches design-review.html → Variant A pattern: a small "Manage" right-aligned link
+       on the block label that links to the module editor. */
+    .profile-block-label .manage-link {
+      font-family: var(--font-sans);
+      font-size: 10px;
+      color: var(--primary);
+      text-transform: none;
+      letter-spacing: 0;
+      font-weight: 500;
+      text-decoration: none;
+    }
+    .profile-block-label .manage-link:hover {
+      text-decoration: underline;
+    }
+    body.color-off .profile-block-label .manage-link { color: var(--ink); }
+
+    /* Wave 4 (5/17): Engagement block — adds Log meeting button + Prep notes link.
+       Replaces the older "Meetings" label/contents per Variant A spec. */
+    .engagement-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .engagement-action {
+      margin-top: 4px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .log-meeting-btn {
+      font-family: var(--font-sans);
+      font-size: 11.5px;
+      color: var(--ink);
+      padding: 4px 10px;
+      border: 1px solid var(--line-2);
+      border-radius: 4px;
+      background: var(--surface);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+      font-weight: 500;
+    }
+    .log-meeting-btn svg {
+      width: 11px;
+      height: 11px;
+    }
+    .prep-notes-link {
+      font-size: 11.5px;
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 500;
+    }
+    .prep-notes-link:hover {
+      text-decoration: underline;
+    }
+    body.color-off .prep-notes-link { color: var(--ink); }
 
     /* ─── Horizontal tab strip — variant A: tabs UNDER student name
        R2.5 (2026-05-13): overflow-x changed from `auto` to `visible` per Alex's wheel-scroll
@@ -1294,6 +1274,22 @@
     @media (max-width: 1100px) {
       .overview-grid {
         grid-template-columns: 1fr;
+      }
+    }
+
+    /* Wave 4 (5/17): narrower viewports — fold the Variant A 4-column profile body
+       into a 2x2 grid so all four blocks (Academic · Hooks · Engagement · Current Module)
+       remain visible on iPad-portrait and similar narrower content widths. */
+    @media (max-width: 1000px) {
+      .profile-top-body {
+        grid-template-columns: 1fr 1fr;
+      }
+      .profile-top-body .profile-block:nth-child(2) {
+        border-right: none;
+      }
+      .profile-top-body .profile-block:nth-child(1),
+      .profile-top-body .profile-block:nth-child(2) {
+        border-bottom: 1px solid var(--line);
       }
     }
 
@@ -1833,13 +1829,10 @@
     <div class="main-content">
       <div class="content-area">
 
-        <!-- ─── PROFILE SECTION ROW (R2.5 5/13)
-             Wraps profile-top + always-visible module-mini side-by-side. Mini sits in the
-             slot that previously held only collapsible right-side whitespace, and stays
-             visible regardless of profile collapse state. ─── -->
-        <div class="profile-section-row">
-
-        <!-- ─── UNIFIED PROFILE-TOP HEADER (page header doubles as profile band; B5 color-accent applied) ─── -->
+        <!-- ─── UNIFIED PROFILE CARD (Wave 4, 5/17) — Variant A=Synthesis
+             4-column body (Academic · Hooks · Engagement · Current Module). Module-mini
+             folded IN as Block D (per design-review.html). Family/Contacts dropped;
+             Citizenship promoted into the Academic block. WS chips remain in the header. ─── -->
         <div class="profile-top" data-design-note="profile-top" data-note-num="1">
           <div class="profile-top-header" id="profile-header">
             <div class="profile-top-avatar">MC</div>
@@ -1870,12 +1863,13 @@
           <div class="profile-top-body" id="profile-body">
 
             <div class="profile-block">
-              <div class="profile-block-label">Quick stats</div>
+              <div class="profile-block-label">Academic</div>
               <div class="stats-mini-grid">
                 <div class="stat"><span class="label">GPA (UW)</span><span class="value">3.96</span></div>
                 <div class="stat"><span class="label">SAT</span><span class="value">1530</span></div>
                 <div class="stat"><span class="label">Major</span><span class="value text">Studio Art</span></div>
                 <div class="stat"><span class="label">2nd</span><span class="value text">Art History</span></div>
+                <div class="stat"><span class="label">Citizen</span><span class="value text">US</span></div>
               </div>
             </div>
 
@@ -1889,64 +1883,57 @@
             </div>
 
             <div class="profile-block">
-              <div class="profile-block-label">Family / Contacts</div>
-              <div class="stats-mini-grid">
-                <div class="stat"><span class="label">Parent</span><span class="value text">Linda Chen</span></div>
-                <div class="stat"><span class="label">Phone</span><span class="value">917 555 0143</span></div>
-                <div class="stat"><span class="label">Region</span><span class="value text">NYC · LES</span></div>
-                <div class="stat"><span class="label">Citizen</span><span class="value text">US</span></div>
+              <div class="profile-block-label">Engagement</div>
+              <div class="engagement-stack">
+                <div class="meeting-row">
+                  <span class="meeting-label">Last</span>
+                  <span class="meeting-value">2d ago</span>
+                </div>
+                <div class="meeting-row">
+                  <span class="meeting-label">Next</span>
+                  <span class="meeting-value">Tom · 4pm</span>
+                </div>
+                <div class="meeting-row">
+                  <span class="meeting-label">Cadence</span>
+                  <span class="meeting-value">Weekly</span>
+                </div>
+                <div class="engagement-action">
+                  <button class="log-meeting-btn" data-tooltip="Logs a meeting after the fact — opens form with date, attendees, summary">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="12" cy="12" r="10"/>
+                      <polyline points="12 6 12 12 16 14"/>
+                    </svg>
+                    Log meeting
+                  </button>
+                  <a href="#" class="prep-notes-link">Prep notes →</a>
+                </div>
               </div>
             </div>
 
-            <div class="profile-block">
-              <div class="profile-block-label">Meetings</div>
-              <div class="meeting-row">
-                <span class="meeting-label">Last</span>
-                <span class="meeting-value">2d ago</span>
+            <div class="profile-block" data-design-note="module-mini" data-note-num="9">
+              <div class="profile-block-label">
+                Current Module
+                <a class="manage-link" href="#">Manage</a>
               </div>
-              <div class="meeting-row">
-                <span class="meeting-label">Next</span>
-                <span class="meeting-value">Tom · 4pm</span>
-              </div>
-              <div class="meeting-row">
-                <span class="meeting-label">Cycle</span>
-                <span class="meeting-value">Dec 15</span>
+              <div class="profile-module-block">
+                <div class="pm-module-row">
+                  <span class="pm-module-name">Application Strategy</span>
+                  <span class="pm-module-pos">· Lesson 2 of 5</span>
+                </div>
+                <div>
+                  <div class="pm-lesson-label">This lesson</div>
+                  <div class="pm-lesson-title">School research deep-dive</div>
+                </div>
+                <div class="pm-task">
+                  <a class="pm-task-link" href="#">Finish worksheet</a>
+                  <span class="pm-task-due">· Due Dec 19</span>
+                </div>
+                <div class="pm-track">9 of 16 lessons in track</div>
               </div>
             </div>
-
-            <!-- R2.5 5/13: Module-mini moved OUT of profile-top-body and into its own
-                 always-visible aside sibling (.profile-section-row > .profile-module-mini below).
-                 Reason: visible when profile collapses + tall-rectangular shape needs vertical
-                 stack room that the horizontal 4-column grid can't provide. -->
 
           </div>
         </div>
-
-        <!-- ─── MODULE MINI (R2.5 5/13)
-             Tall-rectangular always-visible card: module name + current lesson + linked task + due.
-             Replaces the previously-removed standalone Module Progress widget below. ─── -->
-        <aside class="profile-module-mini" data-design-note="module-mini" data-note-num="9" aria-label="Current module progress">
-          <div class="mm-eyebrow">Module progress</div>
-          <div class="mm-module-row">
-            <span class="mm-module-name">Application Strategy</span>
-            <span class="mm-module-sep">·</span>
-            <span class="mm-module-pos">Lesson 2 of 5</span>
-          </div>
-          <div class="mm-lesson">
-            <div class="mm-lesson-label">This lesson</div>
-            <div class="mm-lesson-title">School research deep-dive</div>
-          </div>
-          <div class="mm-task">
-            <div class="mm-task-label">Linked task</div>
-            <a class="mm-task-link" href="#">Finish school deep-dive worksheet</a>
-            <span class="mm-task-due">Due Dec 19</span>
-          </div>
-          <div class="mm-track">
-            <span class="mm-track-frac">9 of 16 lessons in track</span>
-          </div>
-        </aside>
-
-        </div><!-- /profile-section-row -->
 
         <!-- ─── HORIZONTAL TAB STRIP — Variant A ─── -->
         <div class="tab-strip" data-design-note="horizontal-tabs" data-note-num="3" role="tablist" aria-label="Student sections">
@@ -2235,9 +2222,8 @@
 
         </div><!-- /overview-grid -->
 
-        <!-- R2.5 5/13: Standalone Module Progress widget REMOVED.
-             Module info now lives ONLY in the profile-module-mini card (top-right of profile band).
-             Removed per Alex 11:07 PM: "we do not need to have it at the top and the bottom." -->
+        <!-- Wave 4 5/17: Module info lives inside the profile card as Block D (Variant A).
+             No standalone Module Progress widget; no sibling module-mini aside. -->
 
         <!-- ─── ACTIVITY + NOTES (split per v2 lock) ─── -->
         <div class="activity-grid" data-design-note="activity-split" data-note-num="8">
